@@ -8,8 +8,7 @@
         <div class="col-md-3">
             <div class="card bg-primary text-white">
                 <div class="card-body">
-                    <h5 class="card-title">jumlah pesanan</h5>
-                    <h2 class="card-text">{{ $totalOrders }}</h2>
+                    <h5 class="card-title">Total pesanan</h5>
                     <h2 class="card-text">{{ $totalOrders }}</h2>
                 </div>
             </div>
