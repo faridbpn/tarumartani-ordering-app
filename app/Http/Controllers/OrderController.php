@@ -16,19 +16,25 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with('items.menu')
+        $totalOrders = Order::count();
+        $newOrders = Order::where('status', 'new')->count();
+        $processingOrders = Order::where('status', 'processing')->count();
+        $completedOrders = Order::where('status', 'completed')->count();
+        $totalRevenue = Order::where('status', 'completed')->sum('total_amount');
+        
+        $recentOrders = Order::with('orderItems.menu')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        $stats = [
-            'total' => Order::count(),
-            'new' => Order::where('status', 'new')->count(),
-            'processing' => Order::where('status', 'processing')->count(),
-            'completed' => Order::where('status', 'completed')->count(),
-            'revenue' => Order::where('status', 'completed')->sum('total_amount')
-        ];
+            ->take(10)
+            ->get();
 
-        return view('adminPage', compact('orders', 'stats'));
+        return view('adminPage', compact(
+            'totalOrders',
+            'newOrders',
+            'processingOrders',
+            'completedOrders',
+            'totalRevenue',
+            'recentOrders'
+        ));
     }
 
     /**
