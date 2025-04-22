@@ -1,90 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - Tarumartani Cafe</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: #1f2937;
-            color: #fff;
-            padding: 20px;
-            position: fixed;
-            height: 100%;
-        }
-        .sidebar a {
-            color: #fff;
-            text-decoration: none;
-            display: block;
-            padding: 10px 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-        }
-        .sidebar a:hover, .sidebar .active {
-            background-color: #374151;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: 100%;
-        }
-    </style>
-    @yield('styles')
-</head>
-<body>
-    @if(session('admin_logged_in'))
-        <div class="sidebar">
-            <h4 class="mb-4">Tarumartani Admin</h4>
-            <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <i class="fas fa-chart-line me-2"></i> Dashboard
+<div class="sidebar gradient-bg text-white w-64 flex-shrink-0 hidden md:flex flex-col">
+    <div class="p-4 flex items-center space-x-2">
+        <i class="fas fa-utensils text-2xl"></i>
+        <h1 class="text-xl font-bold">FoodExpress</h1>
+    </div>
+
+    <div class="flex-1 overflow-y-auto">
+        <nav class="px-4 py-6 space-y-1">
+            {{-- admin --}}
+            <a href="{{ route('admin.dashboard') }}"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg 
+                   {{ request()->routeIs('admin.dashboard') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
             </a>
-            <a href="{{ route('menu.index') }}" class="{{ request()->routeIs('menu.*') ? 'active' : '' }}">
-                <i class="fas fa-utensils me-2"></i> Menu Items
+            {{-- menu management --}}
+            <a href="{{ route('orders.index') }}"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg 
+                {{ request()->routeIs('orders.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                <i class="fas fa-utensils"></i>
+                <span>Menu</span>
             </a>
-            <a href="{{ route('orders.index') }}" class="{{ request()->routeIs('orders.index') ? 'active' : '' }}">
-                <i class="fas fa-shopping-cart me-2"></i> Orders
+            {{-- orders --}}
+            <a href="{{ route('orders.index') }}"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg 
+                {{ request()->routeIs('orders.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
             </a>
-            <a href="{{ route('orders.archive') }}" class="{{ request()->routeIs('orders.archive') ? 'active' : '' }}">
-                <i class="fas fa-archive me-2"></i> Archive
+            {{-- orders --}}
+            <a href="{{ route('orders.index') }}"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg 
+                {{ request()->routeIs('orders.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                <i class="fas fa-users"></i>
+                <span>Orders</span>
             </a>
-            <a href="{{ route('logout') }}"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-               <i class="fas fa-sign-out-alt me-2"></i> Logout
-            </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                @csrf
-            </form>
+        </nav>
+    </div>
+
+    <div class="p-4 border-t border-white border-opacity-20">
+        <div class="flex items-center space-x-3">
+            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Admin" class="w-10 h-10 rounded-full">
+            <div>
+                <p class="font-medium">Admin User</p>
+                <p class="text-xs opacity-80">admin@foodexpress.com</p>
+            </div>
         </div>
-
-        <div class="main-content">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @yield('content')
-        </div>
-    @endif
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    @yield('scripts')
-</body>
-</html>
+        <button class="w-full mt-4 py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all">
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </button>
+    </div>
+</div>

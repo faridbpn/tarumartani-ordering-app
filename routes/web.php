@@ -23,22 +23,25 @@ Route::post('/admin/logout', [AdminController::class, 'logout'])->middleware('au
 
 // Checkout Routes
 Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+// Route::post('/orders', [OrderController::class, 'store'])->name('orders.store')->middleware('auth');
 Route::get('/orders/success/{order}', [OrderController::class, 'success'])->name('orders.success');
 
+
 // Admin Routes (Protected)
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware('auth')->prefix('admin')->group(function () {
     // Dashboard
-    Route::get('/', [OrderController::class, 'index'])->name('admin.dashboard');
-    
+
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
     Route::post('/menu', [MenuController::class, 'store'])->name('menu.store');
     Route::put('/menu/{menu}', [MenuController::class, 'update'])->name('menu.update');
     Route::delete('/menu/{menu}', [MenuController::class, 'destroy'])->name('menu.destroy');
-    
+
     // Order Management
+    Route::get('/', [OrderController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    // Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    // Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('/orders/archive', [OrderController::class, 'archive'])->name('orders.archive');
 });

@@ -8,6 +8,7 @@ use App\Models\Menu;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use App\Models\MenuItem;
 
 class OrderController extends Controller
 {
@@ -27,7 +28,7 @@ class OrderController extends Controller
             ->take(10)
             ->get();
 
-        return view('adminPage', compact(
+        return view('orders', compact(
             'totalOrders',
             'newOrders',
             'processingOrders',
@@ -45,6 +46,13 @@ class OrderController extends Controller
         //
     }
 
+     /**
+     * public function dashboard.
+     */
+    public function dashboard()
+    {
+        return view('adminPage');
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -52,38 +60,43 @@ class OrderController extends Controller
     {
         $request->validate([
             'customer_name' => 'required|string|max:255',
-            'table_number' => 'required|integer|min:1',
+            'table_number' => 'required|string|max:255',
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:menu_items,id',
+            'items.*.quantity' => 'required|integer|min:1'
         ]);
 
-        $cart = Session::get('cart', []);
-        
-        if (empty($cart)) {
-            return redirect()->back()->with('error', 'Your cart is empty');
-        }
+        try {
+            DB::beginTransaction();
 
-        $total = 0;
-        foreach ($cart as $item) {
-            $total += $item['price'] * $item['quantity'];
-        }
-
-        $order = Order::create([
-            'customer_name' => $request->customer_name,
-            'table_number' => $request->table_number,
-            'total_amount' => $total,
-            'status' => 'new'
-        ]);
-
-        foreach ($cart as $menuId => $item) {
-            $order->items()->create([
-                'menu_id' => $menuId,
-                'quantity' => $item['quantity'],
-                'price' => $item['price']
+            $order = Order::create([
+                'customer_name' => $request->customer_name,
+                'table_number' => $request->table_number,
+                'status' => 'new',
+                'total_amount' => 0
             ]);
-        }
 
-        Session::forget('cart');
-        
-        return redirect()->route('orders.success', $order);
+            $totalAmount = 0;
+            foreach ($request->items as $item) {
+                $menuItem = MenuItem::find($item['id']);
+                $order->items()->create([
+                    'menu_item_id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $menuItem->price
+                ]);
+                $totalAmount += $menuItem->price * $item['quantity'];
+            }
+
+            $order->update(['total_amount' => $totalAmount]);
+
+            DB::commit();
+
+            return redirect()->route('orders.success', $order)
+                ->with('success', 'Order has been placed successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to place order. Please try again.');
+        }
     }
 
     /**
