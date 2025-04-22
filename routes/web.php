@@ -19,7 +19,7 @@ Route::get('/cart', [OrderController::class, 'showCart'])->name('cart.show');
 // Authentication Routes
 Route::get('/admin/login', [AdminController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [AdminController::class, 'login'])->name('submit.login');
-Route::post('/admin/logout', [AdminController::class, 'logout'])->name('logout');
+Route::post('/admin/logout', [AdminController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Checkout Routes
 Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');

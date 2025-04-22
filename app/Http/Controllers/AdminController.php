@@ -21,13 +21,13 @@ class AdminController extends Controller
             'password' => 'required'
         ]);
 
-        // dd($request);
-        if (Auth::attempt(credentials: $request->only('email', 'password'))) {
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $request->session()->regenerate();
             return redirect()->route('admin.dashboard');
         }
 
         return back()->withErrors([
-            'password' => 'Password yang Anda masukkan salah.'
+            'email' => 'Email atau password yang Anda masukkan salah.'
         ]);
     }
 
@@ -48,8 +48,11 @@ class AdminController extends Controller
         ));
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 }
