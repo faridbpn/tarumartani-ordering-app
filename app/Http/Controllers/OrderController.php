@@ -160,7 +160,11 @@ class OrderController extends Controller
         }
         
         Session::put('cart', $cart);
-        return redirect()->back()->with('success', 'Item added to cart successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Item added to cart successfully'
+        ]);
+        
     }
 
     public function updateCart(Request $request, Menu $menu)

@@ -3,22 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $foods = Menu::where('category', 'food')
-            ->where('is_available', true)
-            ->orderBy('name')
-            ->get();
-            
-        $beverages = Menu::where('category', 'beverage')
-            ->where('is_available', true)
-            ->orderBy('name')
-            ->get();
+        $foods = Menu::where('category', 'food')->where('is_available', true)->orderBy('name')->get();
+        $beverages = Menu::where('category', 'beverage')->where('is_available', true)->orderBy('name')->get();
+        $categories = Category::all();
+        $menuItems = Menu::where('is_available', true)->orderBy('name')->get();
 
-        return view('userPage', compact('foods', 'beverages'));
+        return view('userPage', compact('foods', 'beverages', 'categories', 'menuItems'));
     }
 } 
