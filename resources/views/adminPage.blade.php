@@ -57,7 +57,7 @@
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
+                <a href="{{ route('menu.items') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
                     <i class="fas fa-utensils"></i>
                     <span>Menu Items</span>
                 </a>
@@ -66,16 +66,8 @@
                     <span>Orders</span>
                 </a>
                 <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
-                    <i class="fas fa-users"></i>
-                    <span>Customers</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
                     <i class="fas fa-chart-line"></i>
-                    <span>Analytics</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
+                    <span>Archive</span>
                 </a>
             </nav>
         </div>

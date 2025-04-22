@@ -36,6 +36,10 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/menu', [MenuController::class, 'store'])->name('menu.store');
     Route::put('/menu/{menu}', [MenuController::class, 'update'])->name('menu.update');
     Route::delete('/menu/{menu}', [MenuController::class, 'destroy'])->name('menu.destroy');
+    Route::get('/menu-items', function () {
+        return view('menuItems');
+    })->name('menu.items');
+    
     
     // Order Management
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
