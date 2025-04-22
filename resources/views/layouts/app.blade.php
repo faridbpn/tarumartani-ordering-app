@@ -14,9 +14,9 @@
                 <span>Dashboard</span>
             </a>
             {{-- menu management --}}
-            <a href="{{ route('orders.index') }}"
+            <a href="{{ route('menu.index') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
-                {{ request()->routeIs('orders.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                {{ request()->routeIs('menu.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
                 <i class="fas fa-utensils"></i>
                 <span>Menu</span>
             </a>
