@@ -233,6 +233,7 @@
     }
 
     renderMenu(); // Initial render
+    
   </script>
 </body>
 </html>
