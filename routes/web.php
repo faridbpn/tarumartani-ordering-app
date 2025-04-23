@@ -29,7 +29,7 @@ Route::get('/orders/success/{order}', [OrderController::class, 'success'])->name
 // Admin Routes (Protected)
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Dashboard
-    Route::get('/', [OrderController::class, 'index'])->name('admin.dashboard');
+    Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
@@ -45,7 +45,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Order Management
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::get('/orders/archive', [OrderController::class, 'archive'])->name('orders.archive');
+    Route::get('/orders/archive', [OrderController::class, 'arsip'])->name('orders.arsip');
 
 
 

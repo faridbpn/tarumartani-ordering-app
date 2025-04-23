@@ -107,6 +107,19 @@ class OrderController extends Controller
         //
     }
 
+      /**
+     * menampilkan order yang sudah selesai⚠️.
+     */
+    public function arsip()
+    {
+        $orders = Order::with('items.menu')
+            ->where('status', 'completed')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('arsip', compact('orders'));
+    }
+
     /**
      * Show the form for editing the specified resource.
      */

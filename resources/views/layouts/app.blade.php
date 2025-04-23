@@ -28,9 +28,9 @@
                 <span>Orders</span>
             </a>
             {{-- orders --}}
-            <a href="{{ route('orders.index') }}"
+            <a href="{{ route('orders.arsip') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
-                {{ request()->routeIs('orders.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                {{ request()->routeIs('orders.arsip') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
                 <i class="fas fa-users"></i>
                 <span>Orders</span>
             </a>
