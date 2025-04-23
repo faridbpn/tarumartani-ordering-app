@@ -79,10 +79,51 @@
         .toast {
             transition: opacity 0.3s ease;
         }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pagination li {
+            margin: 0 2px;
+        }
+
+        .pagination li a,
+        .pagination li span {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: white;
+            color: #3b82f6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .pagination li.active span {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .pagination li a:hover {
+            background-color: #f3f4f6;
+        }
+
+        .pagination li.disabled span {
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
+<body class="flex h-screen">
+    <!-- Navbar -->
     @include('layouts.app')
     
     <!-- Mobile sidebar toggle -->
@@ -101,7 +142,7 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Menu Management</h1>
-            <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all">
+            <button data-action="add-menu" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all">
                 <i class="fas fa-plus mr-2"></i> Add Menu
             </button>
         </div>
@@ -137,13 +178,13 @@
                 <div class="relative">
                     <img src="{{ $menu->image ? asset('storage/' . $menu->image) : 'https://via.placeholder.com/300x200' }}" 
                          alt="{{ $menu->name }}" 
-                         class="w-full h-48 object-cover">
+                         class="w-full h-36 object-cover">
                     <div class="absolute top-2 right-2 flex space-x-2">
-                        <button onclick="openEditModal({{ $menu->id }})" 
+                        <button data-action="edit-menu" data-id="{{ $menu->id }}" 
                                 class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition-colors">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="confirmDelete({{ $menu->id }})" 
+                        <button data-action="delete-menu" data-id="{{ $menu->id }}" 
                                 class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -161,21 +202,28 @@
                                 {{ $menu->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ $menu->is_available ? 'Available' : 'Not Available' }}
                             </span>
-                            <span class="text-xs text-gray-500">{{ $menu->category->name }}</span>
+                            <span class="text-xs text-gray-500" data-category-id="{{ $menu->category_id ?? '' }}">
+                                {{ isset($menu->category->name) ? $menu->category->name : 'No Category' }}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
             @endforeach
         </div>
+        
+        <!-- Pagination -->
+        <div class="mt-8 flex justify-center">
+            {{ $menus->links() }}
+        </div>
     </div>
     
     <!-- Add/Edit Modal -->
     <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
             <div class="flex justify-between items-center p-4 border-b">
                 <h3 class="text-lg font-semibold" id="modalTitle">Add New Menu</h3>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                <button data-action="close-modal" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -223,7 +271,7 @@
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal()"
+                    <button type="button" data-action="close-modal"
                             class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </button>
@@ -238,16 +286,16 @@
     
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
             <div class="p-4">
                 <h3 class="text-lg font-semibold mb-4">Confirm Delete</h3>
                 <p class="text-gray-600 mb-6">Are you sure you want to delete this menu item? This action cannot be undone.</p>
                 <div class="flex justify-end space-x-3">
-                    <button onclick="closeDeleteModal()"
+                    <button data-action="close-delete-modal"
                             class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </button>
-                    <button onclick="deleteMenu()"
+                    <button data-action="confirm-delete"
                             class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                         Delete
                     </button>
@@ -256,161 +304,306 @@
         </div>
     </div>
     
-    @push('scripts')
     <script>
-        let currentMenuId = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentMenuId = null;
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            toastMessage.textContent = message;
-            toast.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
-            toast.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
+            function showToast(message, isError = false) {
+                const toast = document.getElementById('toast');
+                if (!toast) {
+                    console.error('Toast element not found');
+                    return;
+                }
+                const toastMessage = document.getElementById('toastMessage');
+                toastMessage.textContent = message;
+                toast.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
+                toast.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
 
-        // Image preview
-        document.getElementById('image').addEventListener('change', function(e) {
-            const preview = document.getElementById('imagePreview');
-            if (e.target.files && e.target.files[0]) {
-                preview.src = URL.createObjectURL(e.target.files[0]);
-                preview.classList.remove('hidden');
+            // Image preview
+            const imageInput = document.getElementById('image');
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    if (e.target.files && e.target.files[0]) {
+                        preview.src = URL.createObjectURL(e.target.files[0]);
+                        preview.classList.remove('hidden');
+                    } else {
+                        preview.classList.add('hidden');
+                    }
+                });
             } else {
-                preview.classList.add('hidden');
+                console.error('Image input not found');
+            }
+
+            function openAddModal() {
+                console.log('Opening add modal');
+                const modal = document.getElementById('menuModal');
+                if (modal) {
+                    document.getElementById('modalTitle').textContent = 'Add New Menu';
+                    document.getElementById('menuForm').reset();
+                    document.getElementById('menuId').value = '';
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('active');
+                    console.log('Add modal should be visible');
+                } else {
+                    console.error('menuModal not found');
+                }
+            }
+
+            function openEditModal(id) {
+                console.log(`Fetching menu data for ID: ${id}`);
+                fetch(`/admin/menu/${id}`)
+                    .then(response => {
+                        console.log(`Fetch response status: ${response.status}`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch menu data: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(menu => {
+                        console.log('Menu data:', menu);
+                        const modal = document.getElementById('menuModal');
+                        if (modal) {
+                            document.getElementById('modalTitle').textContent = 'Edit Menu';
+                            document.getElementById('menuId').value = menu.id;
+                            document.getElementById('name').value = menu.name;
+                            document.getElementById('description').value = menu.description || '';
+                            document.getElementById('price').value = menu.price;
+                            document.getElementById('category_id').value = menu.category_id;
+                            document.getElementById('is_available').value = menu.is_available ? '1' : '0';
+                            document.getElementById('imagePreview').src = menu.image ? `/storage/${menu.image}` : '';
+                            document.getElementById('imagePreview').classList.toggle('hidden', !menu.image);
+                            modal.classList.remove('hidden');
+                            modal.classList.add('active');
+                            console.log('Edit modal should be visible');
+                        } else {
+                            console.error('menuModal not found');
+                        }
+                    })
+                    .catch(error => {
+                        showToast('Failed to load menu data', true);
+                        console.error('Fetch error:', error);
+                    });
+            }
+
+            function closeModal() {
+                console.log('Closing add/edit modal');
+                const modal = document.getElementById('menuModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('active');
+                    document.getElementById('imagePreview').classList.add('hidden');
+                } else {
+                    console.error('menuModal not found');
+                }
+            }
+
+            function confirmDelete(id) {
+                console.log(`Opening delete modal for ID: ${id}`);
+                currentMenuId = id;
+                const deleteModal = document.getElementById('deleteModal');
+                if (deleteModal) {
+                    deleteModal.classList.remove('hidden');
+                    deleteModal.classList.add('active');
+                    console.log('Delete modal should be visible');
+                } else {
+                    console.error('deleteModal not found');
+                }
+            }
+
+            function closeDeleteModal() {
+                console.log('Closing delete modal');
+                const deleteModal = document.getElementById('deleteModal');
+                if (deleteModal) {
+                    deleteModal.classList.add('hidden');
+                    deleteModal.classList.remove('active');
+                    currentMenuId = null;
+                } else {
+                    console.error('deleteModal not found');
+                }
+            }
+
+            function deleteMenu() {
+                console.log(`Deleting menu ID: ${currentMenuId}`);
+                if (!currentMenuId) return;
+
+                fetch(`/admin/menu/${currentMenuId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        console.log(`Delete response status: ${response.status}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to delete menu');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            closeDeleteModal();
+                            showToast('Menu deleted successfully');
+                            location.reload();
+                        } else {
+                            showToast(data.message || 'Failed to delete menu', true);
+                        }
+                    })
+                    .catch(error => {
+                        showToast('Error deleting menu', true);
+                        console.error('Delete error:', error);
+                    });
+            }
+
+            // Search and Filter functionality
+            function filterMenus() {
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const category = document.getElementById('categoryFilter').value;
+                const status = document.getElementById('statusFilter').value;
+
+                document.querySelectorAll('.menu-card').forEach(card => {
+                    const name = card.querySelector('h3').textContent.toLowerCase();
+                    const cardCategory = card.querySelector('.text-gray-500').getAttribute('data-category-id') || '';
+                    const cardStatus = card.querySelector('.rounded-full').textContent.includes('Available') ? '1' : '0';
+
+                    const matchesSearch = name.includes(search);
+                    const matchesCategory = !category || cardCategory === category;
+                    const matchesStatus = !status || cardStatus === status;
+
+                    card.style.display = matchesSearch && matchesCategory && matchesStatus ? 'block' : 'none';
+                });
+            }
+
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterMenus);
+            } else {
+                console.error('searchInput not found');
+            }
+
+            const categoryFilter = document.getElementById('categoryFilter');
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', filterMenus);
+            } else {
+                console.error('categoryFilter not found');
+            }
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterMenus);
+            } else {
+                console.error('statusFilter not found');
+            }
+
+            const menuForm = document.getElementById('menuForm');
+            if (menuForm) {
+                menuForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const id = document.getElementById('menuId').value;
+                    const url = id ? `/admin/menu/${id}` : '/admin/menu';
+                    const method = id ? 'POST' : 'POST';
+                    if (id) formData.append('_method', 'PUT');
+
+                    fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                        .then(response => {
+                            console.log(`Form submit response status: ${response.status}`);
+                            if (!response.ok) {
+                                throw new Error('Failed to save menu');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                closeModal();
+                                showToast(id ? 'Menu updated successfully' : 'Menu created successfully');
+                                location.reload();
+                            } else {
+                                showToast(data.message || 'Failed to save menu', true);
+                            }
+                        })
+                        .catch(error => {
+                            showToast('Error saving menu', true);
+                            console.error('Form submit error:', error);
+                        });
+                });
+            } else {
+                console.error('menuForm not found');
+            }
+
+            // Sidebar toggle for mobile
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    document.querySelector('.sidebar').classList.toggle('hidden');
+                });
+            } else {
+                console.error('sidebar-toggle not found');
+            }
+
+            // Attach event listeners to buttons
+            const addButton = document.querySelector('[data-action="add-menu"]');
+            if (addButton) {
+                console.log('Add button found');
+                addButton.addEventListener('click', () => {
+                    console.log('Add button clicked');
+                    openAddModal();
+                });
+            } else {
+                console.error('Add button not found');
+            }
+
+            document.querySelectorAll('[data-action="edit-menu"]').forEach(button => {
+                const id = button.getAttribute('data-id');
+                console.log(`Edit button found for ID: ${id}`);
+                button.addEventListener('click', () => {
+                    console.log(`Edit button clicked for ID: ${id}`);
+                    openEditModal(id);
+                });
+            });
+
+            document.querySelectorAll('[data-action="delete-menu"]').forEach(button => {
+                const id = button.getAttribute('data-id');
+                console.log(`Delete button found for ID: ${id}`);
+                button.addEventListener('click', () => {
+                    console.log(`Delete button clicked for ID: ${id}`);
+                    confirmDelete(id);
+                });
+            });
+
+            const closeModalButton = document.querySelector('[data-action="close-modal"]');
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', closeModal);
+            } else {
+                console.error('close-modal button not found');
+            }
+
+            const closeDeleteModalButton = document.querySelector('[data-action="close-delete-modal"]');
+            if (closeDeleteModalButton) {
+                closeDeleteModalButton.addEventListener('click', closeDeleteModal);
+            } else {
+                console.error('close-delete-modal button not found');
+            }
+
+            const confirmDeleteButton = document.querySelector('[data-action="confirm-delete"]');
+            if (confirmDeleteButton) {
+                confirmDeleteButton.addEventListener('click', deleteMenu);
+            } else {
+                console.error('confirm-delete button not found');
             }
         });
-
-        function openAddModal() {
-            document.getElementById('modalTitle').textContent = 'Add New Menu';
-            document.getElementById('menuForm').reset();
-            document.getElementById('menuId').value = '';
-            document.getElementById('imagePreview').classList.add('hidden');
-            document.getElementById('menuModal').classList.remove('hidden');
-        }
-
-        function openEditModal(id) {
-            fetch(`/admin/menu/${id}`)
-                .then(response => response.json())
-                .then(menu => {
-                    document.getElementById('modalTitle').textContent = 'Edit Menu';
-                    document.getElementById('menuId').value = menu.id;
-                    document.getElementById('name').value = menu.name;
-                    document.getElementById('description').value = menu.description || '';
-                    document.getElementById('price').value = menu.price;
-                    document.getElementById('category_id').value = menu.category_id;
-                    document.getElementById('is_available').value = menu.is_available ? '1' : '0';
-                    document.getElementById('imagePreview').src = menu.image ? `/storage/${menu.image}` : '';
-                    document.getElementById('imagePreview').classList.toggle('hidden', !menu.image);
-                    document.getElementById('menuModal').classList.remove('hidden');
-                })
-                .catch(error => {
-                    showToast('Failed to load menu data', true);
-                    console.error(error);
-                });
-        }
-
-        function closeModal() {
-            document.getElementById('menuModal').classList.add('hidden');
-            document.getElementById('imagePreview').classList.add('hidden');
-        }
-
-        function confirmDelete(id) {
-            currentMenuId = id;
-            document.getElementById('deleteModal').classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.add('hidden');
-            currentMenuId = null;
-        }
-
-        function deleteMenu() {
-            if (!currentMenuId) return;
-
-            fetch(`/admin/menu/${currentMenuId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeDeleteModal();
-                        showToast('Menu deleted successfully');
-                        location.reload();
-                    } else {
-                        showToast(data.message || 'Failed to delete menu', true);
-                    }
-                })
-                .catch(error => {
-                    showToast('Error deleting menu', true);
-                    console.error(error);
-                });
-        }
-
-        // Search and Filter functionality
-        document.getElementById('searchInput').addEventListener('input', filterMenus);
-        document.getElementById('categoryFilter').addEventListener('change', filterMenus);
-        document.getElementById('statusFilter').addEventListener('change', filterMenus);
-
-        function filterMenus() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-            const status = document.getElementById('statusFilter').value;
-
-            document.querySelectorAll('.menu-card').forEach(card => {
-                const name = card.querySelector('h3').textContent.toLowerCase();
-                const cardCategory = card.querySelector('.text-gray-500').getAttribute('data-category-id');
-                const cardStatus = card.querySelector('.rounded-full').textContent.includes('Available') ? '1' : '0';
-
-                const matchesSearch = name.includes(search);
-                const matchesCategory = !category || cardCategory === category;
-                const matchesStatus = !status || cardStatus === status;
-
-                card.style.display = matchesSearch && matchesCategory && matchesStatus ? 'block' : 'none';
-            });
-        }
-
-        document.getElementById('menuForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const id = document.getElementById('menuId').value;
-            const url = id ? `/admin/menu/${id}` : '/admin/menu';
-            const method = id ? 'POST' : 'POST';
-            if (id) formData.append('_method', 'PUT');
-
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeModal();
-                        showToast(id ? 'Menu updated successfully' : 'Menu created successfully');
-                        location.reload();
-                    } else {
-                        showToast(data.message || 'Failed to save menu', true);
-                    }
-                })
-                .catch(error => {
-                    showToast('Error saving menu', true);
-                    console.error(error);
-                });
-        });
-
-        // Sidebar toggle for mobile
-        document.getElementById('sidebar-toggle').addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('hidden');
-        });
     </script>
-    @endpush
 </body>
 </html>

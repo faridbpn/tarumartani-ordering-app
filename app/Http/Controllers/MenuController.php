@@ -12,7 +12,7 @@ class MenuController extends Controller
 {
     public function index()
     {
-        $menus = Menu::with('category')->get();
+        $menus = Menu::with('category')->paginate(4);
         $categories = Category::all();
         return view('menuItems', compact('menus', 'categories'));
     }

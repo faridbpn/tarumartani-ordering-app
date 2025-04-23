@@ -32,11 +32,7 @@
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
                 {{ request()->routeIs('orders.arsip') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
                 <i class="fas fa-users"></i>
-<<<<<<< HEAD
-                <span>Archive</span>
-=======
                 <span>History</span>
->>>>>>> 3ca125907a04abfaf46657c90ac2f95c39f95d08
             </a>
         </nav>
     </div>
@@ -58,3 +54,4 @@
         
     </div>
 </div>
+
