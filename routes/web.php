@@ -33,14 +33,10 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
-    Route::post('/menu', [MenuController::class, 'store'])->name('menu.store');
-    Route::put('/menu/{menu}', [MenuController::class, 'update'])->name('menu.update');
-    Route::delete('/menu/{menu}', [MenuController::class, 'destroy'])->name('menu.destroy');
-    Route::get('/menu-items', function () {
-        return view('menuItems');
-    })->name('menu.items');
-    
-    
+    Route::get('/menu/{id}', [MenuController::class, 'show']);
+    Route::post('/menu', [MenuController::class, 'store']);
+    Route::post('/menu/{id}', [MenuController::class, 'update']);
+    Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
     
     // Order Management
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

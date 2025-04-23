@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive - FoodExpress Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8fafc;
-        }
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+    }
         
         .gradient-bg {
             background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
@@ -20,9 +20,9 @@
         
         .sidebar {
             transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
+    }
+
+    .card-hover:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
@@ -63,19 +63,19 @@
         
         .modal.active .modal-content {
             transform: translateY(0);
-        }
-    </style>
+    }
+  </style>
 </head>
 <body class="flex h-screen overflow-hidden">
   @include('layouts.app')
-  
+
     <!-- Mobile sidebar toggle -->
     <div class="md:hidden fixed bottom-4 right-4 z-50">
         <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
             <i class="fas fa-bars text-xl"></i>
         </button>
     </div>
-    
+
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Topbar -->
@@ -363,8 +363,8 @@
                 <button id="close-restore-modal" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>
-            
+  </div>
+
             <div class="p-4">
                 <p class="mb-4">Are you sure you want to restore this item? It will be moved back to its original location.</p>
                 <input type="hidden" id="restore-item-id">
@@ -499,7 +499,7 @@
                 // Remove from archive list (in a real app, you would refresh the list)
                 archiveItems = archiveItems.filter(item => item.id !== itemId);
             });
-        });
-    </script>
+    });
+  </script>
 </body>
 </html>
