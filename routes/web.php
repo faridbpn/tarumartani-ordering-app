@@ -48,4 +48,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/orders/archive', [OrderController::class, 'archive'])->name('orders.archive');
 
 
+
+
 });

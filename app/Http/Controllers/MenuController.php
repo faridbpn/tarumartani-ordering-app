@@ -14,7 +14,7 @@ class MenuController extends Controller
     public function index()
     {
         $menus = Menu::orderBy('category')->orderBy('name')->get();
-        return view('menuManagement', compact('menus'));
+        return view('menuItems', compact('menus'));
     }
 
     /**
