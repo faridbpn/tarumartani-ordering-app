@@ -105,6 +105,16 @@
         </form>
     </div>
 </div>
+    <!-- Success/Failure Modal -->
+    <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-4" id="resultModalTitle"></h2>
+            <p id="resultModalMessage" class="mb-4"></p>
+            <div class="flex justify-end">
+                <button id="closeResultModalBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">OK</button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -258,5 +268,49 @@
     function closeCheckoutModal() {
         $('#checkoutModal').removeClass('flex').addClass('hidden');
     }
+
+        // Handle form submission
+$('#checkoutForm').submit(function(e) {
+    e.preventDefault(); // Mencegah form submit langsung
+
+    const form = $(this);
+    const formData = form.serialize(); // Ambil data form
+    const url = form.attr('action'); // Ambil URL dari form (route orders.store)
+
+    // Kirim data ke server menggunakan AJAX
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: formData,
+        success: function(response) {
+            // Tutup modal checkout
+            closeCheckoutModal();
+
+            // Tampilkan pop-up sukses
+            $('#resultModalTitle').text('Pesanan Berhasil!');
+            $('#resultModalMessage').text('Pesanan Anda telah berhasil ditempatkan.');
+            $('#resultModal').removeClass('hidden').addClass('flex');
+
+            // Redirect ke halaman orders setelah 2 detik
+            setTimeout(function() {
+                window.location.href = "{{ route('orders.index') }}"; // Redirect ke halaman orders
+            }, 2000);
+        },
+        error: function(xhr) {
+            // Tutup modal checkout
+            closeCheckoutModal();
+
+            // Tampilkan pop-up gagal
+            $('#resultModalTitle').text('Pesanan Gagal!');
+            $('#resultModalMessage').text('Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.');
+            $('#resultModal').removeClass('hidden').addClass('flex');
+        }
+    });
+});
+
+// Tutup modal hasil
+$('#closeResultModalBtn').click(function() {
+    $('#resultModal').removeClass('flex').addClass('hidden');
+});
 </script>
 @endsection

@@ -78,16 +78,19 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi input
         $request->validate([
             'customer_name' => 'required|string|max:255',
-            'table_number' => 'required|string|max:255',
-            'items' => 'required|array',
-            'items.*.id' => 'required|exists:menu_items,id',
-            'items.*.quantity' => 'required|integer|min:1'
+            'table_number' => 'required|string|max:10',
         ]);
 
-        try {
-            DB::beginTransaction();
+        // Simpan pesanan
+        $order = Order::create([
+            'customer_name' => $request->customer_name,
+            'table_number' => $request->table_number,
+            'total' => 0, // Total akan dihitung setelah menyimpan item
+            'status' => 'pending',
+        ]);
 
             $order = Order::create([
                 'customer_name' => $request->customer_name,
@@ -117,6 +120,16 @@ class OrderController extends Controller
             DB::rollBack();
             return back()->with('error', 'Failed to place order. Please try again.');
         }
+
+        // Hitung pajak dan biaya layanan
+        $tax = $subtotal * 0.1;
+        $service = $subtotal * 0.05;
+        $total = $subtotal + $tax + $service;
+
+        // Update total pada order
+        $order->update(['total' => $total]);
+
+        return response()->json(['success' => true, 'message' => 'Pesanan berhasil ditempatkan']);
     }
 
     /**

@@ -59,7 +59,54 @@
 </head>
 <body class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    @include('layouts.app')
+    <div class="sidebar gradient-bg text-white w-64 flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-4 flex items-center space-x-2">
+            <i class="fas fa-utensils text-2xl"></i>
+            <h1 class="text-xl font-bold">FoodExpress</h1>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto">
+            <nav class="px-4 py-6 space-y-1">
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fas fa-utensils"></i>
+                    <span>Menu Items</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg active-nav">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-white border-opacity-20">
+            <div class="flex items-center space-x-3">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Admin" class="w-10 h-10 rounded-full">
+                <div>
+                    <p class="font-medium">Admin User</p>
+                    <p class="text-xs opacity-80">admin@foodexpress.com</p>
+                </div>
+            </div>
+            <button class="w-full mt-4 py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </div>
+    </div>
     
     <!-- Mobile sidebar toggle -->
     <div class="md:hidden fixed bottom-4 right-4 z-50">
