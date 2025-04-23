@@ -32,7 +32,7 @@
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
                 {{ request()->routeIs('orders.arsip') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
                 <i class="fas fa-users"></i>
-                <span>Orders</span>
+                <span>Archive</span>
             </a>
         </nav>
     </div>
@@ -45,8 +45,12 @@
                 <p class="text-xs opacity-80">admin@foodexpress.com</p>
             </div>
         </div>
-        <button class="w-full mt-4 py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all">
-            <i class="fas fa-sign-out-alt mr-2"></i> Logout
-        </button>
+        <form action="{{ route('logout') }}" method="POST" class="w-full mt-4">
+            @csrf
+            <button type="submit" class="w-full py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </form>
+        
     </div>
 </div>

@@ -97,16 +97,16 @@
             <div class="bg-white rounded-xl shadow p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                     <div class="relative w-full md:w-64">
-                        <input type="text" placeholder="Search orders..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <input type="text" id="searchInput" placeholder="Search orders..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
-                    <select class="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option>All Status</option>
-                        <option>Pending</option>
-                        <option>Processing</option>
-                        <option>On Delivery</option>
-                        <option>Completed</option>
-                        <option>Cancelled</option>
+                    <select id="statusFilter" class="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="All">All Status</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Processing">Processing</option>
+                        <option value="On Delivery">On Delivery</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Pending">Pending</option>
                     </select>
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
@@ -120,356 +120,61 @@
             </div>
             
             <!-- Order Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <!-- Order Card 1 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78945</span>
-                        <span class="text-xs text-gray-500">10 min ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">John Smith</p>
-                                <p class="text-xs text-gray-500">3 items • $28.97</p>
+            @if ($orders->isEmpty())
+                <div class="bg-white rounded-xl shadow p-6 text-center">
+                    <i class="fas fa-shopping-cart text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-800">No Orders Found</h3>
+                    <p class="text-gray-500">There are currently no orders to display.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @foreach ($orders as $order)
+                        <div class="order-card bg-white rounded-xl shadow overflow-hidden" 
+                             data-status="{{ $order->status }}"
+                             data-search="{{ strtolower($order->id . ' ' . $order->customer_name . ' ' . implode(' ', array_column($order->items->toArray(), 'name'))) }}">
+                            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                                <span class="font-medium">#{{ $order->id }}</span>
+                                <span class="text-xs text-gray-500">{{ $order->created_at->diffForHumans() }}</span>
+                            </div>
+                            <div class="p-4">
+                                <div class="flex items-center mb-3">
+                                    <img src="https://randomuser.me/api/portraits/{{ rand(0,1) ? 'men' : 'women' }}/{{ rand(1,99) }}.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
+                                    <div>
+                                        <p class="font-medium">{{ $order->customer_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ $order->items->count() }} items • ${{ number_format($order->total, 2) }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Order Items -->
+                                <div class="mb-3">
+                                    @foreach ($order->items as $item)
+                                        <div class="order-item flex justify-between">
+                                            <span>{{ $item->name }}</span>
+                                            <span class="font-medium">{{ $item->quantity }} × ${{ number_format($item->price, 2) }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                
+                                <!-- Total and Status -->
+                                <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Total</p>
+                                        <p class="font-bold">${{ number_format($order->total, 2) }}</p>
+                                    </div>
+                                    <span class="status-badge {{ $order->status == 'Completed' ? 'bg-green-100 text-green-800' : ($order->status == 'Processing' ? 'bg-yellow-100 text-yellow-800' : ($order->status == 'On Delivery' ? 'bg-blue-100 text-blue-800' : ($order->status == 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'))) }}">
+                                        {{ $order->status }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">2 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Nasi Goreng</span>
-                                <span class="font-medium">1 × $12.00</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Ayam Bakar</span>
-                                <span class="font-medium">1 × $13.97</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$28.97</p>
-                            </div>
-                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
                 
-                <!-- Order Card 2 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78944</span>
-                        <span class="text-xs text-gray-500">25 min ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">Sarah Johnson</p>
-                                <p class="text-xs text-gray-500">5 items • $45.50</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">3 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Mie Goreng</span>
-                                <span class="font-medium">2 × $10.00</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Sate Ayam</span>
-                                <span class="font-medium">1 × $15.00</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Lumpia</span>
-                                <span class="font-medium">2 × $3.50</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$45.50</p>
-                            </div>
-                            <span class="status-badge bg-yellow-100 text-yellow-800">Processing</span>
-                        </div>
-                    </div>
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-center">
+                    {{ $orders->links('pagination::tailwind') }}
                 </div>
-                
-                <!-- Order Card 3 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78943</span>
-                        <span class="text-xs text-gray-500">1 hour ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">Michael Brown</p>
-                                <p class="text-xs text-gray-500">2 items • $18.99</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">1 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Bakso</span>
-                                <span class="font-medium">1 × $17.49</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$18.99</p>
-                            </div>
-                            <span class="status-badge bg-blue-100 text-blue-800">On Delivery</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Order Card 4 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78942</span>
-                        <span class="text-xs text-gray-500">2 hours ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/women/63.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">Emily Davis</p>
-                                <p class="text-xs text-gray-500">4 items • $36.75</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">2 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Nasi Padang</span>
-                                <span class="font-medium">1 × $15.00</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Rendang</span>
-                                <span class="font-medium">1 × $18.75</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$36.75</p>
-                            </div>
-                            <span class="status-badge bg-red-100 text-red-800">Cancelled</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Order Card 5 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78941</span>
-                        <span class="text-xs text-gray-500">3 hours ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">Robert Wilson</p>
-                                <p class="text-xs text-gray-500">1 item • $9.99</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">1 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Gado-Gado</span>
-                                <span class="font-medium">1 × $8.49</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$9.99</p>
-                            </div>
-                            <span class="status-badge bg-purple-100 text-purple-800">Pending</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Order Card 6 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78940</span>
-                        <span class="text-xs text-gray-500">5 hours ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/women/28.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">Jessica Lee</p>
-                                <p class="text-xs text-gray-500">3 items • $24.50</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">2 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Soto Ayam</span>
-                                <span class="font-medium">1 × $10.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Pempek</span>
-                                <span class="font-medium">1 × $12.50</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$24.50</p>
-                            </div>
-                            <span class="status-badge bg-yellow-100 text-yellow-800">Processing</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Order Card 7 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78939</span>
-                        <span class="text-xs text-gray-500">1 day ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">David Kim</p>
-                                <p class="text-xs text-gray-500">2 items • $17.25</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">1 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Nasi Uduk</span>
-                                <span class="font-medium">1 × $15.75</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$17.25</p>
-                            </div>
-                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Order Card 8 -->
-                <div class="order-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <span class="font-medium">#ORD-78938</span>
-                        <span class="text-xs text-gray-500">1 day ago</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="https://randomuser.me/api/portraits/women/19.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-medium">Amanda Chen</p>
-                                <p class="text-xs text-gray-500">6 items • $52.80</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Items -->
-                        <div class="mb-3">
-                            <div class="order-item flex justify-between">
-                                <span>Es Teh Manis</span>
-                                <span class="font-medium">4 × $1.50</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Nasi Campur</span>
-                                <span class="font-medium">1 × $18.00</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Ayam Goreng</span>
-                                <span class="font-medium">1 × $14.80</span>
-                            </div>
-                            <div class="order-item flex justify-between">
-                                <span>Tempe Goreng</span>
-                                <span class="font-medium">2 × $3.00</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Total and Status -->
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <div>
-                                <p class="text-sm text-gray-500">Total</p>
-                                <p class="font-bold">$52.80</p>
-                            </div>
-                            <span class="status-badge bg-blue-100 text-blue-800">On Delivery</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="mt-6 flex justify-center">
-                <nav class="inline-flex rounded-md shadow">
-                    <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-blue-600 font-medium">1</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">2</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">3</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">4</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">5</a>
-                    <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </nav>
-            </div>
+            @endif
         </main>
     </div>
 
@@ -485,7 +190,43 @@
                 sidebar.classList.toggle('inset-0');
                 sidebar.classList.toggle('z-40');
             });
+
+            // Status filter and search
+            const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.getElementById('searchInput');
+            const orderCards = document.querySelectorAll('.order-card');
+            const noOrdersMessage = document.querySelector('.no-orders-message');
+
+            function filterCards() {
+                const selectedStatus = statusFilter.value;
+                const searchTerm = searchInput.value.toLowerCase();
+                let visibleCards = 0;
+
+                orderCards.forEach(card => {
+                    const cardStatus = card.getAttribute('data-status');
+                    const cardSearchData = card.getAttribute('data-search');
+
+                    const statusMatch = selectedStatus === 'All' || cardStatus === selectedStatus;
+                    const searchMatch = !searchTerm || cardSearchData.includes(searchTerm);
+
+                    if (statusMatch && searchMatch) {
+                        card.style.display = 'block';
+                        visibleCards++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Show "No orders found" message if no cards are visible
+                if (noOrdersMessage) {
+                    noOrdersMessage.style.display = visibleCards === 0 && orderCards.length > 0 ? 'block' : 'none';
+                }
+            }
+
+            statusFilter.addEventListener('change', filterCards);
+            searchInput.addEventListener('input', filterCards);
         });
     </script>
+    
 </body>
 </html>

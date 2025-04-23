@@ -4,37 +4,55 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\Menu;
+use App\Models\MenuItem;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use App\Models\MenuItem;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Order::with('orderItems.menuItem')
+            ->orderBy('created_at', 'desc');
+
+        // Pencarian berdasarkan customer_name, id, atau nama item
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('customer_name', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhereHas('orderItems.menuItem', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter berdasarkan status
+        if ($status = $request->query('status')) {
+            if ($status !== 'All') {
+                $query->where('status', $status);
+            }
+        }
+
+        $orders = $query->paginate(12)->appends($request->query());
+
+        // Data untuk dashboard (opsional, jika masih dibutuhkan)
         $totalOrders = Order::count();
-        $newOrders = Order::where('status', 'new')->count();
-        $processingOrders = Order::where('status', 'processing')->count();
-        $completedOrders = Order::where('status', 'completed')->count();
-        $totalRevenue = Order::where('status', 'completed')->sum('total_amount');
-        
-        $recentOrders = Order::with('orderItems.menu')
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
+        $newOrders = Order::where('status', 'Pending')->count();
+        $processingOrders = Order::where('status', 'Processing')->count();
+        $completedOrders = Order::where('status', 'Completed')->count();
+        $totalRevenue = Order::where('status', 'Completed')->sum('total_amount');
 
         return view('orders', compact(
+            'orders',
             'totalOrders',
             'newOrders',
             'processingOrders',
             'completedOrders',
-            'totalRevenue',
-            'recentOrders'
+            'totalRevenue'
         ));
     }
 
@@ -43,16 +61,18 @@ class OrderController extends Controller
      */
     public function create()
     {
-        //
+        $menuItems = MenuItem::all();
+        return view('orders.create', compact('menuItems'));
     }
 
-     /**
-     * public function dashboard.
+    /**
+     * Public function dashboard.
      */
     public function dashboard()
     {
         return view('adminPage');
     }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -72,14 +92,14 @@ class OrderController extends Controller
             $order = Order::create([
                 'customer_name' => $request->customer_name,
                 'table_number' => $request->table_number,
-                'status' => 'new',
+                'status' => 'Pending',
                 'total_amount' => 0
             ]);
 
             $totalAmount = 0;
             foreach ($request->items as $item) {
                 $menuItem = MenuItem::find($item['id']);
-                $order->items()->create([
+                $order->orderItems()->create([
                     'menu_item_id' => $item['id'],
                     'quantity' => $item['quantity'],
                     'price' => $menuItem->price
@@ -100,122 +120,80 @@ class OrderController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-      /**
-     * menampilkan order yang sudah selesai⚠️.
-     */
-    public function arsip()
-    {
-        $orders = Order::with('items.menu')
-            ->where('status', 'completed')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        return view('arsip', compact('orders'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:new,processing,completed,cancelled'
+            'status' => 'required|in:Pending,Processing,Completed,On Delivery,Cancelled'
         ]);
 
         $order->update(['status' => $request->status]);
-        
+
         return redirect()->back()->with('success', 'Order status updated successfully');
     }
 
-    public function success(Order $order)
-    {
-        return view('orderSuccess', compact('order'));
-    }
-
+    /**
+     * Display completed orders.
+     */
     public function archive()
     {
-        $orders = Order::with('items.menu')
-            ->where('status', 'completed')
+        $orders = Order::with('orderItems.menuItem')
+            ->where('status', 'Completed')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-            
+
         return view('orderArchive', compact('orders'));
     }
 
-    public function addToCart(Request $request, Menu $menu)
+    /**
+     * Cart management functions remain unchanged...
+     */
+    public function addToCart(Request $request, MenuItem $menuItem)
     {
         $cart = Session::get('cart', []);
-        
-        if (isset($cart[$menu->id])) {
-            $cart[$menu->id]['quantity'] += $request->quantity;
+
+        if (isset($cart[$menuItem->id])) {
+            $cart[$menuItem->id]['quantity'] += $request->quantity;
         } else {
-            $cart[$menu->id] = [
-                'name' => $menu->name,
+            $cart[$menuItem->id] = [
+                'name' => $menuItem->name,
                 'quantity' => $request->quantity,
-                'price' => $menu->price,
-                'image' => $menu->image
+                'price' => $menuItem->price,
+                'image' => $menuItem->image
             ];
         }
-        
+
         Session::put('cart', $cart);
         return response()->json([
             'success' => true,
             'message' => 'Item added to cart successfully'
         ]);
-        
     }
 
-    public function updateCart(Request $request, Menu $menu)
+    public function updateCart(Request $request, MenuItem $menuItem)
     {
         $cart = Session::get('cart', []);
-        
-        if (isset($cart[$menu->id])) {
-            $cart[$menu->id]['quantity'] = $request->quantity;
+
+        if (isset($cart[$menuItem->id])) {
+            $cart[$menuItem->id]['quantity'] = $request->quantity;
             Session::put('cart', $cart);
             return redirect()->back()->with('success', 'Cart updated successfully');
         }
-        
+
         return redirect()->back()->with('error', 'Item not found in cart');
     }
 
-    public function removeFromCart(Menu $menu)
+    public function removeFromCart(MenuItem $menuItem)
     {
         $cart = Session::get('cart', []);
-        
-        if (isset($cart[$menu->id])) {
-            unset($cart[$menu->id]);
+
+        if (isset($cart[$menuItem->id])) {
+            unset($cart[$menuItem->id]);
             Session::put('cart', $cart);
             return redirect()->back()->with('success', 'Item removed from cart');
         }
-        
+
         return redirect()->back()->with('error', 'Item not found in cart');
     }
 
@@ -223,26 +201,32 @@ class OrderController extends Controller
     {
         $cart = Session::get('cart', []);
         $total = 0;
-        
+
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
-        
+
         return view('cart', compact('cart', 'total'));
     }
 
     public function checkout()
     {
         $cart = Session::get('cart', []);
-        
+
         if (empty($cart)) {
             return redirect()->route('menu.public')->with('error', 'Your cart is empty');
         }
-        
+
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
-        
+
+        return view('checkout', compact('cart', 'total'));
+    }
+
+    public function success(Order $order)
+    {
+        return view('orderSuccess', compact('order'));
     }
 }
