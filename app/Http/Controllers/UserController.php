@@ -10,11 +10,9 @@ class UserController extends Controller
 {
     public function index()
     {
-        $foods = Menu::where('category', 'food')->where('is_available', true)->orderBy('name')->get();
-        $beverages = Menu::where('category', 'beverage')->where('is_available', true)->orderBy('name')->get();
         $categories = Category::all();
-        $menuItems = Menu::where('is_available', true)->orderBy('name')->get();
+        $menuItems = Menu::with('category')->where('is_available', true)->orderBy('name')->get();
 
-        return view('userPage', compact('foods', 'beverages', 'categories', 'menuItems'));
+        return view('userPage', compact('categories', 'menuItems'));
     }
 } 

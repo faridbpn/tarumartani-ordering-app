@@ -39,6 +39,7 @@ Route::middleware(['auth', PreventBackHistory::class])->prefix('admin')->group(f
 
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+<<<<<<< HEAD
     Route::post('/menu', [MenuController::class, 'store'])->name('menu.store');
     Route::put('/menu/{menu}', [MenuController::class, 'update'])->name('menu.update');
     Route::delete('/menu/{menu}', [MenuController::class, 'destroy'])->name('menu.destroy');
@@ -46,6 +47,13 @@ Route::middleware(['auth', PreventBackHistory::class])->prefix('admin')->group(f
         return view('menuItems');
     })->name('menu.items');
 
+=======
+    Route::get('/menu/{id}', [MenuController::class, 'show']);
+    Route::post('/menu', [MenuController::class, 'store']);
+    Route::post('/menu/{id}', [MenuController::class, 'update']);
+    Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
+    
+>>>>>>> 3ca125907a04abfaf46657c90ac2f95c39f95d08
     // Order Management
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');

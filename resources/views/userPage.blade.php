@@ -24,8 +24,11 @@
         <div class="lg:w-2/3">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($menuItems as $item)
+                    @if($item->is_available)
                     <div class="food-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300" data-category="{{ $item->category_id }}">
-                        <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" class="w-full h-48 object-cover">
+                        <img src="{{ $item->image ? asset('storage/' . $item->image) : 'https://via.placeholder.com/300x200' }}" 
+                             alt="{{ $item->name }}" 
+                             class="w-full h-48 object-cover">
                         <div class="p-4">
                             <h3 class="text-lg font-semibold mb-2">{{ $item->name }}</h3>
                             <p class="text-gray-600 mb-4">{{ $item->description }}</p>
@@ -40,6 +43,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                 @endforeach
             </div>
         </div>
@@ -50,7 +54,6 @@
                 <h2 class="text-xl font-bold mb-4">Your Order</h2>
                 
                 <div id="order-items" class="mb-4 max-h-96 overflow-y-auto">
-                    <!-- Order items will be added here -->
                     <div class="text-center text-gray-500 py-8">
                         <i class="fas fa-shopping-cart text-4xl mb-2 text-gray-300"></i>
                         <p>Your cart is empty</p>
@@ -90,6 +93,7 @@
         <h2 class="text-2xl font-bold mb-4">Complete Your Order</h2>
         <form id="checkoutForm" action="{{ route('orders.store') }}" method="POST">
             @csrf
+            <input type="hidden" name="cart_items" id="cart_items">
             <div class="mb-4">
                 <label for="customer_name" class="block text-gray-700 mb-2">Your Name</label>
                 <input type="text" id="customer_name" name="customer_name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
@@ -119,33 +123,29 @@
 
 @section('scripts')
 <script>
-    $(document).ready(function() {
-        // Cart state
-        let cart = [];
-        
-        // Category filtering
-        $('.category-btn').click(function() {
-            $('.category-btn').removeClass('active');
-            $(this).addClass('active');
-            
-            const category = $(this).data('category');
-            if (category === 'all') {
-                $('.food-card').show();
-            } else {
-                $('.food-card').hide();
-                $(`.food-card[data-category="${category}"]`).show();
-            }
+    let cart = [];
+
+    // Category filtering
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('bg-blue-500', 'text-white'));
+            this.classList.add('bg-blue-500', 'text-white');
+
+            const category = this.dataset.category;
+            document.querySelectorAll('.food-card').forEach(card => {
+                card.style.display = category === 'all' || card.dataset.category === category ? 'block' : 'none';
+            });
         });
+    });
 
-        // Add to cart functionality
-        $('.add-to-cart-btn').click(function() {
-            const itemId = $(this).data('id');
-            const itemName = $(this).data('name');
-            const itemPrice = $(this).data('price');
+    // Add to cart functionality
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.id;
+            const itemName = this.dataset.name;
+            const itemPrice = parseFloat(this.dataset.price);
 
-            // Check if item already in cart
             const existingItem = cart.find(item => item.id === itemId);
-            
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
@@ -156,86 +156,76 @@
                     quantity: 1
                 });
             }
-            
+
             updateCart();
         });
+    });
 
-        // Update cart UI
-        function updateCart() {
-            const orderItemsContainer = $('#order-items');
-            const cartCount = $('.fa-shopping-cart').next('.bg-red-500');
-            const checkoutBtn = $('#checkout-btn');
-            
-            // Update cart count
-            const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
-            if (cartCount.length) {
-                cartCount.text(itemCount);
-            } else {
-                $('.fa-shopping-cart').after(`
-                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        ${itemCount}
-                    </span>
-                `);
-            }
-            
-            // Update order items
-            if (cart.length === 0) {
-                orderItemsContainer.html(`
-                    <div class="text-center text-gray-500 py-8">
-                        <i class="fas fa-shopping-cart text-4xl mb-2 text-gray-300"></i>
-                        <p>Your cart is empty</p>
-                    </div>
-                `);
-                checkoutBtn.prop('disabled', true);
-            } else {
-                orderItemsContainer.html('');
-                
-                cart.forEach((item, index) => {
-                    const itemEl = $(`
-                        <div class="order-item flex items-center justify-between p-3 rounded-lg transition-colors">
-                            <div class="flex items-center space-x-3">
-                                <div>
-                                    <h4 class="font-medium">${item.name}</h4>
-                                    <p class="text-sm text-gray-500">Rp ${item.price.toLocaleString()}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="decrease">
-                                    <i class="fas fa-minus text-xs"></i>
-                                </button>
-                                <span class="font-medium">${item.quantity}</span>
-                                <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="increase">
-                                    <i class="fas fa-plus text-xs"></i>
-                                </button>
-                                <button class="remove-btn text-red-500 hover:text-red-600 ml-2" data-index="${index}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+    // Update cart UI
+    function updateCart() {
+        const orderItemsContainer = document.getElementById('order-items');
+        const checkoutBtn = document.getElementById('checkout-btn');
+
+        if (cart.length === 0) {
+            orderItemsContainer.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-shopping-cart text-4xl mb-2 text-gray-300"></i>
+                    <p>Your cart is empty</p>
+                </div>
+            `;
+            checkoutBtn.disabled = true;
+        } else {
+            orderItemsContainer.innerHTML = '';
+            cart.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'order-item flex items-center justify-between p-3 rounded-lg transition-colors';
+                itemEl.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div>
+                            <h4 class="font-medium">${item.name}</h4>
+                            <p class="text-sm text-gray-500">Rp ${item.price.toLocaleString()}</p>
                         </div>
-                    `);
-                    orderItemsContainer.append(itemEl);
-                });
-                
-                checkoutBtn.prop('disabled', false);
-            }
-            
-            // Calculate totals
-            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-            const tax = subtotal * 0.1;
-            const service = subtotal * 0.05;
-            const total = subtotal + tax + service;
-            
-            $('#subtotal').text(`Rp ${subtotal.toLocaleString()}`);
-            $('#tax').text(`Rp ${tax.toLocaleString()}`);
-            $('#service').text(`Rp ${service.toLocaleString()}`);
-            $('#total').text(`Rp ${total.toLocaleString()}`);
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="decrease">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span class="font-medium">${item.quantity}</span>
+                        <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="increase">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <button class="remove-btn text-red-500 hover:text-red-600 ml-2" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                orderItemsContainer.appendChild(itemEl);
+            });
+            checkoutBtn.disabled = false;
         }
-        
-        // Handle quantity changes and item removal
-        $(document).on('click', '.quantity-btn', function() {
-            const index = $(this).data('index');
-            const action = $(this).data('action');
-            
+
+        // Calculate totals
+        const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        const tax = subtotal * 0.1;
+        const service = subtotal * 0.05;
+        const total = subtotal + tax + service;
+
+        document.getElementById('subtotal').textContent = `Rp ${subtotal.toLocaleString()}`;
+        document.getElementById('tax').textContent = `Rp ${tax.toLocaleString()}`;
+        document.getElementById('service').textContent = `Rp ${service.toLocaleString()}`;
+        document.getElementById('total').textContent = `Rp ${total.toLocaleString()}`;
+
+        // Update cart items for checkout
+        document.getElementById('cart_items').value = JSON.stringify(cart);
+    }
+
+    // Handle quantity changes and item removal
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.quantity-btn')) {
+            const btn = e.target.closest('.quantity-btn');
+            const index = btn.dataset.index;
+            const action = btn.dataset.action;
+
             if (action === 'increase') {
                 cart[index].quantity += 1;
             } else if (action === 'decrease') {
@@ -245,28 +235,29 @@
                     cart.splice(index, 1);
                 }
             }
-            
             updateCart();
-        });
-        
-        $(document).on('click', '.remove-btn', function() {
-            const index = $(this).data('index');
+        }
+
+        if (e.target.closest('.remove-btn')) {
+            const index = e.target.closest('.remove-btn').dataset.index;
             cart.splice(index, 1);
             updateCart();
-        });
-        
-        // Checkout button
-        $('#checkout-btn').click(function() {
-            openCheckoutModal();
-        });
+        }
+    });
+
+    // Checkout button
+    document.getElementById('checkout-btn').addEventListener('click', function() {
+        openCheckoutModal();
     });
 
     function openCheckoutModal() {
-        $('#checkoutModal').removeClass('hidden').addClass('flex');
+        document.getElementById('checkoutModal').classList.remove('hidden');
+        document.getElementById('checkoutModal').classList.add('flex');
     }
 
     function closeCheckoutModal() {
-        $('#checkoutModal').removeClass('flex').addClass('hidden');
+        document.getElementById('checkoutModal').classList.remove('flex');
+        document.getElementById('checkoutModal').classList.add('hidden');
     }
 
         // Handle form submission
