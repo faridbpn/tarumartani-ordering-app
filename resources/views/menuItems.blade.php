@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @vite([])
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Management - FoodExpress Admin</title>
@@ -227,7 +228,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="menuForm" class="p-4" enctype="multipart/form-data">
+            <form id="menuForm" method="POST" enctype="multipart/form-data" class="p-4">
                 @csrf
                 <input type="hidden" id="menuId" name="id">
                 <div class="space-y-4">
@@ -275,7 +276,7 @@
                             class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </button>
-                    <button type="submit"
+                    <button type="submit" 
                             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                         Save
                     </button>
@@ -305,303 +306,191 @@
     </div>
     
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let currentMenuId = null;
-
-            function showToast(message, isError = false) {
-                const toast = document.getElementById('toast');
-                if (!toast) {
-                    console.error('Toast element not found');
-                    return;
-                }
-                const toastMessage = document.getElementById('toastMessage');
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuModal = document.getElementById('menuModal');
+            const deleteModal = document.getElementById('deleteModal');
+            const menuForm = document.getElementById('menuForm');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageInput = document.getElementById('image');
+            
+            // Show toast notification
+            function showToast(message, type = 'success') {
                 toastMessage.textContent = message;
-                toast.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
-                toast.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+                toast.classList.remove('hidden');
+                toast.classList.remove('bg-red-500', 'bg-green-500');
+                toast.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
                 setTimeout(() => toast.classList.add('hidden'), 3000);
             }
-
-            // Image preview
-            const imageInput = document.getElementById('image');
-            if (imageInput) {
-                imageInput.addEventListener('change', function(e) {
-                    const preview = document.getElementById('imagePreview');
-                    if (e.target.files && e.target.files[0]) {
-                        preview.src = URL.createObjectURL(e.target.files[0]);
-                        preview.classList.remove('hidden');
-                    } else {
-                        preview.classList.add('hidden');
+            
+            // Handle image preview
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
                     }
-                });
-            } else {
-                console.error('Image input not found');
-            }
-
-            function openAddModal() {
-                console.log('Opening add modal');
-                const modal = document.getElementById('menuModal');
-                if (modal) {
-                    document.getElementById('modalTitle').textContent = 'Add New Menu';
-                    document.getElementById('menuForm').reset();
-                    document.getElementById('menuId').value = '';
-                    document.getElementById('imagePreview').classList.add('hidden');
-                    modal.classList.remove('hidden');
-                    modal.classList.add('active');
-                    console.log('Add modal should be visible');
-                } else {
-                    console.error('menuModal not found');
+                    reader.readAsDataURL(file);
                 }
-            }
-
-            function openEditModal(id) {
-                console.log(`Fetching menu data for ID: ${id}`);
-                fetch(`/admin/menu/${id}`)
-                    .then(response => {
-                        console.log(`Fetch response status: ${response.status}`);
-                        if (!response.ok) {
-                            throw new Error(`Failed to fetch menu data: ${response.statusText}`);
-                        }
-                        return response.json();
-                    })
-                    .then(menu => {
-                        console.log('Menu data:', menu);
-                        const modal = document.getElementById('menuModal');
-                        if (modal) {
+            });
+            
+            // Add Menu Button
+            document.querySelector('[data-action="add-menu"]').addEventListener('click', function() {
+                document.getElementById('modalTitle').textContent = 'Add New Menu';
+                document.getElementById('menuId').value = '';
+                menuForm.reset();
+                imagePreview.classList.add('hidden');
+                menuModal.classList.remove('hidden');
+            });
+            
+            // Edit Menu Button
+            document.querySelectorAll('[data-action="edit-menu"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const menuId = this.dataset.id;
+                    fetch(`/admin/menu/${menuId}`)
+                        .then(response => response.json())
+                        .then(menu => {
                             document.getElementById('modalTitle').textContent = 'Edit Menu';
                             document.getElementById('menuId').value = menu.id;
                             document.getElementById('name').value = menu.name;
-                            document.getElementById('description').value = menu.description || '';
+                            document.getElementById('description').value = menu.description;
                             document.getElementById('price').value = menu.price;
                             document.getElementById('category_id').value = menu.category_id;
                             document.getElementById('is_available').value = menu.is_available ? '1' : '0';
-                            document.getElementById('imagePreview').src = menu.image ? `/storage/${menu.image}` : '';
-                            document.getElementById('imagePreview').classList.toggle('hidden', !menu.image);
-                            modal.classList.remove('hidden');
-                            modal.classList.add('active');
-                            console.log('Edit modal should be visible');
-                        } else {
-                            console.error('menuModal not found');
-                        }
-                    })
-                    .catch(error => {
-                        showToast('Failed to load menu data', true);
-                        console.error('Fetch error:', error);
-                    });
-            }
-
-            function closeModal() {
-                console.log('Closing add/edit modal');
-                const modal = document.getElementById('menuModal');
-                if (modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('active');
-                    document.getElementById('imagePreview').classList.add('hidden');
-                } else {
-                    console.error('menuModal not found');
-                }
-            }
-
-            function confirmDelete(id) {
-                console.log(`Opening delete modal for ID: ${id}`);
-                currentMenuId = id;
-                const deleteModal = document.getElementById('deleteModal');
-                if (deleteModal) {
-                    deleteModal.classList.remove('hidden');
-                    deleteModal.classList.add('active');
-                    console.log('Delete modal should be visible');
-                } else {
-                    console.error('deleteModal not found');
-                }
-            }
-
-            function closeDeleteModal() {
-                console.log('Closing delete modal');
-                const deleteModal = document.getElementById('deleteModal');
-                if (deleteModal) {
-                    deleteModal.classList.add('hidden');
-                    deleteModal.classList.remove('active');
-                    currentMenuId = null;
-                } else {
-                    console.error('deleteModal not found');
-                }
-            }
-
-            function deleteMenu() {
-                console.log(`Deleting menu ID: ${currentMenuId}`);
-                if (!currentMenuId) return;
-
-                fetch(`/admin/menu/${currentMenuId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(response => {
-                        console.log(`Delete response status: ${response.status}`);
-                        if (!response.ok) {
-                            throw new Error('Failed to delete menu');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            closeDeleteModal();
-                            showToast('Menu deleted successfully');
-                            location.reload();
-                        } else {
-                            showToast(data.message || 'Failed to delete menu', true);
-                        }
-                    })
-                    .catch(error => {
-                        showToast('Error deleting menu', true);
-                        console.error('Delete error:', error);
-                    });
-            }
-
-            // Search and Filter functionality
-            function filterMenus() {
-                const search = document.getElementById('searchInput').value.toLowerCase();
-                const category = document.getElementById('categoryFilter').value;
-                const status = document.getElementById('statusFilter').value;
-
-                document.querySelectorAll('.menu-card').forEach(card => {
-                    const name = card.querySelector('h3').textContent.toLowerCase();
-                    const cardCategory = card.querySelector('.text-gray-500').getAttribute('data-category-id') || '';
-                    const cardStatus = card.querySelector('.rounded-full').textContent.includes('Available') ? '1' : '0';
-
-                    const matchesSearch = name.includes(search);
-                    const matchesCategory = !category || cardCategory === category;
-                    const matchesStatus = !status || cardStatus === status;
-
-                    card.style.display = matchesSearch && matchesCategory && matchesStatus ? 'block' : 'none';
-                });
-            }
-
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', filterMenus);
-            } else {
-                console.error('searchInput not found');
-            }
-
-            const categoryFilter = document.getElementById('categoryFilter');
-            if (categoryFilter) {
-                categoryFilter.addEventListener('change', filterMenus);
-            } else {
-                console.error('categoryFilter not found');
-            }
-
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) {
-                statusFilter.addEventListener('change', filterMenus);
-            } else {
-                console.error('statusFilter not found');
-            }
-
-            const menuForm = document.getElementById('menuForm');
-            if (menuForm) {
-                menuForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    const formData = new FormData(this);
-                    const id = document.getElementById('menuId').value;
-                    const url = id ? `/admin/menu/${id}` : '/admin/menu';
-                    const method = id ? 'POST' : 'POST';
-                    if (id) formData.append('_method', 'PUT');
-
-                    fetch(url, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        }
-                    })
-                        .then(response => {
-                            console.log(`Form submit response status: ${response.status}`);
-                            if (!response.ok) {
-                                throw new Error('Failed to save menu');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                closeModal();
-                                showToast(id ? 'Menu updated successfully' : 'Menu created successfully');
-                                location.reload();
+                            
+                            if (menu.image) {
+                                imagePreview.src = `/storage/${menu.image}`;
+                                imagePreview.classList.remove('hidden');
                             } else {
-                                showToast(data.message || 'Failed to save menu', true);
+                                imagePreview.classList.add('hidden');
                             }
-                        })
-                        .catch(error => {
-                            showToast('Error saving menu', true);
-                            console.error('Form submit error:', error);
+                            
+                            menuModal.classList.remove('hidden');
                         });
                 });
-            } else {
-                console.error('menuForm not found');
-            }
-
-            // Sidebar toggle for mobile
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', () => {
-                    document.querySelector('.sidebar').classList.toggle('hidden');
-                });
-            } else {
-                console.error('sidebar-toggle not found');
-            }
-
-            // Attach event listeners to buttons
-            const addButton = document.querySelector('[data-action="add-menu"]');
-            if (addButton) {
-                console.log('Add button found');
-                addButton.addEventListener('click', () => {
-                    console.log('Add button clicked');
-                    openAddModal();
-                });
-            } else {
-                console.error('Add button not found');
-            }
-
-            document.querySelectorAll('[data-action="edit-menu"]').forEach(button => {
-                const id = button.getAttribute('data-id');
-                console.log(`Edit button found for ID: ${id}`);
-                button.addEventListener('click', () => {
-                    console.log(`Edit button clicked for ID: ${id}`);
-                    openEditModal(id);
-                });
             });
-
+            
+            // Delete Menu Button
             document.querySelectorAll('[data-action="delete-menu"]').forEach(button => {
-                const id = button.getAttribute('data-id');
-                console.log(`Delete button found for ID: ${id}`);
-                button.addEventListener('click', () => {
-                    console.log(`Delete button clicked for ID: ${id}`);
-                    confirmDelete(id);
+                button.addEventListener('click', function() {
+                    const menuId = this.dataset.id;
+                    deleteModal.classList.remove('hidden');
+                    deleteModal.dataset.menuId = menuId;
                 });
             });
-
-            const closeModalButton = document.querySelector('[data-action="close-modal"]');
-            if (closeModalButton) {
-                closeModalButton.addEventListener('click', closeModal);
-            } else {
-                console.error('close-modal button not found');
+            
+            // Close Modal Buttons
+            document.querySelectorAll('[data-action="close-modal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    menuModal.classList.add('hidden');
+                });
+            });
+            
+            document.querySelectorAll('[data-action="close-delete-modal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    deleteModal.classList.add('hidden');
+                });
+            });
+            
+            // Confirm Delete Button
+            document.querySelector('[data-action="confirm-delete"]').addEventListener('click', function() {
+                const menuId = deleteModal.dataset.menuId;
+                fetch(`/admin/menu/${menuId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Menu deleted successfully');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Error deleting menu', 'error');
+                });
+                
+                deleteModal.classList.add('hidden');
+            });
+            
+            // Form Submit Handler
+            menuForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const menuId = document.getElementById('menuId').value;
+                const url = menuId ? `/admin/menu/${menuId}` : '/admin/menu';
+                const method = menuId ? 'POST' : 'POST';
+                
+                // Add CSRF token to headers
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast(menuId ? 'Menu updated successfully' : 'Menu created successfully');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(error.message || 'Error saving menu', 'error');
+                });
+            });
+            
+            // Search and Filter Handlers
+            const searchInput = document.getElementById('searchInput');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            function updateFilters() {
+                const search = searchInput.value;
+                const category = categoryFilter.value;
+                const status = statusFilter.value;
+                
+                let url = new URL(window.location.href);
+                url.searchParams.set('search', search);
+                url.searchParams.set('category', category);
+                url.searchParams.set('status', status);
+                
+                window.location.href = url.toString();
             }
-
-            const closeDeleteModalButton = document.querySelector('[data-action="close-delete-modal"]');
-            if (closeDeleteModalButton) {
-                closeDeleteModalButton.addEventListener('click', closeDeleteModal);
-            } else {
-                console.error('close-delete-modal button not found');
-            }
-
-            const confirmDeleteButton = document.querySelector('[data-action="confirm-delete"]');
-            if (confirmDeleteButton) {
-                confirmDeleteButton.addEventListener('click', deleteMenu);
-            } else {
-                console.error('confirm-delete button not found');
+            
+            searchInput.addEventListener('input', debounce(updateFilters, 500));
+            categoryFilter.addEventListener('change', updateFilters);
+            statusFilter.addEventListener('change', updateFilters);
+            
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
             }
         });
     </script>

@@ -10,10 +10,30 @@ use Illuminate\Support\Facades\Validator;
 
 class MenuController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $menus = Menu::with('category')->paginate(4);
+        $query = Menu::with('category');
+        
+        // Search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+        
+        // Category filter
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category_id', $request->category);
+        }
+        
+        // Status filter
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('is_available', $request->status);
+        }
+        
+        $menus = $query->paginate(6);
         $categories = Category::all();
+        
         return view('menuItems', compact('menus', 'categories'));
     }
 
@@ -25,29 +45,46 @@ class MenuController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'is_available' => 'required|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:100',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'category_id' => 'required|exists:categories,id',
+                'is_available' => 'required|boolean',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
+
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('menus', 'public');
+            }
+
+            $menu = Menu::create($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu created successfully',
+                'data' => $menu
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Menu creation failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create menu: ' . $e->getMessage()
+            ], 500);
         }
-
-        $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
-        
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('menus', 'public');
-        }
-
-        Menu::create($data);
-
-        return response()->json(['success' => true, 'message' => 'Menu created successfully']);
     }
+    
 
     public function update(Request $request, $id)
     {
