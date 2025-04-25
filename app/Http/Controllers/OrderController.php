@@ -78,168 +78,92 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'customer_name' => 'required|string|max:255',
-            'table_number' => 'required|string|max:10',
+            'table_number' => 'required|integer',
         ]);
-
-        // Simpan pesanan
-        $order = Order::create([
-            'customer_name' => $request->customer_name,
-            'table_number' => $request->table_number,
-            'total' => 0, // Total akan dihitung setelah menyimpan item
-            'status' => 'pending',
-        ]);
-
+    
+        $cart = session()->get('cart', []);
+    
+        if (empty($cart)) {
+            return redirect()->route('orders.create')->with('error', 'Keranjang pesanan kosong.');
+        }
+    
+        DB::beginTransaction();
+    
+        try {
+            // Buat pesanan baru
             $order = Order::create([
                 'customer_name' => $request->customer_name,
                 'table_number' => $request->table_number,
                 'status' => 'Pending',
                 'total_amount' => 0
             ]);
-
+    
             $totalAmount = 0;
-            foreach ($request->items as $item) {
-                $menuItem = MenuItem::find($item['id']);
-                $order->orderItems()->create([
-                    'menu_item_id' => $item['id'],
+    
+            // Tambahkan detail pesanan     
+            foreach ($cart as $itemId => $item) {
+                $itemTotal = $item['price'] * $item['quantity'];
+                $totalAmount += $itemTotal;
+    
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_id' => $itemId,
                     'quantity' => $item['quantity'],
-                    'price' => $menuItem->price
+                    'price' => $item['price'],
+                    'subtotal' => $itemTotal,
                 ]);
-                $totalAmount += $menuItem->price * $item['quantity'];
             }
-
-            $order->update(['total_amount' => $totalAmount]);
-
+    
+            // (Opsional) Tambahkan pajak dan service charge jika diperlukan
+            $tax = $totalAmount * 0.1;
+            $service = $totalAmount * 0.05;
+            $finalTotal = $totalAmount + $tax + $service;
+    
+            // Update total di tabel orders
+            $order->update([
+                'total_amount' => $totalAmount // ganti dengan $finalTotal jika pakai pajak
+            ]);
+    
             DB::commit();
-
-            return redirect()->route('orders.success', $order)
-                ->with('success', 'Order has been placed successfully!');
+    
+            // Kosongkan keranjang
+            session()->forget('cart');
+    
+            return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibuat.');
+    
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to place order. Please try again.');
+    
+            return redirect()->route('orders.create')->with('error', 'Gagal menyimpan pesanan: ' . $e->getMessage());
         }
+    }    
 
-        // Hitung pajak dan biaya layanan
-        $tax = $subtotal * 0.1;
-        $service = $subtotal * 0.05;
-        $total = $subtotal + $tax + $service;
-
-        // Update total pada order
-        $order->update(['total' => $total]);
-
-        return response()->json(['success' => true, 'message' => 'Pesanan berhasil ditempatkan']);
-    }
-
-    /**
-     * Update the specified resource in storage.
+     /**
+     * Public function addToCart.
      */
-    public function updateStatus(Request $request, Order $order)
-    {
+    public function addToCart(Request $request, $id)
+        {
         $request->validate([
-            'status' => 'required|in:Pending,Processing,Completed,On Delivery,Cancelled'
+            'quantity' => 'required|integer|min:1',
         ]);
 
-        $order->update(['status' => $request->status]);
+        $menuItem = MenuItem::findOrFail($id);
+        $cart = session()->get('cart', []);
 
-        return redirect()->back()->with('success', 'Order status updated successfully');
-    }
-
-    /**
-     * Display completed orders.
-     */
-    public function archive()
-    {
-        $orders = Order::with('orderItems.menuItem')
-            ->where('status', 'Completed')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        return view('orderArchive', compact('orders'));
-    }
-
-    /**
-     * Cart management functions remain unchanged...
-     */
-    public function addToCart(Request $request, MenuItem $menuItem)
-    {
-        $cart = Session::get('cart', []);
-
-        if (isset($cart[$menuItem->id])) {
-            $cart[$menuItem->id]['quantity'] += $request->quantity;
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity'] += $request->quantity;
         } else {
-            $cart[$menuItem->id] = [
+            $cart[$id] = [
                 'name' => $menuItem->name,
-                'quantity' => $request->quantity,
                 'price' => $menuItem->price,
-                'image' => $menuItem->image
+                'quantity' => $request->quantity,
             ];
         }
 
-        Session::put('cart', $cart);
-        return response()->json([
-            'success' => true,
-            'message' => 'Item added to cart successfully'
-        ]);
-    }
+        session()->put('cart', $cart);
 
-    public function updateCart(Request $request, MenuItem $menuItem)
-    {
-        $cart = Session::get('cart', []);
-
-        if (isset($cart[$menuItem->id])) {
-            $cart[$menuItem->id]['quantity'] = $request->quantity;
-            Session::put('cart', $cart);
-            return redirect()->back()->with('success', 'Cart updated successfully');
-        }
-
-        return redirect()->back()->with('error', 'Item not found in cart');
-    }
-
-    public function removeFromCart(MenuItem $menuItem)
-    {
-        $cart = Session::get('cart', []);
-
-        if (isset($cart[$menuItem->id])) {
-            unset($cart[$menuItem->id]);
-            Session::put('cart', $cart);
-            return redirect()->back()->with('success', 'Item removed from cart');
-        }
-
-        return redirect()->back()->with('error', 'Item not found in cart');
-    }
-
-    public function showCart()
-    {
-        $cart = Session::get('cart', []);
-        $total = 0;
-
-        foreach ($cart as $item) {
-            $total += $item['price'] * $item['quantity'];
-        }
-
-        return view('cart', compact('cart', 'total'));
-    }
-
-    public function checkout()
-    {
-        $cart = Session::get('cart', []);
-
-        if (empty($cart)) {
-            return redirect()->route('menu.public')->with('error', 'Your cart is empty');
-        }
-
-        $total = 0;
-        foreach ($cart as $item) {
-            $total += $item['price'] * $item['quantity'];
-        }
-
-        return view('checkout', compact('cart', 'total'));
-    }
-
-    public function success(Order $order)
-    {
-        return view('orderSuccess', compact('order'));
+        return redirect()->route('orders.create')->with('success', 'Item berhasil ditambahkan ke keranjang.');
     }
 }

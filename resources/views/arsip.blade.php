@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    @vite([])
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive - FoodExpress Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8fafc;
-    }
+    <title>Order Archive - FoodExpress Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+        }
         
         .gradient-bg {
             background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
@@ -21,11 +20,6 @@
         
         .sidebar {
             transition: all 0.3s ease;
-    }
-
-    .card-hover:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
         .active-nav {
@@ -33,11 +27,11 @@
             border-left: 4px solid white;
         }
         
-        .archive-card {
+        .order-card {
             transition: all 0.2s ease;
         }
         
-        .archive-card:hover {
+        .order-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
@@ -64,12 +58,61 @@
         
         .modal.active .modal-content {
             transform: translateY(0);
-    }
-  </style>
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            z-index: 1;
+            border-radius: 0.5rem;
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .collapsible.active .collapsible-content {
+            max-height: 1000px;
+        }
+    </style>
 </head>
 <body class="flex h-screen overflow-hidden">
-  @include('layouts.app')
-
+   @include('layouts.app')
+   
     <!-- Mobile sidebar toggle -->
     <div class="md:hidden fixed bottom-4 right-4 z-50">
         <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
@@ -80,12 +123,12 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Topbar -->
-        <header class="bg-white shadow-sm p-4 flex items-center justify-between">
+        <header class="bg-white shadow-sm p-4 flex items-center justify-between sticky-header">
             <div class="flex items-center space-x-4">
                 <button class="md:hidden text-gray-500">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <h2 class="text-xl font-bold text-gray-800">Archive Management</h2>
+                <h2 class="text-xl font-bold text-gray-800">Order Archive</h2>
             </div>
             
             <div class="flex items-center space-x-4">
@@ -101,238 +144,343 @@
         </header>
         
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-4 bg-gray-50">
-            <!-- Filters and Actions -->
-            <div class="bg-white rounded-xl shadow p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div class="relative w-full md:w-64">
-                    <input type="text" placeholder="Search archive..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                </div>
-                <div class="flex gap-2 w-full md:w-auto">
-                    <select class="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option>All Types</option>
-                        <option>Menu Items</option>
-                        <option>Orders</option>
-                        <option>Customers</option>
-                    </select>
-                    <select class="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option>All Status</option>
-                        <option>Archived</option>
-                        <option>Deleted</option>
-                    </select>
-                    <button class="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-all">
-                        <i class="fas fa-filter mr-2"></i> Filter
+        <main class="flex-1 overflow-y-auto bg-gray-50">
+            <!-- Tabs -->
+            <div class="bg-white border-b border-gray-200 px-4">
+                <div class="flex space-x-8">
+                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm tab-active" data-tab="all">
+                        All Orders
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="completed">
+                        Completed
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="canceled">
+                        Canceled
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="failed">
+                        Failed
                     </button>
                 </div>
             </div>
             
-            <!-- Archive Items Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Archive Item 1 -->
-                <div class="archive-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <span class="status-badge bg-blue-100 text-blue-800">Archived</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-calendar-alt mr-1"></i> 15 Jun 2023
-                        </div>
+            <!-- Filters and Actions -->
+            <div class="bg-white rounded-xl shadow p-4 m-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="relative w-64">
+                        <input type="text" placeholder="Search orders..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
-                    <div class="p-4">
-                        <div class="flex items-start mb-3">
-                            <div class="bg-gray-100 p-3 rounded-lg mr-3">
-                                <i class="fas fa-utensils text-gray-500"></i>
+                    
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <i class="fas fa-filter text-gray-500"></i>
+                            <span>Filters</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </button>
+                        
+                        <div class="dropdown-content mt-1 p-3 w-64">
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                                    <option>All Time</option>
+                                    <option>Today</option>
+                                    <option>Last 7 Days</option>
+                                    <option>Last 30 Days</option>
+                                    <option>Custom Range</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Order Value</label>
+                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                                    <option>Any Amount</option>
+                                    <option>Under $20</option>
+                                    <option>$20 - $50</option>
+                                    <option>$50 - $100</option>
+                                    <option>Over $100</option>
+                                </select>
                             </div>
                             <div>
-                                <h3 class="font-bold">Nasi Goreng Special</h3>
-                                <p class="text-sm text-gray-500">Menu Item</p>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                                    <option>All Methods</option>
+                                    <option>Credit Card</option>
+                                    <option>PayPal</option>
+                                    <option>Cash on Delivery</option>
+                                </select>
                             </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">Premium version of our traditional nasi goreng with additional seafood and special sauce.</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                            <span class="text-sm text-gray-500">Archived by: <span class="font-medium">Admin</span></span>
-                            <div class="flex space-x-2">
-                                <button class="restore-btn p-2 text-green-500 hover:bg-green-50 rounded-lg" data-id="1">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="delete-permanent-btn p-2 text-red-500 hover:bg-red-50 rounded-lg" data-id="1">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <div class="flex justify-between mt-3">
+                                <button class="text-sm text-gray-600 hover:text-gray-800">Reset</button>
+                                <button class="text-sm text-blue-600 hover:text-blue-800 font-medium">Apply</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Archive Item 2 -->
-                <div class="archive-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <span class="status-badge bg-red-100 text-red-800">Deleted</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-calendar-alt mr-1"></i> 22 May 2023
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <i class="fas fa-sort text-gray-500"></i>
+                            <span>Sort By</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </button>
+                        
+                        <div class="dropdown-content mt-1 p-2 w-48">
+                            <div class="dropdown-item text-sm">Newest First</div>
+                            <div class="dropdown-item text-sm">Oldest First</div>
+                            <div class="dropdown-item text-sm">Highest Amount</div>
+                            <div class="dropdown-item text-sm">Lowest Amount</div>
                         </div>
                     </div>
-                    <div class="p-4">
-                        <div class="flex items-start mb-3">
-                            <div class="bg-gray-100 p-3 rounded-lg mr-3">
-                                <i class="fas fa-shopping-cart text-gray-500"></i>
+                    
+                    <button class="px-4 py-2 gradient-bg text-white rounded-lg hover:opacity-90">
+                        <i class="fas fa-file-export mr-2"></i> Export
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Grouped Orders -->
+            <div class="m-4">
+                <!-- Month Group -->
+                <div class="mb-6 bg-white rounded-xl shadow overflow-hidden">
+                    <div class="collapsible active">
+                        <button class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-lg">June 2023</h3>
+                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">12 orders</span>
                             </div>
-                            <div>
-                                <h3 class="font-bold">Order #45892</h3>
-                                <p class="text-sm text-gray-500">Order</p>
+                            <i class="fas fa-chevron-down transition-transform duration-300 transform"></i>
+                        </button>
+                        
+                        <div class="collapsible-content">
+                            <!-- Order 1 -->
+                            <div class="order-card border-b border-gray-200 last:border-b-0">
+                                <div class="p-4 flex justify-between items-center">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="bg-blue-100 p-3 rounded-lg">
+                                            <i class="fas fa-shopping-cart text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold">Order #45892</h3>
+                                            <p class="text-sm text-gray-500">15 Jun 2023 • 12:45 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="text-right">
+                                            <p class="font-bold">$45.20</p>
+                                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
+                                        </div>
+                                        <div class="dropdown relative">
+                                            <button class="p-2 text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-content right-0 mt-1 w-40">
+                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
+                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
+                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="px-4 pb-4 -mt-2">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <span class="mr-4">Customer: <span class="font-medium">John Doe</span></span>
+                                        <span class="mr-4">Items: <span class="font-medium">3</span></span>
+                                        <span>Payment: <span class="font-medium">Credit Card</span></span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">Order from customer John Doe with total $45.20. Canceled by customer.</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                            <span class="text-sm text-gray-500">Deleted by: <span class="font-medium">System</span></span>
-                            <div class="flex space-x-2">
-                                <button class="restore-btn p-2 text-green-500 hover:bg-green-50 rounded-lg" data-id="2">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="delete-permanent-btn p-2 text-red-500 hover:bg-red-50 rounded-lg" data-id="2">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            
+                            <!-- Order 2 -->
+                            <div class="order-card border-b border-gray-200 last:border-b-0">
+                                <div class="p-4 flex justify-between items-center">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="bg-red-100 p-3 rounded-lg">
+                                            <i class="fas fa-shopping-cart text-red-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold">Order #45891</h3>
+                                            <p class="text-sm text-gray-500">15 Jun 2023 • 10:30 AM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="text-right">
+                                            <p class="font-bold">$32.50</p>
+                                            <span class="status-badge bg-red-100 text-red-800">Canceled</span>
+                                        </div>
+                                        <div class="dropdown relative">
+                                            <button class="p-2 text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-content right-0 mt-1 w-40">
+                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
+                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
+                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="px-4 pb-4 -mt-2">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <span class="mr-4">Customer: <span class="font-medium">Sarah Johnson</span></span>
+                                        <span class="mr-4">Items: <span class="font-medium">2</span></span>
+                                        <span>Payment: <span class="font-medium">PayPal</span></span>
+                                    </div>
+                                    <div class="mt-1 text-sm text-gray-600">
+                                        <span>Reason: <span class="font-medium">Customer request</span></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Archive Item 3 -->
-                <div class="archive-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <span class="status-badge bg-blue-100 text-blue-800">Archived</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-calendar-alt mr-1"></i> 10 May 2023
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-start mb-3">
-                            <div class="bg-gray-100 p-3 rounded-lg mr-3">
-                                <i class="fas fa-users text-gray-500"></i>
+                <!-- Month Group -->
+                <div class="mb-6 bg-white rounded-xl shadow overflow-hidden">
+                    <div class="collapsible">
+                        <button class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-lg">May 2023</h3>
+                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">24 orders</span>
                             </div>
-                            <div>
-                                <h3 class="font-bold">Sarah Johnson</h3>
-                                <p class="text-sm text-gray-500">Customer</p>
+                            <i class="fas fa-chevron-down transition-transform duration-300 transform"></i>
+                        </button>
+                        
+                        <div class="collapsible-content">
+                            <!-- Order 1 -->
+                            <div class="order-card border-b border-gray-200 last:border-b-0">
+                                <div class="p-4 flex justify-between items-center">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="bg-blue-100 p-3 rounded-lg">
+                                            <i class="fas fa-shopping-cart text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold">Order #45785</h3>
+                                            <p class="text-sm text-gray-500">28 May 2023 • 7:15 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="text-right">
+                                            <p class="font-bold">$78.90</p>
+                                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
+                                        </div>
+                                        <div class="dropdown relative">
+                                            <button class="p-2 text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-content right-0 mt-1 w-40">
+                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
+                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
+                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="px-4 pb-4 -mt-2">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <span class="mr-4">Customer: <span class="font-medium">Michael Brown</span></span>
+                                        <span class="mr-4">Items: <span class="font-medium">5</span></span>
+                                        <span>Payment: <span class="font-medium">Credit Card</span></span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">Inactive customer for more than 2 years. Last order on 12 Apr 2021.</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                            <span class="text-sm text-gray-500">Archived by: <span class="font-medium">Admin</span></span>
-                            <div class="flex space-x-2">
-                                <button class="restore-btn p-2 text-green-500 hover:bg-green-50 rounded-lg" data-id="3">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="delete-permanent-btn p-2 text-red-500 hover:bg-red-50 rounded-lg" data-id="3">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Archive Item 4 -->
-                <div class="archive-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <span class="status-badge bg-blue-100 text-blue-800">Archived</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-calendar-alt mr-1"></i> 5 May 2023
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-start mb-3">
-                            <div class="bg-gray-100 p-3 rounded-lg mr-3">
-                                <i class="fas fa-utensils text-gray-500"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold">Es Campur</h3>
-                                <p class="text-sm text-gray-500">Menu Item</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">Seasonal dessert item. Archived for next season availability.</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                            <span class="text-sm text-gray-500">Archived by: <span class="font-medium">Manager</span></span>
-                            <div class="flex space-x-2">
-                                <button class="restore-btn p-2 text-green-500 hover:bg-green-50 rounded-lg" data-id="4">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="delete-permanent-btn p-2 text-red-500 hover:bg-red-50 rounded-lg" data-id="4">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Archive Item 5 -->
-                <div class="archive-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <span class="status-badge bg-red-100 text-red-800">Deleted</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-calendar-alt mr-1"></i> 28 Apr 2023
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-start mb-3">
-                            <div class="bg-gray-100 p-3 rounded-lg mr-3">
-                                <i class="fas fa-shopping-cart text-gray-500"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold">Order #45721</h3>
-                                <p class="text-sm text-gray-500">Order</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">Failed payment order. System automatically deleted after 30 days.</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                            <span class="text-sm text-gray-500">Deleted by: <span class="font-medium">System</span></span>
-                            <div class="flex space-x-2">
-                                <button class="restore-btn p-2 text-green-500 hover:bg-green-50 rounded-lg" data-id="5">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="delete-permanent-btn p-2 text-red-500 hover:bg-red-50 rounded-lg" data-id="5">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            
+                            <!-- Order 2 -->
+                            <div class="order-card border-b border-gray-200 last:border-b-0">
+                                <div class="p-4 flex justify-between items-center">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="bg-yellow-100 p-3 rounded-lg">
+                                            <i class="fas fa-shopping-cart text-yellow-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold">Order #45721</h3>
+                                            <p class="text-sm text-gray-500">22 May 2023 • 5:30 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="text-right">
+                                            <p class="font-bold">$32.50</p>
+                                            <span class="status-badge bg-yellow-100 text-yellow-800">Failed</span>
+                                        </div>
+                                        <div class="dropdown relative">
+                                            <button class="p-2 text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-content right-0 mt-1 w-40">
+                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
+                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
+                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="px-4 pb-4 -mt-2">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <span class="mr-4">Customer: <span class="font-medium">Emily Wilson</span></span>
+                                        <span class="mr-4">Items: <span class="font-medium">2</span></span>
+                                        <span>Payment: <span class="font-medium">Credit Card</span></span>
+                                    </div>
+                                    <div class="mt-1 text-sm text-gray-600">
+                                        <span>Reason: <span class="font-medium">Payment declined</span></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Archive Item 6 -->
-                <div class="archive-card bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <span class="status-badge bg-blue-100 text-blue-800">Archived</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-calendar-alt mr-1"></i> 15 Apr 2023
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-start mb-3">
-                            <div class="bg-gray-100 p-3 rounded-lg mr-3">
-                                <i class="fas fa-utensils text-gray-500"></i>
+                <!-- Month Group -->
+                <div class="mb-6 bg-white rounded-xl shadow overflow-hidden">
+                    <div class="collapsible">
+                        <button class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-lg">April 2023</h3>
+                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">18 orders</span>
                             </div>
-                            <div>
-                                <h3 class="font-bold">Soto Betawi</h3>
-                                <p class="text-sm text-gray-500">Menu Item</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-4">Temporarily unavailable due to ingredient supply issues.</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                            <span class="text-sm text-gray-500">Archived by: <span class="font-medium">Chef</span></span>
-                            <div class="flex space-x-2">
-                                <button class="restore-btn p-2 text-green-500 hover:bg-green-50 rounded-lg" data-id="6">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button class="delete-permanent-btn p-2 text-red-500 hover:bg-red-50 rounded-lg" data-id="6">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <i class="fas fa-chevron-down transition-transform duration-300 transform"></i>
+                        </button>
+                        
+                        <div class="collapsible-content">
+                            <!-- Order 1 -->
+                            <div class="order-card border-b border-gray-200 last:border-b-0">
+                                <div class="p-4 flex justify-between items-center">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="bg-blue-100 p-3 rounded-lg">
+                                            <i class="fas fa-shopping-cart text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold">Order #45678</h3>
+                                            <p class="text-sm text-gray-500">15 Apr 2023 • 1:20 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="text-right">
+                                            <p class="font-bold">$62.75</p>
+                                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
+                                        </div>
+                                        <div class="dropdown relative">
+                                            <button class="p-2 text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-content right-0 mt-1 w-40">
+                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
+                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
+                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="px-4 pb-4 -mt-2">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <span class="mr-4">Customer: <span class="font-medium">Robert Taylor</span></span>
+                                        <span class="mr-4">Items: <span class="font-medium">4</span></span>
+                                        <span>Payment: <span class="font-medium">Cash on Delivery</span></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -340,7 +488,10 @@
             </div>
             
             <!-- Pagination -->
-            <div class="mt-6 flex justify-center">
+            <div class="m-4 flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    Showing <span class="font-medium">1</span> to <span class="font-medium">6</span> of <span class="font-medium">54</span> orders
+                </div>
                 <nav class="inline-flex rounded-md shadow">
                     <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
                         <i class="fas fa-chevron-left"></i>
@@ -348,6 +499,8 @@
                     <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-blue-600 font-medium">1</a>
                     <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">2</a>
                     <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">3</a>
+                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">4</a>
+                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">5</a>
                     <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
                         <i class="fas fa-chevron-right"></i>
                     </a>
@@ -364,10 +517,10 @@
                 <button id="close-restore-modal" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
-  </div>
-
+            </div>
+            
             <div class="p-4">
-                <p class="mb-4">Are you sure you want to restore this item? It will be moved back to its original location.</p>
+                <p class="mb-4">Are you sure you want to restore this order? It will be moved back to the active orders list.</p>
                 <input type="hidden" id="restore-item-id">
                 
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
@@ -389,7 +542,7 @@
             </div>
             
             <div class="p-4">
-                <p class="mb-4">Are you sure you want to permanently delete this item? This action cannot be undone and all data will be lost.</p>
+                <p class="mb-4">Are you sure you want to permanently delete this order? This action cannot be undone and all data will be lost.</p>
                 <input type="hidden" id="delete-permanent-item-id">
                 
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
@@ -412,25 +565,63 @@
                 sidebar.classList.toggle('inset-0');
                 sidebar.classList.toggle('z-40');
             });
+
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('text-gray-500');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('tab-active');
+                    this.classList.remove('text-gray-500');
+                    
+                    // In a real app, you would filter orders here based on the tab
+                    const tab = this.getAttribute('data-tab');
+                    console.log('Switched to tab:', tab);
+                });
+            });
+            
+            // Collapsible sections
+            const collapsibles = document.querySelectorAll('.collapsible');
+            
+            collapsibles.forEach(collapsible => {
+                const button = collapsible.querySelector('button');
+                
+                button.addEventListener('click', function() {
+                    collapsible.classList.toggle('active');
+                    
+                    const icon = this.querySelector('i');
+                    if (collapsible.classList.contains('active')) {
+                        icon.classList.add('rotate-180');
+                    } else {
+                        icon.classList.remove('rotate-180');
+                    }
+                });
+            });
             
             // Modal elements
             const restoreModal = document.getElementById('restore-modal');
             const deletePermanentModal = document.getElementById('delete-permanent-modal');
-            const restoreBtns = document.querySelectorAll('.restore-btn');
-            const deletePermanentBtns = document.querySelectorAll('.delete-permanent-btn');
+            const restoreBtns = document.querySelectorAll('.dropdown-item:nth-child(2)'); // Restore buttons in dropdown
+            const deletePermanentBtns = document.querySelectorAll('.dropdown-item:nth-child(3)'); // Delete buttons in dropdown
             const closeRestoreModalBtns = [document.getElementById('close-restore-modal'), document.getElementById('cancel-restore-btn')];
             const closeDeletePermanentModalBtns = [document.getElementById('close-delete-permanent-modal'), document.getElementById('cancel-delete-permanent-btn')];
             const confirmRestoreBtn = document.getElementById('confirm-restore-btn');
             const confirmDeletePermanentBtn = document.getElementById('confirm-delete-permanent-btn');
             
             // Sample data for demonstration
-            let archiveItems = [
-                { id: 1, type: 'menu', name: 'Nasi Goreng Special', status: 'archived', date: '15 Jun 2023', description: 'Premium version of our traditional nasi goreng with additional seafood and special sauce.', archivedBy: 'Admin' },
-                { id: 2, type: 'order', name: 'Order #45892', status: 'deleted', date: '22 May 2023', description: 'Order from customer John Doe with total $45.20. Canceled by customer.', archivedBy: 'System' },
-                { id: 3, type: 'customer', name: 'Sarah Johnson', status: 'archived', date: '10 May 2023', description: 'Inactive customer for more than 2 years. Last order on 12 Apr 2021.', archivedBy: 'Admin' },
-                { id: 4, type: 'menu', name: 'Es Campur', status: 'archived', date: '5 May 2023', description: 'Seasonal dessert item. Archived for next season availability.', archivedBy: 'Manager' },
-                { id: 5, type: 'order', name: 'Order #45721', status: 'deleted', date: '28 Apr 2023', description: 'Failed payment order. System automatically deleted after 30 days.', archivedBy: 'System' },
-                { id: 6, type: 'menu', name: 'Soto Betawi', status: 'archived', date: '15 Apr 2023', description: 'Temporarily unavailable due to ingredient supply issues.', archivedBy: 'Chef' }
+            let archiveOrders = [
+                { id: 1, orderNumber: '#45892', date: '15 Jun 2023', status: 'completed', amount: 45.20, customer: 'John Doe', items: 3, payment: 'Credit Card' },
+                { id: 2, orderNumber: '#45891', date: '15 Jun 2023', status: 'canceled', amount: 32.50, customer: 'Sarah Johnson', items: 2, payment: 'PayPal', reason: 'Customer request' },
+                { id: 3, orderNumber: '#45785', date: '28 May 2023', status: 'completed', amount: 78.90, customer: 'Michael Brown', items: 5, payment: 'Credit Card' },
+                { id: 4, orderNumber: '#45721', date: '22 May 2023', status: 'failed', amount: 32.50, customer: 'Emily Wilson', items: 2, payment: 'Credit Card', reason: 'Payment declined' },
+                { id: 5, orderNumber: '#45678', date: '15 Apr 2023', status: 'completed', amount: 62.75, customer: 'Robert Taylor', items: 4, payment: 'Cash on Delivery' }
             ];
             
             // Toggle modal function
@@ -446,20 +637,22 @@
                 }
             }
             
-            // Restore item
+            // Restore order
             restoreBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const itemId = parseInt(this.getAttribute('data-id'));
-                    document.getElementById('restore-item-id').value = itemId;
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const orderId = this.closest('.order-card').querySelector('h3').textContent.split('#')[1];
+                    document.getElementById('restore-item-id').value = orderId;
                     toggleModal(restoreModal, true);
                 });
             });
             
             // Delete permanent
             deletePermanentBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const itemId = parseInt(this.getAttribute('data-id'));
-                    document.getElementById('delete-permanent-item-id').value = itemId;
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const orderId = this.closest('.order-card').querySelector('h3').textContent.split('#')[1];
+                    document.getElementById('delete-permanent-item-id').value = orderId;
                     toggleModal(deletePermanentModal, true);
                 });
             });
@@ -479,28 +672,28 @@
             
             // Confirm restore
             confirmRestoreBtn.addEventListener('click', function() {
-                const itemId = parseInt(document.getElementById('restore-item-id').value);
+                const orderId = document.getElementById('restore-item-id').value;
                 
                 // In a real app, you would send restore request to server here
-                alert('Item restored successfully!');
+                alert(`Order #${orderId} restored successfully!`);
                 toggleModal(restoreModal, false);
                 
                 // Remove from archive list (in a real app, you would refresh the list)
-                archiveItems = archiveItems.filter(item => item.id !== itemId);
+                archiveOrders = archiveOrders.filter(order => order.orderNumber !== `#${orderId}`);
             });
             
             // Confirm permanent delete
             confirmDeletePermanentBtn.addEventListener('click', function() {
-                const itemId = parseInt(document.getElementById('delete-permanent-item-id').value);
+                const orderId = document.getElementById('delete-permanent-item-id').value;
                 
                 // In a real app, you would send delete request to server here
-                alert('Item permanently deleted!');
+                alert(`Order #${orderId} permanently deleted!`);
                 toggleModal(deletePermanentModal, false);
                 
                 // Remove from archive list (in a real app, you would refresh the list)
-                archiveItems = archiveItems.filter(item => item.id !== itemId);
+                archiveOrders = archiveOrders.filter(order => order.orderNumber !== `#${orderId}`);
             });
-    });
-  </script>
+        });
+    </script>
 </body>
 </html>
