@@ -6,19 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
+    /**`
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_name');
-            $table->string('table_number');
-            $table->decimal('total_amount', 10, 2);
-            $table->enum('status', ['new', 'processing', 'completed', 'cancelled'])->default('new');
-            $table->boolean('is_paid')->default(false);
+            $table->unsignedBigInteger('user_id');
+            $table->string('status')->default('pending');
+            $table->decimal('total_amount', 10, 2)->default(0); // ini cukup
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

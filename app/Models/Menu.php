@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Menu extends Model
 {
@@ -13,13 +13,14 @@ class Menu extends Model
         'name',
         'description',
         'price',
-        'category',
+        'category_id',
         'image',
         'is_available'
     ];
+    
 
-    public function orderItems()
+    public function category()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->belongsTo(Category::class);
     }
 }

@@ -9,51 +9,53 @@ class MenuSeeder extends Seeder
 {
     public function run()
     {
-        $menuItems = [
+        $menus = [
             [
-                'name' => 'Nasi Goreng',
-                'description' => 'Nasi goreng spesial dengan ayam dan telur',
+                'name' => 'Nasi Goreng Special',
+                'description' => 'Traditional Indonesian fried rice with special sauce, chicken, and prawns',
+                'price' => 35000,
+                'category_id' => 1, // Main Course
+                'is_available' => true
+            ],
+            [
+                'name' => 'Sate Ayam',
+                'description' => 'Grilled chicken skewers with peanut sauce, served with rice cakes',
                 'price' => 25000,
-                'category' => 'Makanan',
-                'image' => 'images/nasi-goreng.jpg',
-                'is_available' => true,
+                'category_id' => 2, // Appetizer
+                'is_available' => true
             ],
             [
-                'name' => 'Es Teh',
-                'description' => 'Es teh manis segar',
-                'price' => 5000,
-                'category' => 'Minuman',
-                'image' => 'images/es-teh.jpg',
-                'is_available' => true,
+                'name' => 'Es Campur',
+                'description' => 'Mixed ice dessert with fruits, jelly, syrup, and condensed milk',
+                'price' => 18000,
+                'category_id' => 3, // Dessert
+                'is_available' => true
             ],
             [
-                'name' => 'Es Teh',
-                'description' => 'Es teh manis segar',
-                'price' => 5000,
-                'category' => 'Minuman',
-                'image' => 'images/es-teh.jpg',
-                'is_available' => true,
+                'name' => 'Soto Betawi',
+                'description' => 'Jakarta-style beef soup with coconut milk, served with rice',
+                'price' => 28000,
+                'category_id' => 1, // Main Course
+                'is_available' => true
             ],
             [
-                'name' => 'Es Teh',
-                'description' => 'Es teh manis segar',
-                'price' => 5000,
-                'category' => 'Minuman',
-                'image' => 'images/es-teh.jpg',
-                'is_available' => true,
+                'name' => 'Es Teh Manis',
+                'description' => 'Sweet iced tea with lemon, perfect Indonesian-style refreshment',
+                'price' => 8000,
+                'category_id' => 4, // Beverage
+                'is_available' => true
             ],
             [
-                'name' => 'Es Teh',
-                'description' => 'Es teh manis segar',
-                'price' => 5000,
-                'category' => 'Minuman',
-                'image' => 'images/es-teh.jpg',
-                'is_available' => true,
-            ],
+                'name' => 'Gado-Gado',
+                'description' => 'Indonesian salad with mixed vegetables, tofu, tempeh and peanut sauce',
+                'price' => 22000,
+                'category_id' => 2, // Appetizer
+                'is_available' => true
+            ]
         ];
 
-        foreach ($menuItems as $item) {
-            Menu::create($item);
+        foreach ($menus as $menu) {
+            Menu::create($menu);
         }
     }
 }

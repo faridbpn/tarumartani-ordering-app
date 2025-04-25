@@ -2,116 +2,131 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Menu;
+use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class MenuController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $menus = Menu::orderBy('category')->orderBy('name')->get();
-        return view('menuItems', compact('menus'));
+        $query = Menu::with('category');
+        
+        // Search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+        
+        // Category filter
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category_id', $request->category);
+        }
+        
+        // Status filter
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('is_available', $request->status);
+        }
+        
+        $menus = $query->paginate(6);
+        $categories = Category::all();
+        
+        return view('menuItems', compact('menus', 'categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function show($id)
     {
-        //
+        $menu = Menu::findOrFail($id);
+        return response()->json($menu);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:100',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'category_id' => 'required|exists:categories,id',
+                'is_available' => 'required|boolean',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
+
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('menus', 'public');
+            }
+
+            $menu = Menu::create($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu created successfully',
+                'data' => $menu
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Menu creation failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create menu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+
+    public function update(Request $request, $id)
+    {
+        $menu = Menu::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'category' => 'required|in:food,beverage',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_available' => 'boolean',
+            'category_id' => 'required|exists:categories,id',
+            'is_available' => 'required|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $data = $request->all();
-        $data['is_available'] = $request->has('is_available');
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('menu-images', 'public');
-            $data['image'] = $path;
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        Menu::create($data);
-
-        return redirect()->route('menu.index')->with('success', 'Menu item added successfully');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Menu $menu)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'category' => 'required|in:food,beverage',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_available' => 'boolean',
-        ]);
-
-        $data = $request->all();
-        $data['is_available'] = $request->has('is_available');
+        $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
 
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($menu->image) {
                 Storage::disk('public')->delete($menu->image);
             }
-            
-            $path = $request->file('image')->store('menu-images', 'public');
-            $data['image'] = $path;
+            $data['image'] = $request->file('image')->store('menus', 'public');
         }
 
         $menu->update($data);
 
-        return redirect()->route('menu.index')->with('success', 'Menu item updated successfully');
+        return response()->json(['success' => true, 'message' => 'Menu updated successfully']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Menu $menu)
+    public function destroy($id)
     {
-        // Delete image if exists
+        $menu = Menu::findOrFail($id);
+        
         if ($menu->image) {
             Storage::disk('public')->delete($menu->image);
         }
-        
+
         $menu->delete();
 
-        return redirect()->route('menu.index')->with('success', 'Menu item deleted successfully');
+        return response()->json(['success' => true, 'message' => 'Menu deleted successfully']);
     }
 }

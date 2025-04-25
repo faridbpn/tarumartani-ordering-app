@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Menu Items - Admin Panel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <style>
+    @vite([])
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Management - FoodExpress Admin</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
         body {
@@ -33,168 +34,465 @@
             border-left: 4px solid white;
         }
         
-        .chart-container {
-            position: relative;
-            height: 300px;
+        .menu-card {
+            transition: all 0.2s ease;
         }
         
-        .order-row:hover {
-            background-color: #f1f5f9;
+        .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal-content {
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .category-tab.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .image-upload-preview {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .toast {
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pagination li {
+            margin: 0 2px;
+        }
+
+        .pagination li a,
+        .pagination li span {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: white;
+            color: #3b82f6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .pagination li.active span {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .pagination li a:hover {
+            background-color: #f3f4f6;
+        }
+
+        .pagination li.disabled span {
+            color: #9ca3af;
+            cursor: not-allowed;
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex">
-
+<body class="flex h-screen">
+    <!-- Navbar -->
+    @include('layouts.app')
     
-
-  <!-- Sidebar -->
-  @include('layouts.app')
-
-  <!-- Main content -->
-  <div class="flex-1 p-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Menu Items</h1>
-      <button onclick="openForm()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        + Add New Item
-      </button>
+    <!-- Mobile sidebar toggle -->
+    <div class="md:hidden fixed bottom-4 right-4 z-50">
+        <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
     </div>
-
-    <!-- Table -->
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-      <table class="min-w-full table-auto">
-        <thead class="bg-gray-100 text-gray-600">
-          <tr>
-            <th class="px-6 py-3">Image</th>
-            <th class="px-6 py-3">Name</th>
-            <th class="px-6 py-3">Category</th>
-            <th class="px-6 py-3">Price</th>
-            <th class="px-6 py-3">Status</th>
-            <th class="px-6 py-3 text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="menuList" class="text-gray-700">
-          <!-- Dynamic rows here -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Modal Form -->
-    <div id="formModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h2 class="text-xl font-semibold mb-4" id="formTitle">Add New Item</h2>
-        <form id="menuForm">
-          <input type="hidden" id="editIndex">
-          <div class="mb-4">
-            <label class="block mb-1">Name</label>
-            <input type="text" id="itemName" class="w-full border rounded px-3 py-2" required>
-          </div>
-          <div class="mb-4">
-            <label class="block mb-1">Category</label>
-            <input type="text" id="itemCategory" class="w-full border rounded px-3 py-2" required>
-          </div>
-          <div class="mb-4">
-            <label class="block mb-1">Price</label>
-            <input type="number" id="itemPrice" class="w-full border rounded px-3 py-2" required>
-          </div>
-          <div class="mb-4">
-            <label class="block mb-1">Image URL</label>
-            <input type="text" id="itemImage" class="w-full border rounded px-3 py-2">
-          </div>
-          <div class="flex justify-end space-x-2">
-            <button type="button" onclick="closeForm()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
-            <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- JS Section -->
-  <script>
-    const menuList = document.getElementById("menuList");
-    const formModal = document.getElementById("formModal");
-    const form = document.getElementById("menuForm");
-    const itemName = document.getElementById("itemName");
-    const itemCategory = document.getElementById("itemCategory");
-    const itemPrice = document.getElementById("itemPrice");
-    const itemImage = document.getElementById("itemImage");
-    const editIndex = document.getElementById("editIndex");
-    const formTitle = document.getElementById("formTitle");
-
-    let menuItems = [];
-
-    function renderMenu() {
-      menuList.innerHTML = "";
-      menuItems.forEach((item, index) => {
-        menuList.innerHTML += `
-          <tr class="border-b">
-            <td class="px-6 py-4"><img src="${item.image || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded"/></td>
-            <td class="px-6 py-4">${item.name}</td>
-            <td class="px-6 py-4">${item.category}</td>
-            <td class="px-6 py-4">$${item.price}</td>
-            <td class="px-6 py-4">${item.status || "Available"}</td>
-            <td class="px-6 py-4 text-center">
-              <button onclick="editItem(${index})" class="text-blue-500 hover:underline mr-2">Edit</button>
-              <button onclick="deleteItem(${index})" class="text-red-500 hover:underline">Delete</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function openForm() {
-      form.reset();
-      editIndex.value = "";
-      formTitle.innerText = "Add New Item";
-      formModal.classList.remove("hidden");
-    }
-
-    function closeForm() {
-      formModal.classList.add("hidden");
-    }
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const newItem = {
-        name: itemName.value,
-        category: itemCategory.value,
-        price: parseFloat(itemPrice.value).toFixed(2),
-        image: itemImage.value,
-        status: "Available"
-      };
-
-      const index = editIndex.value;
-      if (index) {
-        menuItems[index] = newItem;
-      } else {
-        menuItems.push(newItem);
-      }
-
-      renderMenu();
-      closeForm();
-    });
-
-    function editItem(index) {
-      const item = menuItems[index];
-      itemName.value = item.name;
-      itemCategory.value = item.category;
-      itemPrice.value = item.price;
-      itemImage.value = item.image;
-      editIndex.value = index;
-      formTitle.innerText = "Edit Item";
-      formModal.classList.remove("hidden");
-    }
-
-    function deleteItem(index) {
-      if (confirm("Are you sure you want to delete this item?")) {
-        menuItems.splice(index, 1);
-        renderMenu();
-      }
-    }
-
-    renderMenu(); // Initial render
     
-  </script>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden">
+        <span id="toastMessage"></span>
+    </div>
+    
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Menu Management</h1>
+            <button data-action="add-menu" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all">
+                <i class="fas fa-plus mr-2"></i> Add Menu
+            </button>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="bg-white rounded-xl shadow p-4 mb-6">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="relative flex-1">
+                    <input type="text" id="searchInput" placeholder="Search menu items..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                <div class="flex gap-2">
+                    <select id="categoryFilter" class="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    <select id="statusFilter" class="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Status</option>
+                        <option value="1">Available</option>
+                        <option value="0">Not Available</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menu Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($menus as $menu)
+            <div class="menu-card bg-white rounded-xl shadow overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="relative">
+                    <img src="{{ $menu->image ? asset('storage/' . $menu->image) : 'https://via.placeholder.com/300x200' }}" 
+                         alt="{{ $menu->name }}" 
+                         class="w-full h-36 object-cover">
+                    <div class="absolute top-2 right-2 flex space-x-2">
+                        <button data-action="edit-menu" data-id="{{ $menu->id }}" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition-colors">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button data-action="delete-menu" data-id="{{ $menu->id }}" 
+                                class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">{{ $menu->name }}</h3>
+                        <span class="text-lg font-bold text-green-600">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">{{ $menu->description }}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {{ $menu->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $menu->is_available ? 'Available' : 'Not Available' }}
+                            </span>
+                            <span class="text-xs text-gray-500" data-category-id="{{ $menu->category_id ?? '' }}">
+                                {{ isset($menu->category->name) ? $menu->category->name : 'No Category' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        
+        <!-- Pagination -->
+        <div class="mt-8 flex justify-center">
+            {{ $menus->links() }}
+        </div>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-semibold" id="modalTitle">Add New Menu</h3>
+                <button data-action="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="menuForm" method="POST" enctype="multipart/form-data" class="p-4">
+                @csrf
+                <input type="hidden" id="menuId" name="id">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" name="name" id="name" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" id="description"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Price (Rp)</label>
+                        <input type="number" name="price" id="price" required min="0"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category</label>
+                        <select name="category_id" id="category_id" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Availability</label>
+                        <select name="is_available" id="is_available" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="1">Available</option>
+                            <option value="0">Not Available</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Image</label>
+                        <input type="file" name="image" id="image" accept="image/*"
+                               class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <img id="imagePreview" class="mt-2 w-full h-32 object-cover rounded hidden" alt="Image Preview">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" data-action="close-modal"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+            <div class="p-4">
+                <h3 class="text-lg font-semibold mb-4">Confirm Delete</h3>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete this menu item? This action cannot be undone.</p>
+                <div class="flex justify-end space-x-3">
+                    <button data-action="close-delete-modal"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button data-action="confirm-delete"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuModal = document.getElementById('menuModal');
+            const deleteModal = document.getElementById('deleteModal');
+            const menuForm = document.getElementById('menuForm');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageInput = document.getElementById('image');
+            
+            // Show toast notification
+            function showToast(message, type = 'success') {
+                toastMessage.textContent = message;
+                toast.classList.remove('hidden');
+                toast.classList.remove('bg-red-500', 'bg-green-500');
+                toast.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+            
+            // Handle image preview
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Add Menu Button
+            document.querySelector('[data-action="add-menu"]').addEventListener('click', function() {
+                document.getElementById('modalTitle').textContent = 'Add New Menu';
+                document.getElementById('menuId').value = '';
+                menuForm.reset();
+                imagePreview.classList.add('hidden');
+                menuModal.classList.remove('hidden');
+            });
+            
+            // Edit Menu Button
+            document.querySelectorAll('[data-action="edit-menu"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const menuId = this.dataset.id;
+                    fetch(`/admin/menu/${menuId}`)
+                        .then(response => response.json())
+                        .then(menu => {
+                            document.getElementById('modalTitle').textContent = 'Edit Menu';
+                            document.getElementById('menuId').value = menu.id;
+                            document.getElementById('name').value = menu.name;
+                            document.getElementById('description').value = menu.description;
+                            document.getElementById('price').value = menu.price;
+                            document.getElementById('category_id').value = menu.category_id;
+                            document.getElementById('is_available').value = menu.is_available ? '1' : '0';
+                            
+                            if (menu.image) {
+                                imagePreview.src = `/storage/${menu.image}`;
+                                imagePreview.classList.remove('hidden');
+                            } else {
+                                imagePreview.classList.add('hidden');
+                            }
+                            
+                            menuModal.classList.remove('hidden');
+                        });
+                });
+            });
+            
+            // Delete Menu Button
+            document.querySelectorAll('[data-action="delete-menu"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const menuId = this.dataset.id;
+                    deleteModal.classList.remove('hidden');
+                    deleteModal.dataset.menuId = menuId;
+                });
+            });
+            
+            // Close Modal Buttons
+            document.querySelectorAll('[data-action="close-modal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    menuModal.classList.add('hidden');
+                });
+            });
+            
+            document.querySelectorAll('[data-action="close-delete-modal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    deleteModal.classList.add('hidden');
+                });
+            });
+            
+            // Confirm Delete Button
+            document.querySelector('[data-action="confirm-delete"]').addEventListener('click', function() {
+                const menuId = deleteModal.dataset.menuId;
+                fetch(`/admin/menu/${menuId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Menu deleted successfully');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Error deleting menu', 'error');
+                });
+                
+                deleteModal.classList.add('hidden');
+            });
+            
+            // Form Submit Handler
+            menuForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const menuId = document.getElementById('menuId').value;
+                const url = menuId ? `/admin/menu/${menuId}` : '/admin/menu';
+                const method = menuId ? 'POST' : 'POST';
+                
+                // Add CSRF token to headers
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast(menuId ? 'Menu updated successfully' : 'Menu created successfully');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(error.message || 'Error saving menu', 'error');
+                });
+            });
+            
+            // Search and Filter Handlers
+            const searchInput = document.getElementById('searchInput');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            function updateFilters() {
+                const search = searchInput.value;
+                const category = categoryFilter.value;
+                const status = statusFilter.value;
+                
+                let url = new URL(window.location.href);
+                url.searchParams.set('search', search);
+                url.searchParams.set('category', category);
+                url.searchParams.set('status', status);
+                
+                window.location.href = url.toString();
+            }
+            
+            searchInput.addEventListener('input', debounce(updateFilters, 500));
+            categoryFilter.addEventListener('change', updateFilters);
+            statusFilter.addEventListener('change', updateFilters);
+            
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+        });
+    </script>
 </body>
 </html>
