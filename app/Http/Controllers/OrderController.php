@@ -82,24 +82,23 @@ class OrderController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'table_number' => 'required|string|max:10',
+            'items' => 'required|array',
+            'items.*.id' => 'required|integer|exists:menu_items,id',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
-
-        // Simpan pesanan
-        $order = Order::create([
-            'customer_name' => $request->customer_name,
-            'table_number' => $request->table_number,
-            'total' => 0, // Total akan dihitung setelah menyimpan item
-            'status' => 'pending',
-        ]);
-
+    
+        DB::beginTransaction();
+    
+        try {
             $order = Order::create([
                 'customer_name' => $request->customer_name,
                 'table_number' => $request->table_number,
                 'status' => 'Pending',
                 'total_amount' => 0
             ]);
-
+    
             $totalAmount = 0;
+    
             foreach ($request->items as $item) {
                 $menuItem = MenuItem::find($item['id']);
                 $order->orderItems()->create([
@@ -109,28 +108,26 @@ class OrderController extends Controller
                 ]);
                 $totalAmount += $menuItem->price * $item['quantity'];
             }
-
-            $order->update(['total_amount' => $totalAmount]);
-
+    
+            // Hitung pajak dan biaya layanan
+            $tax = $totalAmount * 0.1;
+            $service = $totalAmount * 0.05;
+            $total = $totalAmount + $tax + $service;
+    
+            // Update total pada order
+            $order->update(['total_amount' => $total]);
+    
             DB::commit();
-
+    
             return redirect()->route('orders.success', $order)
                 ->with('success', 'Order has been placed successfully!');
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to place order. Please try again.');
         }
-
-        // Hitung pajak dan biaya layanan
-        $tax = $subtotal * 0.1;
-        $service = $subtotal * 0.05;
-        $total = $subtotal + $tax + $service;
-
-        // Update total pada order
-        $order->update(['total' => $total]);
-
-        return response()->json(['success' => true, 'message' => 'Pesanan berhasil ditempatkan']);
     }
+    
 
     /**
      * Update the specified resource in storage.
