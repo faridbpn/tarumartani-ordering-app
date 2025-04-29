@@ -83,6 +83,9 @@ class OrderController extends Controller
             'customer_name' => 'required|string|max:255',
             'table_number' => 'required|string|max:10',
         ]);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('menus', 'public');
+        }
 
         DB::beginTransaction();
         try {
