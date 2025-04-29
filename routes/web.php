@@ -41,7 +41,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Order Management
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::get('/orders/archive', [OrderController::class, 'arsip'])->name('orders.arsip');
+    Route::get('/orders/archive', [OrderController::class, 'archive'])->name('orders.arsip');
+    
 
 
 
