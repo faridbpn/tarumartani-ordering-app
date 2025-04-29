@@ -24,7 +24,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             CategorySeeder::class,
-            MenuSeeder::class
+            MenuSeeder::class,
+            OrderSeeder::class
         ]);
     }
 }

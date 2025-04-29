@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('status')->default('pending');
             $table->decimal('total_amount', 10, 2)->default(0); // ini cukup
+            $table->json('items')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

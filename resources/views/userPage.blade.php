@@ -1,8 +1,24 @@
-@extends('layouts.user')
-
-@section('title', 'Menu')
-
-@section('content')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>User Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
         <!-- Categories -->
         <div class="mb-8">
@@ -109,199 +125,195 @@
             </form>
         </div>
     </div>
-        <!-- Success/Failure Modal -->
-        <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                <h2 class="text-2xl font-bold mb-4" id="resultModalTitle"></h2>
-                <p id="resultModalMessage" class="mb-4"></p>
-                <div class="flex justify-end">
-                    <button id="closeResultModalBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">OK</button>
-                </div>
+
+    <!-- Success/Failure Modal -->
+    <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-4" id="resultModalTitle"></h2>
+            <p id="resultModalMessage" class="mb-4"></p>
+            <div class="flex justify-end">
+                <button id="closeResultModalBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">OK</button>
             </div>
         </div>
-@endsection
+    </div>
 
-@section('scripts')
-<script>
-    let cart = [];
+    <script>
+        let cart = [];
 
-    // Category filtering
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('bg-blue-500', 'text-white'));
-            this.classList.add('bg-blue-500', 'text-white');
+        // Setup CSRF token for all AJAX requests
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-            const category = this.dataset.category;
-            document.querySelectorAll('.food-card').forEach(card => {
-                card.style.display = category === 'all' || card.dataset.category === category ? 'block' : 'none';
+        // Category filtering
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('bg-blue-500', 'text-white'));
+                this.classList.add('bg-blue-500', 'text-white');
+
+                const category = this.dataset.category;
+                document.querySelectorAll('.food-card').forEach(card => {
+                    card.style.display = category === 'all' || card.dataset.category === category ? 'block' : 'none';
+                });
             });
         });
-    });
 
-    // Add to cart functionality
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.dataset.id;
-            const itemName = this.dataset.name;
-            const itemPrice = parseFloat(this.dataset.price);
+        // Add to cart functionality
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.dataset.id;
+                const itemName = this.dataset.name;
+                const itemPrice = parseFloat(this.dataset.price);
 
-            const existingItem = cart.find(item => item.id === itemId);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: itemId,
-                    name: itemName,
-                    price: itemPrice,
-                    quantity: 1
-                });
-            }
+                const existingItem = cart.find(item => item.id === itemId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id: itemId,
+                        name: itemName,
+                        price: itemPrice,
+                        quantity: 1
+                    });
+                }
 
-            updateCart();
+                updateCart();
+            });
         });
-    });
 
-    // Update cart UI
-    function updateCart() {
-        const orderItemsContainer = document.getElementById('order-items');
-        const checkoutBtn = document.getElementById('checkout-btn');
+        // Update cart UI
+        function updateCart() {
+            const orderItemsContainer = document.getElementById('order-items');
+            const checkoutBtn = document.getElementById('checkout-btn');
 
-        if (cart.length === 0) {
-            orderItemsContainer.innerHTML = `
-                <div class="text-center text-gray-500 py-8">
-                    <i class="fas fa-shopping-cart text-4xl mb-2 text-gray-300"></i>
-                    <p>Your cart is empty</p>
-                </div>
-            `;
-            checkoutBtn.disabled = true;
-        } else {
-            orderItemsContainer.innerHTML = '';
-            cart.forEach((item, index) => {
-                const itemEl = document.createElement('div');
-                itemEl.className = 'order-item flex items-center justify-between p-3 rounded-lg transition-colors';
-                itemEl.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div>
-                            <h4 class="font-medium">${item.name}</h4>
-                            <p class="text-sm text-gray-500">Rp ${item.price.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="decrease">
-                            <i class="fas fa-minus text-xs"></i>
-                        </button>
-                        <span class="font-medium">${item.quantity}</span>
-                        <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="increase">
-                            <i class="fas fa-plus text-xs"></i>
-                        </button>
-                        <button class="remove-btn text-red-500 hover:text-red-600 ml-2" data-index="${index}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+            if (cart.length === 0) {
+                orderItemsContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-shopping-cart text-4xl mb-2 text-gray-300"></i>
+                        <p>Your cart is empty</p>
                     </div>
                 `;
-                orderItemsContainer.appendChild(itemEl);
-            });
-            checkoutBtn.disabled = false;
-        }
-
-        // Calculate totals
-        const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1;
-        const service = subtotal * 0.05;
-        const total = subtotal + tax + service;
-
-        document.getElementById('subtotal').textContent = `Rp ${subtotal.toLocaleString()}`;
-        document.getElementById('tax').textContent = `Rp ${tax.toLocaleString()}`;
-        document.getElementById('service').textContent = `Rp ${service.toLocaleString()}`;
-        document.getElementById('total').textContent = `Rp ${total.toLocaleString()}`;
-
-        // Update cart items for checkout
-        document.getElementById('cart_items').value = JSON.stringify(cart);
-    }
-
-    // Handle quantity changes and item removal
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.quantity-btn')) {
-            const btn = e.target.closest('.quantity-btn');
-            const index = btn.dataset.index;
-            const action = btn.dataset.action;
-
-            if (action === 'increase') {
-                cart[index].quantity += 1;
-            } else if (action === 'decrease') {
-                if (cart[index].quantity > 1) {
-                    cart[index].quantity -= 1;
-                } else {
-                    cart.splice(index, 1);
-                }
+                checkoutBtn.disabled = true;
+            } else {
+                orderItemsContainer.innerHTML = '';
+                cart.forEach((item, index) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'order-item flex items-center justify-between p-3 rounded-lg transition-colors';
+                    itemEl.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div>
+                                <h4 class="font-medium">${item.name}</h4>
+                                <p class="text-sm text-gray-500">Rp ${item.price.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="decrease">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <span class="font-medium">${item.quantity}</span>
+                            <button class="quantity-btn text-gray-500 hover:text-blue-500 w-6 h-6 rounded-full flex items-center justify-center" data-index="${index}" data-action="increase">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                            <button class="remove-btn text-red-500 hover:text-red-600 ml-2" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    orderItemsContainer.appendChild(itemEl);
+                });
+                checkoutBtn.disabled = false;
             }
-            updateCart();
+
+            // Calculate totals
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.1;
+            const service = subtotal * 0.05;
+            const total = subtotal + tax + service;
+
+            document.getElementById('subtotal').textContent = `Rp ${subtotal.toLocaleString()}`;
+            document.getElementById('tax').textContent = `Rp ${tax.toLocaleString()}`;
+            document.getElementById('service').textContent = `Rp ${service.toLocaleString()}`;
+            document.getElementById('total').textContent = `Rp ${total.toLocaleString()}`;
+
+            // Update cart items for checkout
+            document.getElementById('cart_items').value = JSON.stringify(cart);
         }
 
-        if (e.target.closest('.remove-btn')) {
-            const index = e.target.closest('.remove-btn').dataset.index;
-            cart.splice(index, 1);
-            updateCart();
+        // Handle quantity changes and item removal
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.quantity-btn')) {
+                const btn = e.target.closest('.quantity-btn');
+                const index = btn.dataset.index;
+                const action = btn.dataset.action;
+
+                if (action === 'increase') {
+                    cart[index].quantity += 1;
+                } else if (action === 'decrease') {
+                    if (cart[index].quantity > 1) {
+                        cart[index].quantity -= 1;
+                    } else {
+                        cart.splice(index, 1);
+                    }
+                }
+                updateCart();
+            }
+
+            if (e.target.closest('.remove-btn')) {
+                const index = e.target.closest('.remove-btn').dataset.index;
+                cart.splice(index, 1);
+                updateCart();
+            }
+        });
+
+        // Checkout button
+        document.getElementById('checkout-btn').addEventListener('click', function() {
+            openCheckoutModal();
+        });
+
+        function openCheckoutModal() {
+            document.getElementById('checkoutModal').classList.remove('hidden');
+            document.getElementById('checkoutModal').classList.add('flex');
         }
-    });
 
-    // Checkout button
-    document.getElementById('checkout-btn').addEventListener('click', function() {
-        openCheckoutModal();
-    });
-
-    function openCheckoutModal() {
-        document.getElementById('checkoutModal').classList.remove('hidden');
-        document.getElementById('checkoutModal').classList.add('flex');
-    }
-
-    function closeCheckoutModal() {
-        document.getElementById('checkoutModal').classList.remove('flex');
-        document.getElementById('checkoutModal').classList.add('hidden');
-    }
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.remove('flex');
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
 
         // Handle form submission
-$('#checkoutForm').submit(function(e) {
-    e.preventDefault(); // Mencegah form submit langsung
+        $('#checkoutForm').submit(function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const formData = form.serialize();
+            const url = form.attr('action');
 
-    const form = $(this);
-    const formData = form.serialize(); // Ambil data form
-    const url = form.attr('action'); // Ambil URL dari form (route orders.store)
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: formData,
+                success: function(response) {
+                    closeCheckoutModal();
+                    $('#resultModalTitle').text('Pesanan Berhasil!');
+                    $('#resultModalMessage').text('Pesanan Anda telah berhasil ditempatkan.');
+                    $('#resultModal').removeClass('hidden').addClass('flex');
+                },
+                error: function(xhr) {
+                    console.log('Error Status:', xhr.status);
+                    console.log('Error Response:', xhr.responseText);
+                    closeCheckoutModal();
+                    $('#resultModalTitle').text('Pesanan Gagal!');
+                    $('#resultModalMessage').text('Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.');
+                    $('#resultModal').removeClass('hidden').addClass('flex');
+                }
+            });
+        });
 
-    // Kirim data ke server menggunakan AJAX
-    $.ajax({
-        type: 'POST',
-        url: url,
-        data: formData,
-        success: function(response) {
-            // Tutup modal checkout
-            closeCheckoutModal();
-
-            // Tampilkan pop-up sukses
-            $('#resultModalTitle').text('Pesanan Berhasil!');
-            $('#resultModalMessage').text('Pesanan Anda telah berhasil ditempatkan.');
-            $('#resultModal').removeClass('hidden').addClass('flex');
-
-            // Redirect ke halaman orders setelah 2 detik
-            setTimeout(function() {
-                window.location.href = "{{ route('orders.index') }}"; // Redirect ke halaman orders
-            }, 2000);
-        },
-        error: function(xhr) {
-            // Tutup modal checkout
-            closeCheckoutModal();
-
-            // Tampilkan pop-up gagal
-            $('#resultModalTitle').text('Pesanan Gagal!');
-            $('#resultModalMessage').text('Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.');
-            $('#resultModal').removeClass('hidden').addClass('flex');
-        }
-    });
-});
-
-// Tutup modal hasil
-$('#closeResultModalBtn').click(function() {
-    $('#resultModal').removeClass('flex').addClass('hidden');
-});
-</script>
-@endsection
+        // Close result modal
+        $('#closeResultModalBtn').click(function() {
+            $('#resultModal').removeClass('flex').addClass('hidden');
+        });
+    </script>
+</body>
+</html>

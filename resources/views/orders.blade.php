@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    @vite([])
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders - FoodExpress Admin</title>
@@ -9,77 +8,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8fafc;
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-        }
-        
-        .sidebar {
-            transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .active-nav {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left: 4px solid white;
-        }
-        
-        .order-card {
-            transition: all 0.2s ease;
-        }
-        
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-        }
-        
-        .order-item {
-            border-bottom: 1px dashed #e5e7eb;
-            padding: 0.5rem 0;
-        }
-        
-        .order-item:last-child {
-            border-bottom: none;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
+        .gradient-bg { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); }
+        .sidebar { transition: all 0.3s ease; }
+        .order-card { transition: all 0.2s ease; cursor: pointer; }
+        .order-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+        .status-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; }
+        .order-item { border-bottom: 1px dashed #e5e7eb; padding: 0.5rem 0; }
+        .order-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
+    
     <!-- Sidebar -->
     @include('layouts.app')
 
-    <!-- Mobile sidebar toggle -->
-    <div class="md:hidden fixed bottom-4 right-4 z-50">
-        <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
-            <i class="fas fa-bars text-xl"></i>
-        </button>
-    </div>
-    
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
+        
         <!-- Topbar -->
         <header class="bg-white shadow-sm p-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <button class="md:hidden text-gray-500">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
                 <h2 class="text-xl font-bold text-gray-800">Orders Management</h2>
             </div>
-            
             <div class="flex items-center space-x-4">
                 <div class="relative">
                     <i class="fas fa-bell text-xl text-gray-500"></i>
@@ -91,17 +42,18 @@
                 </div>
             </div>
         </header>
-        
+
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-4 bg-gray-50">
-            <!-- Filters and Actions -->
-            <div class="bg-white rounded-xl shadow p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <main class="flex-1 overflow-y-auto p-6 bg-[#f6f8fb]">
+            <!-- Filters -->
+            <div class="bg-white rounded-2xl shadow p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                    <div class="relative w-full md:w-64">
-                        <input type="text" id="searchInput" placeholder="Search orders..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="relative w-full md:w-72">
+                        <input type="text" id="searchInput" placeholder="Search orders..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[#f6f8fb]">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
-                    <select id="statusFilter" class="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="statusFilter" class="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[#f6f8fb]">
                         <option value="All">All Status</option>
                         <option value="Completed">Completed</option>
                         <option value="Processing">Processing</option>
@@ -110,124 +62,111 @@
                         <option value="Pending">Pending</option>
                     </select>
                 </div>
-                <div class="flex gap-2 w-full md:w-auto">
-                    <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                        <i class="fas fa-filter mr-2"></i> Filter
-                    </button>
-                    <button class="px-4 py-2 gradient-bg text-white hover:opacity-90 rounded-lg transition-all">
-                        <i class="fas fa-plus mr-2"></i> New Order
-                    </button>
-                </div>
             </div>
-            
-            <!-- Order Cards Grid -->
+
+            <!-- Order List -->
             @if ($orders->isEmpty())
-                <div class="bg-white rounded-xl shadow p-6 text-center">
+                <div class="bg-white rounded-2xl shadow p-8 text-center">
                     <i class="fas fa-shopping-cart text-4xl text-gray-400 mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-800">No Orders Found</h3>
                     <p class="text-gray-500">There are currently no orders to display.</p>
                 </div>
             @else
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="space-y-4">
                     @foreach ($orders as $order)
-                        <div class="order-card bg-white rounded-xl shadow overflow-hidden" 
-                             data-status="{{ $order->status }}"
-                             data-search="{{ strtolower($order->id . ' ' . $order->customer_name . ' ' . implode(' ', array_column($order->items->toArray(), 'name'))) }}">
-                            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                                <span class="font-medium">#{{ $order->id }}</span>
-                                <span class="text-xs text-gray-500">{{ $order->created_at->diffForHumans() }}</span>
+                    <div class="order-card bg-white rounded-2xl shadow-md border border-gray-100 p-6" 
+                         data-status="{{ $order->status }}" 
+                         data-search="{{ $order->customer_name }} {{ $order->id }} @foreach($order->orderItems as $item) {{ $item->menuItem->name }} @endforeach">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">#ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    @if(now()->diffInMinutes($order->created_at) < 60)
+                                        {{ now()->diffInMinutes($order->created_at) }} min ago
+                                    @elseif(now()->diffInHours($order->created_at) < 24)
+                                        {{ now()->diffInHours($order->created_at) }} hour{{ now()->diffInHours($order->created_at) > 1 ? 's' : '' }} ago
+                                    @else
+                                        {{ now()->diffInDays($order->created_at) }} day{{ now()->diffInDays($order->created_at) > 1 ? 's' : '' }} ago
+                                    @endif
+                                </p>
                             </div>
-                            <div class="p-4">
-                                <div class="flex items-center mb-3">
-                                    <img src="https://randomuser.me/api/portraits/{{ rand(0,1) ? 'men' : 'women' }}/{{ rand(1,99) }}.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-3">
-                                    <div>
-                                        <p class="font-medium">{{ $order->customer_name }}</p>
-                                        <p class="text-xs text-gray-500">{{ $order->items->count() }} items • ${{ number_format($order->total, 2) }}</p>
-                                    </div>
-                                </div>
-                                
-                                <!-- Order Items -->
-                                <div class="mb-3">
-                                    @foreach ($order->items as $item)
-                                        <div class="order-item flex justify-between">
-                                            <span>{{ $item->name }}</span>
-                                            <span class="font-medium">{{ $item->quantity }} × ${{ number_format($item->price, 2) }}</span>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                
-                                <!-- Total and Status -->
-                                <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Total</p>
-                                        <p class="font-bold">${{ number_format($order->total, 2) }}</p>
-                                    </div>
-                                    <span class="status-badge {{ $order->status == 'Completed' ? 'bg-green-100 text-green-800' : ($order->status == 'Processing' ? 'bg-yellow-100 text-yellow-800' : ($order->status == 'On Delivery' ? 'bg-blue-100 text-blue-800' : ($order->status == 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'))) }}">
-                                        {{ $order->status }}
-                                    </span>
-                                </div>
-                            </div>
+                            <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST" class="flex items-center gap-2">
+                                @csrf
+                                @method('PUT')
+                                <select name="status" onchange="this.form.submit()" 
+                                    class="status-badge px-3 py-1 rounded-lg text-sm font-medium
+                                    @if($order->status == 'Completed') bg-green-100 text-green-700
+                                    @elseif($order->status == 'Processing') bg-yellow-100 text-yellow-700
+                                    @elseif($order->status == 'On Delivery') bg-blue-100 text-blue-700
+                                    @elseif($order->status == 'Cancelled') bg-red-100 text-red-700
+                                    @else bg-purple-100 text-purple-700 @endif">
+                                    <option value="Pending" {{ $order->status == 'Pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="Processing" {{ $order->status == 'Processing' ? 'selected' : '' }}>Processing</option>
+                                    <option value="On Delivery" {{ $order->status == 'On Delivery' ? 'selected' : '' }}>On Delivery</option>
+                                    <option value="Completed" {{ $order->status == 'Completed' ? 'selected' : '' }}>Completed</option>
+                                    <option value="Cancelled" {{ $order->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                </select>
+                            </form>
                         </div>
+
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-800">{{ $order->customer_name }}</h4>
+                            <p class="text-sm text-gray-500">{{ $order->orderItems->sum('quantity') }} items - ${{ number_format($order->total_amount, 2) }}</p>
+                        </div>
+
+                        <div class="space-y-2 mb-4">
+                            @foreach($order->orderItems as $orderItem)
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">{{ $orderItem->menuItem->name }}</span>
+                                <span class="text-gray-700">{{ $orderItem->quantity }} x ${{ number_format($orderItem->price, 2) }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <div class="flex justify-between border-t border-gray-100 pt-4">
+                            <span class="font-medium text-gray-500">Total</span>
+                            <span class="font-bold text-gray-800">${{ number_format($order->total_amount, 2) }}</span>
+                        </div>
+                    </div>
                     @endforeach
-                </div>
-                
-                <!-- Pagination -->
-                <div class="mt-6 flex justify-center">
-                    {{ $orders->links('pagination::tailwind') }}
                 </div>
             @endif
         </main>
     </div>
 
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Mobile sidebar toggle
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            const sidebar = document.querySelector('.sidebar');
-            
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('hidden');
-                sidebar.classList.toggle('fixed');
-                sidebar.classList.toggle('inset-0');
-                sidebar.classList.toggle('z-40');
-            });
-
-            // Status filter and search
-            const statusFilter = document.getElementById('statusFilter');
-            const searchInput = document.getElementById('searchInput');
-            const orderCards = document.querySelectorAll('.order-card');
-            const noOrdersMessage = document.querySelector('.no-orders-message');
-
-            function filterCards() {
-                const selectedStatus = statusFilter.value;
-                const searchTerm = searchInput.value.toLowerCase();
-                let visibleCards = 0;
-
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const orderCards = document.querySelectorAll('.order-card');
+                
                 orderCards.forEach(card => {
-                    const cardStatus = card.getAttribute('data-status');
-                    const cardSearchData = card.getAttribute('data-search');
-
-                    const statusMatch = selectedStatus === 'All' || cardStatus === selectedStatus;
-                    const searchMatch = !searchTerm || cardSearchData.includes(searchTerm);
-
-                    if (statusMatch && searchMatch) {
+                    const cardText = card.dataset.search.toLowerCase();
+                    if (cardText.includes(searchTerm)) {
                         card.style.display = 'block';
-                        visibleCards++;
                     } else {
                         card.style.display = 'none';
                     }
                 });
+            });
 
-                // Show "No orders found" message if no cards are visible
-                if (noOrdersMessage) {
-                    noOrdersMessage.style.display = visibleCards === 0 && orderCards.length > 0 ? 'block' : 'none';
-                }
-            }
-
-            statusFilter.addEventListener('change', filterCards);
-            searchInput.addEventListener('input', filterCards);
+            // Status filter functionality
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                const status = this.value;
+                const orderCards = document.querySelectorAll('.order-card');
+                
+                orderCards.forEach(card => {
+                    const cardStatus = card.dataset.status;
+                    if (status === 'All' || cardStatus === status) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
         });
     </script>
-    
 </body>
 </html>
