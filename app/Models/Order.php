@@ -15,7 +15,9 @@ class Order extends Model
         'total_amount',
         'archived_at',
         'archive_reason',
-        'archive_status'
+        'archive_status',
+        'customer_name',
+        'table_number'
     ];
     
     protected $casts = [

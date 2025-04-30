@@ -122,7 +122,9 @@
 
                         <div class="mb-4">
                             <h4 class="font-medium text-gray-800">{{ $order->customer_name }}</h4>
-                            <p class="text-sm text-gray-500">{{ $order->items->sum('quantity') }} items - ${{ number_format($order->total_amount, 2) }}</p>
+                            <p class="text-sm text-gray-500">
+                                Table #{{ $order->table_number }} - {{ $order->items->sum('quantity') }} items - ${{ number_format($order->total_amount, 2) }}
+                            </p>
                         </div>
 
                         <div class="space-y-2 mb-4">
