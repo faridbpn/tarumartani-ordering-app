@@ -366,6 +366,92 @@
     </div>
 
     <script>
+        // Modal elements
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        const orderDetailsContent = document.getElementById('orderDetailsContent');
+        
+        // Toggle modal function
+        function toggleModal(modal, show) {
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+        
+        // Show order details
+        function showOrderDetails(orderId) {
+        fetch(`/admin/orders/${orderId}/details`)
+            .then(response => {
+                if (!response.ok) throw new Error("HTTP error " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                let html = `
+            <div class="space-y-6 p-4">
+                <div class="bg-white rounded-2xl shadow p-4">
+                    <h4 class="text-lg font-semibold mb-2">📦 Order Info</h4>
+                    <div class="text-sm space-y-1 text-gray-700">
+                        <p><strong>ID:</strong> #${data.id}</p>
+                        <p><strong>Customer:</strong> ${data.customer_name}</p>
+                        <p><strong>Table:</strong> ${data.table_number}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="inline-block px-2 py-1 rounded-full text-white text-xs ${
+                                data.status === 'completed' ? 'bg-green-500' :
+                                data.status === 'pending' ? 'bg-yellow-500' :
+                                'bg-gray-500'
+                            }">${data.status}</span>
+                        </p>
+                        <p><strong>Date:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow p-4">
+                    <h4 class="text-lg font-semibold mb-2">🍽️ Order Items</h4>
+                    <table class="w-full text-sm text-left text-gray-700">
+                        <thead class="text-xs text-gray-500 uppercase border-b">
+                            <tr>
+                                <th class="py-2">Item</th>
+                                <th class="py-2">Qty</th>
+                                <th class="py-2">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.items.map(item => `
+                                <tr class="border-b last:border-0">
+                                    <td class="py-2">${item.menu_item.name}</td>
+                                    <td class="py-2">${item.quantity}</td>
+                                    <td class="py-2">Rp ${item.subtotal.toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end bg-white rounded-2xl shadow p-4">
+                    <h4 class="text-xl font-bold text-gray-800">
+                        💰 Total: <span class="text-green-600">Rp ${data.total_amount.toLocaleString()}</span>
+                    </h4>
+                </div>
+            </div>
+        `;
+
+                
+                orderDetailsContent.innerHTML = html;
+                toggleModal(orderDetailsModal, true);
+            })
+            .catch(error => {
+                console.error('Error fetching order details:', error);
+                orderDetailsContent.innerHTML = '<p class="text-red-500">Error loading order details. Please try again.</p>';
+                toggleModal(orderDetailsModal, true);
+            });
+        }
+        
+        // Close order details
+        function closeOrderDetails() {
+            toggleModal(orderDetailsModal, false);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile sidebar toggle
             const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -425,57 +511,6 @@
                     }
                 });
             });
-            
-            // Modal elements
-            const orderDetailsModal = document.getElementById('orderDetailsModal');
-            const orderDetailsContent = document.getElementById('orderDetailsContent');
-            
-            // Toggle modal function
-            function toggleModal(modal, show) {
-                if (show) {
-                    modal.classList.remove('hidden');
-                } else {
-                    modal.classList.add('hidden');
-                }
-            }
-            
-            // Show order details
-            function showOrderDetails(orderId) {
-                fetch(`/orders/${orderId}/details`)
-                    .then(response => response.json())
-                    .then(data => {
-                        let html = `
-                            <div class="space-y-4">
-                                <div>
-                                    <h4 class="font-semibold">Order ID: ${data.id}</h4>
-                                    <p>Customer: ${data.customer_name}</p>
-                                    <p>Table: ${data.table_number}</p>
-                                    <p>Status: ${data.status}</p>
-                                    <p>Date: ${new Date(data.created_at).toLocaleString()}</p>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold">Order Items:</h4>
-                                    <ul class="list-disc pl-4">
-                                        ${data.items.map(item => `
-                                            <li>${item.menu_item.name} x ${item.quantity} - Rp ${item.subtotal.toLocaleString()}</li>
-                                        `).join('')}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold">Total Amount: Rp ${data.total_amount.toLocaleString()}</h4>
-                                </div>
-                            </div>
-                        `;
-                        
-                        orderDetailsContent.innerHTML = html;
-                        toggleModal(orderDetailsModal, true);
-                    });
-            }
-            
-            // Close order details
-            function closeOrderDetails() {
-                toggleModal(orderDetailsModal, false);
-            }
         });
     </script>
 </body>
