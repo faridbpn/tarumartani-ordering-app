@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +26,7 @@
         .card-hover:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .active-nav {
@@ -41,6 +41,24 @@
         
         .order-row:hover {
             background-color: #f1f5f9;
+        }
+
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal-content {
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -81,30 +99,13 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-4 bg-gray-50">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-xl shadow p-6 card-hover transition-all">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Total Orders -->
+                <div class="bg-white rounded-xl shadow p-6 card-hover transition-all" onclick="showOrderHistoryModal()">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-500">Total Revenue</p>
-                            <h3 class="text-2xl font-bold">$12,345</h3>
-                            <p class="text-sm text-green-500 mt-1">
-                                <i class="fas fa-arrow-up mr-1"></i> 12% from last month
-                            </p>
-                        </div>
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                            <i class="fas fa-dollar-sign text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-xl shadow p-6 card-hover transition-all">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500">Total Orders</p>
-                            <h3 class="text-2xl font-bold">1,234</h3>
-                            <p class="text-sm text-green-500 mt-1">
-                                <i class="fas fa-arrow-up mr-1"></i> 8% from last month
-                            </p>
+                            <p class="text-gray-500">Total Orders (This Month)</p>
+                            <h3 class="text-2xl font-bold">{{ $totalOrders }}</h3>
                         </div>
                         <div class="p-3 rounded-full bg-purple-100 text-purple-600">
                             <i class="fas fa-shopping-cart text-xl"></i>
@@ -112,29 +113,28 @@
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow p-6 card-hover transition-all">
+                <!-- Monthly Favorite Menu -->
+                <div class="bg-white rounded-xl shadow p-6 card-hover transition-all" onclick="showFavoriteMenuHistoryModal()">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-500">Active Customers</p>
-                            <h3 class="text-2xl font-bold">856</h3>
+                            <p class="text-gray-500">Monthly Favorite Menu</p>
+                            <h3 class="text-2xl font-bold">{{ $favoriteMenu ? $favoriteMenu->name : 'N/A' }}</h3>
                             <p class="text-sm text-green-500 mt-1">
-                                <i class="fas fa-arrow-up mr-1"></i> 5% from last month
+                                Ordered {{ $favoriteMenuCount }} times
                             </p>
                         </div>
                         <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <i class="fas fa-users text-xl"></i>
+                            <i class="fas fa-star text-xl"></i>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Menu Items -->
                 <div class="bg-white rounded-xl shadow p-6 card-hover transition-all">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500">Menu Items</p>
-                            <h3 class="text-2xl font-bold">48</h3>
-                            <p class="text-sm text-red-500 mt-1">
-                                <i class="fas fa-arrow-down mr-1"></i> 2% from last month
-                            </p>
+                            <h3 class="text-2xl font-bold">{{ $totalMenuItems }}</h3>
                         </div>
                         <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
                             <i class="fas fa-utensils text-xl"></i>
@@ -145,38 +145,78 @@
             
             <!-- Charts Row -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <!-- Revenue Chart -->
+                <!-- Total Orders Chart -->
                 <div class="bg-white rounded-xl shadow p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg">Revenue Overview</h3>
-                        <select class="bg-gray-100 border-0 rounded-lg px-3 py-1 text-sm">
-                            <option>Last 7 Days</option>
-                            <option>Last 30 Days</option>
-                            <option selected>Last 90 Days</option>
-                        </select>
+                        <h3 class="font-bold text-lg">Total Orders</h3>
+                        <form id="filterForm" method="GET" action="{{ route('admin.dashboard') }}">
+                            <select name="filter" onchange="this.form.submit()" class="bg-gray-100 border-0 rounded-lg px-3 py-1 text-sm">
+                                <option value="daily" {{ $filter == 'daily' ? 'selected' : '' }}>Today</option>
+                                <option value="last30days" {{ $filter == 'last30days' ? 'selected' : '' }}>Last 30 Days</option>
+                                <option value="last90days" {{ $filter == 'last90days' ? 'selected' : '' }}>Last 90 Days</option>
+                            </select>
+                        </form>
                     </div>
                     <div class="chart-container">
-                        <canvas id="revenueChart"></canvas>
+                        <canvas id="ordersChart"></canvas>
                     </div>
                 </div>
                 
-                <!-- Order Types Chart -->
+                <!-- Top 3 Favorite Menus Chart -->
                 <div class="bg-white rounded-xl shadow p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg">Order Types</h3>
-                        <select class="bg-gray-100 border-0 rounded-lg px-3 py-1 text-sm">
-                            <option>Last 7 Days</option>
-                            <option>Last 30 Days</option>
-                            <option selected>Last 90 Days</option>
-                        </select>
+                        <h3 class="font-bold text-lg">Top 3 Favorite Menus (All Time)</h3>
                     </div>
                     <div class="chart-container">
-                        <canvas id="orderTypesChart"></canvas>
+                        <canvas id="topMenusChart"></canvas>
                     </div>
                 </div>
             </div>
             
-            <!-- Recent Orders -->
+            <!-- Order History Modal -->
+            <div id="orderHistoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <h3 class="text-lg font-semibold">Order History (Per Month)</h3>
+                        <button onclick="closeOrderHistoryModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-4 max-h-96 overflow-y-auto">
+                        @foreach ($orderHistory as $history)
+                            <div class="flex justify-between py-2 border-b">
+                                <span>{{ $history['month'] }}</span>
+                                <span class="font-medium">{{ $history['total'] }} orders</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Favorite Menu History Modal -->
+            <div id="favoriteMenuHistoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <h3 class="text-lg font-semibold">Favorite Menu History (Per Month)</h3>
+                        <button onclick="closeFavoriteMenuHistoryModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-4 max-h-96 overflow-y-auto">
+                        @foreach ($favoriteMenuHistory as $history)
+                            <div class="py-2 border-b">
+                                <div class="flex justify-between">
+                                    <span>{{ $history['month'] }}</span>
+                                    <span class="font-medium">{{ $history['menu_name'] }}</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Ordered {{ $history['order_count'] }} times</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders (Biarkan seperti adanya) -->
             <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex justify-between items-center">
@@ -186,201 +226,7 @@
                         </button>
                     </div>
                 </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50 text-gray-500 text-left">
-                            <tr>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Order ID</th>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Items</th>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr class="order-row hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">#ORD-78945</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Customer" class="w-8 h-8 rounded-full mr-2">
-                                        <span>John Smith</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">3</td>
-                                <td class="px-6 py-4 whitespace-nowrap">$28.97</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">10 min ago</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <button class="text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr class="order-row hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">#ORD-78944</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Customer" class="w-8 h-8 rounded-full mr-2">
-                                        <span>Sarah Johnson</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">5</td>
-                                <td class="px-6 py-4 whitespace-nowrap">$45.50</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Processing</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">25 min ago</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <button class="text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr class="order-row hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">#ORD-78943</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Customer" class="w-8 h-8 rounded-full mr-2">
-                                        <span>Michael Brown</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">2</td>
-                                <td class="px-6 py-4 whitespace-nowrap">$18.99</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">On Delivery</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">1 hour ago</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <button class="text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr class="order-row hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">#ORD-78942</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <img src="https://randomuser.me/api/portraits/women/63.jpg" alt="Customer" class="w-8 h-8 rounded-full mr-2">
-                                        <span>Emily Davis</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">4</td>
-                                <td class="px-6 py-4 whitespace-nowrap">$36.75</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Cancelled</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">2 hours ago</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <button class="text-blue-600 hover:text-blue-800">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Popular Items -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="font-bold text-lg">Popular Menu Items</h3>
-                    </div>
-                    <div class="divide-y divide-gray-200">
-                        <div class="p-4 flex items-center">
-                            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" 
-                                 alt="Classic Burger" class="w-16 h-16 rounded-lg object-cover">
-                            <div class="ml-4 flex-1">
-                                <h4 class="font-medium">Classic Burger</h4>
-                                <p class="text-sm text-gray-500">Food • 320 orders</p>
-                            </div>
-                            <span class="text-blue-600 font-medium">$8.99</span>
-                        </div>
-                        <div class="p-4 flex items-center">
-                            <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" 
-                                 alt="Iced Coffee" class="w-16 h-16 rounded-lg object-cover">
-                            <div class="ml-4 flex-1">
-                                <h4 class="font-medium">Iced Coffee</h4>
-                                <p class="text-sm text-gray-500">Drink • 280 orders</p>
-                            </div>
-                            <span class="text-blue-600 font-medium">$3.99</span>
-                        </div>
-                        <div class="p-4 flex items-center">
-                            <img src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" 
-                                 alt="Margherita Pizza" class="w-16 h-16 rounded-lg object-cover">
-                            <div class="ml-4 flex-1">
-                                <h4 class="font-medium">Margherita Pizza</h4>
-                                <p class="text-sm text-gray-500">Food • 245 orders</p>
-                            </div>
-                            <span class="text-blue-600 font-medium">$12.99</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-xl shadow overflow-hidden">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="font-bold text-lg">Recent Reviews</h3>
-                    </div>
-                    <div class="divide-y divide-gray-200">
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <img src="https://randomuser.me/api/portraits/women/12.jpg" alt="User" class="w-8 h-8 rounded-full mr-2">
-                                    <span class="font-medium">Lisa Ray</span>
-                                </div>
-                                <div class="flex items-center text-yellow-400">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                            <p class="mt-2 text-gray-600">"The burger was amazing! Will definitely order again."</p>
-                            <p class="text-xs text-gray-400 mt-2">2 hours ago • Classic Burger</p>
-                        </div>
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="User" class="w-8 h-8 rounded-full mr-2">
-                                    <span class="font-medium">David Miller</span>
-                                </div>
-                                <div class="flex items-center text-yellow-400">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="far fa-star"></i>
-                                </div>
-                            </div>
-                            <p class="mt-2 text-gray-600">"Pizza was good but delivery took longer than expected."</p>
-                            <p class="text-xs text-gray-400 mt-2">5 hours ago • Margherita Pizza</p>
-                        </div>
-                        <div class="p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="User" class="w-8 h-8 rounded-full mr-2">
-                                    <span class="font-medium">Sophia Wilson</span>
-                                </div>
-                                <div class="flex items-center text-yellow-400">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                </div>
-                            </div>
-                            <p class="mt-2 text-gray-600">"Love the iced coffee, perfect for hot days!"</p>
-                            <p class="text-xs text-gray-400 mt-2">1 day ago • Iced Coffee</p>
-                        </div>
-                    </div>
-                </div>
+                <!-- ... (Bagian ini tetap menggunakan data dummy, Anda bisa mengupdate sesuai kebutuhan) -->
             </div>
         </main>
     </div>
@@ -401,15 +247,15 @@
                 sidebar.classList.toggle('z-40');
             });
             
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            const revenueChart = new Chart(revenueCtx, {
+            // Orders Chart
+            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            const ordersChart = new Chart(ordersCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    labels: @json($labels),
                     datasets: [{
-                        label: 'Revenue',
-                        data: [4500, 5200, 4800, 5900, 6200, 7000, 7300],
+                        label: 'Total Orders',
+                        data: @json($data),
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderColor: '#3b82f6',
                         borderWidth: 2,
@@ -441,14 +287,14 @@
                 }
             });
             
-            // Order Types Chart
-            const orderTypesCtx = document.getElementById('orderTypesChart').getContext('2d');
-            const orderTypesChart = new Chart(orderTypesCtx, {
+            // Top 3 Favorite Menus Chart
+            const topMenusCtx = document.getElementById('topMenusChart').getContext('2d');
+            const topMenusChart = new Chart(topMenusCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Dine-in', 'Takeaway', 'Delivery'],
+                    labels: @json($pieLabels),
                     datasets: [{
-                        data: [35, 25, 40],
+                        data: @json($pieData),
                         backgroundColor: [
                             '#3b82f6',
                             '#6366f1',
@@ -469,6 +315,27 @@
                 }
             });
         });
+
+        // Functions to handle modals
+        function showOrderHistoryModal() {
+            document.getElementById('orderHistoryModal').classList.remove('hidden');
+            document.getElementById('orderHistoryModal').classList.add('active');
+        }
+
+        function closeOrderHistoryModal() {
+            document.getElementById('orderHistoryModal').classList.remove('active');
+            document.getElementById('orderHistoryModal').classList.add('hidden');
+        }
+
+        function showFavoriteMenuHistoryModal() {
+            document.getElementById('favoriteMenuHistoryModal').classList.remove('hidden');
+            document.getElementById('favoriteMenuHistoryModal').classList.add('active');
+        }
+
+        function closeFavoriteMenuHistoryModal() {
+            document.getElementById('favoriteMenuHistoryModal').classList.remove('active');
+            document.getElementById('favoriteMenuHistoryModal').classList.add('hidden');
+        }
     </script>
 </body>
 </html>

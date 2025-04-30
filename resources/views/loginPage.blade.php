@@ -7,6 +7,7 @@
     <title>Admin Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -104,7 +105,7 @@
                         </div>
                         
                         <div class="text-sm">
-                            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+                            <a href="#" id="forgotPassword" class="font-medium text-indigo-600 hover:text-indigo-500">
                                 Forgot password?
                             </a>
                         </div>
@@ -123,7 +124,7 @@
             <div class="bg-gray-50 px-8 py-6 rounded-b-2xl">
                 <div class="text-center text-sm text-gray-500">
                     Don't have an account? 
-                    <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    <a href="https://wa.me/6281380464576" target="_blank" class="font-medium text-indigo-600 hover:text-indigo-500">
                         Contact administrator
                     </a>
                 </div>
@@ -153,6 +154,19 @@
 
             // Clear password field on page load
             passwordInput.value = '';
+
+            // SweetAlert untuk Forgot Password
+            const forgotPasswordLink = document.getElementById('forgotPassword');
+            forgotPasswordLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Lupa Password?',
+                    html: 'Password mu adalah <strong>test123</strong>',
+                    icon: 'info',
+                    confirmButtonText: 'Oke',
+                    confirmButtonColor: '#6366f1'
+                });
+            });
         });
     </script>
 </body>
