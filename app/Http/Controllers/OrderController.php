@@ -13,14 +13,14 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['orderItems.menuItem'])
+        $query = Order::with(['Items.menuItem'])
             ->orderBy('created_at', 'desc');
 
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('customer_name', 'like', "%{$search}%")
                     ->orWhere('id', 'like', "%{$search}%")
-                    ->orWhereHas('orderItems.menuItem', function ($q) use ($search) {
+                    ->orWhereHas('Items.menuItem', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
                     });
             });
@@ -140,5 +140,22 @@ class OrderController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Order status updated successfully');
+    }
+
+    // Archive 🔏
+    public function archive(Order $order, Request $request)
+    {
+        $request->validate([
+            'archive_status' => 'required|string|in:completed,canceled,failed',
+            'archive_reason' => 'required|string'
+        ]);
+
+        $order->update([
+            'archived_at' => now(),
+            'archive_status' => $request->archive_status,
+            'archive_reason' => $request->archive_reason
+        ]);
+
+        return redirect()->back()->with('success', 'Order has been archived successfully.');
     }
 }

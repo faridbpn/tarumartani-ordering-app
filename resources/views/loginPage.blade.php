@@ -54,11 +54,11 @@
                         <input 
                             type="email" 
                             name="email" 
+                            id="email"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus focus:outline-none focus:border-indigo-500 transition duration-200 placeholder-transparent form-control @error('email') is-invalid @enderror"
                             placeholder="Email Address"
                             required
                         >
-                      
                         <label for="email" class="floating-label">Email Address</label>
                         <div class="absolute right-3 top-3 text-gray-400">
                             <i class="fas fa-envelope"></i>
@@ -69,22 +69,18 @@
                             {{ $message }}
                         </div>
                         @enderror
-
                     </div>
                     
                     <div class="relative">
                         <input 
                             type="password" 
                             name="password" 
+                            id="password"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus focus:outline-none focus:border-indigo-500 transition duration-200 placeholder-transparent form-control @error('password') is-invalid @enderror"
                             placeholder="Password"
-                            value="test123"
                             required
                         >
                         <label for="password" class="floating-label">Password</label>
-                        <div class="absolute right-3 top-3 text-gray-400">
-                            <i class="fas fa-lock"></i>
-                        </div>
                         <div class="absolute right-3 top-3 text-gray-400 cursor-pointer" id="togglePassword">
                             <i class="fas fa-eye-slash"></i>
                         </div>
@@ -99,7 +95,6 @@
                         <div class="flex items-center">
                             <input 
                                 id="remember-me" 
-                                {{-- name="remember-me"  --}}
                                 type="checkbox" 
                                 class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                             >
@@ -142,7 +137,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Toggle password visibility
             const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('password');
             
@@ -156,8 +150,9 @@
                     icon.classList.replace('fa-eye', 'fa-eye-slash');
                 }
             });
-            
-           
+
+            // Clear password field on page load
+            passwordInput.value = '';
         });
     </script>
 </body>

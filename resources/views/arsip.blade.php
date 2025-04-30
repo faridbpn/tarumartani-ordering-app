@@ -240,19 +240,21 @@
             
             <!-- Grouped Orders -->
             <div class="m-4">
-                <!-- Month Group -->
+                @foreach($archivedOrders->groupBy(function($order) {
+                    return $order->archived_at->format('F Y');
+                }) as $month => $orders)
                 <div class="mb-6 bg-white rounded-xl shadow overflow-hidden">
                     <div class="collapsible active">
                         <button class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
                             <div class="flex items-center">
-                                <h3 class="font-bold text-lg">June 2023</h3>
-                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">12 orders</span>
+                                <h3 class="font-bold text-lg">{{ $month }}</h3>
+                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">{{ $orders->count() }} orders</span>
                             </div>
                             <i class="fas fa-chevron-down transition-transform duration-300 transform"></i>
                         </button>
                         
                         <div class="collapsible-content">
-                            <!-- Order 1 -->
+                            @foreach($orders as $order)
                             <div class="order-card border-b border-gray-200 last:border-b-0">
                                 <div class="p-4 flex justify-between items-center">
                                     <div class="flex items-center space-x-4">
@@ -260,14 +262,16 @@
                                             <i class="fas fa-shopping-cart text-blue-600"></i>
                                         </div>
                                         <div>
-                                            <h3 class="font-bold">Order #45892</h3>
-                                            <p class="text-sm text-gray-500">15 Jun 2023 • 12:45 PM</p>
+                                            <h3 class="font-bold">Order #{{ $order->id }}</h3>
+                                            <p class="text-sm text-gray-500">{{ $order->archived_at->format('d M Y • h:i A') }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center space-x-4">
                                         <div class="text-right">
-                                            <p class="font-bold">$45.20</p>
-                                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
+                                            <p class="font-bold">${{ number_format($order->total_amount, 2) }}</p>
+                                            <span class="status-badge {{ $order->archive_status === 'completed' ? 'bg-green-100 text-green-800' : ($order->archive_status === 'canceled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                                {{ ucfirst($order->archive_status) }}
+                                            </span>
                                         </div>
                                         <div class="dropdown relative">
                                             <button class="p-2 text-gray-500 hover:text-gray-700">
@@ -275,8 +279,15 @@
                                             </button>
                                             <div class="dropdown-content right-0 mt-1 w-40">
                                                 <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
-                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
-                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
+                                                <form action="{{ route('orders.restore', $order) }}" method="POST" class="dropdown-item text-sm">
+                                                    @csrf
+                                                    <button type="submit"><i class="fas fa-undo mr-2"></i> Restore</button>
+                                                </form>
+                                                <form action="{{ route('orders.destroy', $order) }}" method="POST" class="dropdown-item text-sm text-red-500">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"><i class="fas fa-trash mr-2"></i> Delete</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -284,226 +295,55 @@
                                 
                                 <div class="px-4 pb-4 -mt-2">
                                     <div class="flex items-center text-sm text-gray-600">
-                                        <span class="mr-4">Customer: <span class="font-medium">John Doe</span></span>
-                                        <span class="mr-4">Items: <span class="font-medium">3</span></span>
+                                        <span class="mr-4">Customer: <span class="font-medium">{{ $order->user->name }}</span></span>
+                                        <span class="mr-4">Items: <span class="font-medium">{{ $order->items->count() }}</span></span>
                                         <span>Payment: <span class="font-medium">Credit Card</span></span>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Order 2 -->
-                            <div class="order-card border-b border-gray-200 last:border-b-0">
-                                <div class="p-4 flex justify-between items-center">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="bg-red-100 p-3 rounded-lg">
-                                            <i class="fas fa-shopping-cart text-red-600"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold">Order #45891</h3>
-                                            <p class="text-sm text-gray-500">15 Jun 2023 • 10:30 AM</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-right">
-                                            <p class="font-bold">$32.50</p>
-                                            <span class="status-badge bg-red-100 text-red-800">Canceled</span>
-                                        </div>
-                                        <div class="dropdown relative">
-                                            <button class="p-2 text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <div class="dropdown-content right-0 mt-1 w-40">
-                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
-                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
-                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="px-4 pb-4 -mt-2">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <span class="mr-4">Customer: <span class="font-medium">Sarah Johnson</span></span>
-                                        <span class="mr-4">Items: <span class="font-medium">2</span></span>
-                                        <span>Payment: <span class="font-medium">PayPal</span></span>
-                                    </div>
+                                    @if($order->archive_reason)
                                     <div class="mt-1 text-sm text-gray-600">
-                                        <span>Reason: <span class="font-medium">Customer request</span></span>
+                                        <span>Reason: <span class="font-medium">{{ $order->archive_reason }}</span></span>
                                     </div>
+                                    @endif
                                 </div>
                             </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
-                
-                <!-- Month Group -->
-                <div class="mb-6 bg-white rounded-xl shadow overflow-hidden">
-                    <div class="collapsible">
-                        <button class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
-                            <div class="flex items-center">
-                                <h3 class="font-bold text-lg">May 2023</h3>
-                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">24 orders</span>
-                            </div>
-                            <i class="fas fa-chevron-down transition-transform duration-300 transform"></i>
-                        </button>
-                        
-                        <div class="collapsible-content">
-                            <!-- Order 1 -->
-                            <div class="order-card border-b border-gray-200 last:border-b-0">
-                                <div class="p-4 flex justify-between items-center">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="bg-blue-100 p-3 rounded-lg">
-                                            <i class="fas fa-shopping-cart text-blue-600"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold">Order #45785</h3>
-                                            <p class="text-sm text-gray-500">28 May 2023 • 7:15 PM</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-right">
-                                            <p class="font-bold">$78.90</p>
-                                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
-                                        </div>
-                                        <div class="dropdown relative">
-                                            <button class="p-2 text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <div class="dropdown-content right-0 mt-1 w-40">
-                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
-                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
-                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="px-4 pb-4 -mt-2">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <span class="mr-4">Customer: <span class="font-medium">Michael Brown</span></span>
-                                        <span class="mr-4">Items: <span class="font-medium">5</span></span>
-                                        <span>Payment: <span class="font-medium">Credit Card</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Order 2 -->
-                            <div class="order-card border-b border-gray-200 last:border-b-0">
-                                <div class="p-4 flex justify-between items-center">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="bg-yellow-100 p-3 rounded-lg">
-                                            <i class="fas fa-shopping-cart text-yellow-600"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold">Order #45721</h3>
-                                            <p class="text-sm text-gray-500">22 May 2023 • 5:30 PM</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-right">
-                                            <p class="font-bold">$32.50</p>
-                                            <span class="status-badge bg-yellow-100 text-yellow-800">Failed</span>
-                                        </div>
-                                        <div class="dropdown relative">
-                                            <button class="p-2 text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <div class="dropdown-content right-0 mt-1 w-40">
-                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
-                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
-                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="px-4 pb-4 -mt-2">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <span class="mr-4">Customer: <span class="font-medium">Emily Wilson</span></span>
-                                        <span class="mr-4">Items: <span class="font-medium">2</span></span>
-                                        <span>Payment: <span class="font-medium">Credit Card</span></span>
-                                    </div>
-                                    <div class="mt-1 text-sm text-gray-600">
-                                        <span>Reason: <span class="font-medium">Payment declined</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Month Group -->
-                <div class="mb-6 bg-white rounded-xl shadow overflow-hidden">
-                    <div class="collapsible">
-                        <button class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
-                            <div class="flex items-center">
-                                <h3 class="font-bold text-lg">April 2023</h3>
-                                <span class="ml-3 text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full">18 orders</span>
-                            </div>
-                            <i class="fas fa-chevron-down transition-transform duration-300 transform"></i>
-                        </button>
-                        
-                        <div class="collapsible-content">
-                            <!-- Order 1 -->
-                            <div class="order-card border-b border-gray-200 last:border-b-0">
-                                <div class="p-4 flex justify-between items-center">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="bg-blue-100 p-3 rounded-lg">
-                                            <i class="fas fa-shopping-cart text-blue-600"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold">Order #45678</h3>
-                                            <p class="text-sm text-gray-500">15 Apr 2023 • 1:20 PM</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-right">
-                                            <p class="font-bold">$62.75</p>
-                                            <span class="status-badge bg-green-100 text-green-800">Completed</span>
-                                        </div>
-                                        <div class="dropdown relative">
-                                            <button class="p-2 text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <div class="dropdown-content right-0 mt-1 w-40">
-                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
-                                                <div class="dropdown-item text-sm"><i class="fas fa-undo mr-2"></i> Restore</div>
-                                                <div class="dropdown-item text-sm text-red-500"><i class="fas fa-trash mr-2"></i> Delete</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="px-4 pb-4 -mt-2">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <span class="mr-4">Customer: <span class="font-medium">Robert Taylor</span></span>
-                                        <span class="mr-4">Items: <span class="font-medium">4</span></span>
-                                        <span>Payment: <span class="font-medium">Cash on Delivery</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
             
             <!-- Pagination -->
             <div class="m-4 flex justify-between items-center">
                 <div class="text-sm text-gray-600">
-                    Showing <span class="font-medium">1</span> to <span class="font-medium">6</span> of <span class="font-medium">54</span> orders
+                    Showing <span class="font-medium">{{ $archivedOrders->firstItem() }}</span> to <span class="font-medium">{{ $archivedOrders->lastItem() }}</span> of <span class="font-medium">{{ $archivedOrders->total() }}</span> orders
                 </div>
                 <nav class="inline-flex rounded-md shadow">
-                    <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    @if($archivedOrders->onFirstPage())
+                    <span class="px-3 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-gray-400">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                    @else
+                    <a href="{{ $archivedOrders->previousPageUrl() }}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
                         <i class="fas fa-chevron-left"></i>
                     </a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-blue-600 font-medium">1</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">2</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">3</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">4</a>
-                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">5</a>
-                    <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    @endif
+
+                    @foreach(range(1, $archivedOrders->lastPage()) as $page)
+                    <a href="{{ $archivedOrders->url($page) }}" class="px-4 py-2 border-t border-b border-gray-300 bg-white {{ $archivedOrders->currentPage() === $page ? 'text-blue-600 font-medium' : 'text-gray-500 hover:bg-gray-50' }}">
+                        {{ $page }}
+                    </a>
+                    @endforeach
+
+                    @if($archivedOrders->hasMorePages())
+                    <a href="{{ $archivedOrders->nextPageUrl() }}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
                         <i class="fas fa-chevron-right"></i>
                     </a>
+                    @else
+                    <span class="px-3 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-gray-400">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                    @endif
                 </nav>
             </div>
         </main>
@@ -581,9 +421,18 @@
                     this.classList.add('tab-active');
                     this.classList.remove('text-gray-500');
                     
-                    // In a real app, you would filter orders here based on the tab
+                    // Filter orders based on the tab
                     const tab = this.getAttribute('data-tab');
-                    console.log('Switched to tab:', tab);
+                    const orders = document.querySelectorAll('.order-card');
+                    
+                    orders.forEach(order => {
+                        const status = order.querySelector('.status-badge').textContent.toLowerCase();
+                        if (tab === 'all' || status === tab) {
+                            order.style.display = 'block';
+                        } else {
+                            order.style.display = 'none';
+                        }
+                    });
                 });
             });
             
@@ -614,15 +463,6 @@
             const closeDeletePermanentModalBtns = [document.getElementById('close-delete-permanent-modal'), document.getElementById('cancel-delete-permanent-btn')];
             const confirmRestoreBtn = document.getElementById('confirm-restore-btn');
             const confirmDeletePermanentBtn = document.getElementById('confirm-delete-permanent-btn');
-            
-            // Sample data for demonstration
-            let archiveOrders = [
-                { id: 1, orderNumber: '#45892', date: '15 Jun 2023', status: 'completed', amount: 45.20, customer: 'John Doe', items: 3, payment: 'Credit Card' },
-                { id: 2, orderNumber: '#45891', date: '15 Jun 2023', status: 'canceled', amount: 32.50, customer: 'Sarah Johnson', items: 2, payment: 'PayPal', reason: 'Customer request' },
-                { id: 3, orderNumber: '#45785', date: '28 May 2023', status: 'completed', amount: 78.90, customer: 'Michael Brown', items: 5, payment: 'Credit Card' },
-                { id: 4, orderNumber: '#45721', date: '22 May 2023', status: 'failed', amount: 32.50, customer: 'Emily Wilson', items: 2, payment: 'Credit Card', reason: 'Payment declined' },
-                { id: 5, orderNumber: '#45678', date: '15 Apr 2023', status: 'completed', amount: 62.75, customer: 'Robert Taylor', items: 4, payment: 'Cash on Delivery' }
-            ];
             
             // Toggle modal function
             function toggleModal(modal, show) {
@@ -673,25 +513,15 @@
             // Confirm restore
             confirmRestoreBtn.addEventListener('click', function() {
                 const orderId = document.getElementById('restore-item-id').value;
-                
-                // In a real app, you would send restore request to server here
-                alert(`Order #${orderId} restored successfully!`);
-                toggleModal(restoreModal, false);
-                
-                // Remove from archive list (in a real app, you would refresh the list)
-                archiveOrders = archiveOrders.filter(order => order.orderNumber !== `#${orderId}`);
+                const form = document.querySelector(`form[action*="/orders/${orderId}/restore"]`);
+                form.submit();
             });
             
             // Confirm permanent delete
             confirmDeletePermanentBtn.addEventListener('click', function() {
                 const orderId = document.getElementById('delete-permanent-item-id').value;
-                
-                // In a real app, you would send delete request to server here
-                alert(`Order #${orderId} permanently deleted!`);
-                toggleModal(deletePermanentModal, false);
-                
-                // Remove from archive list (in a real app, you would refresh the list)
-                archiveOrders = archiveOrders.filter(order => order.orderNumber !== `#${orderId}`);
+                const form = document.querySelector(`form[action*="/orders/${orderId}/destroy"]`);
+                form.submit();
             });
         });
     </script>

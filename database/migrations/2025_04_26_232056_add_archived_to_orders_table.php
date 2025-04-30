@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            //
+            $table->timestamp('archived_at')->nullable();
+            $table->string('archive_reason')->nullable();
+            $table->string('archive_status')->nullable();
         });
     }
 
@@ -22,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            //
+            $table->dropColumn(['archived_at', 'archive_reason', 'archive_status']);
         });
     }
 };

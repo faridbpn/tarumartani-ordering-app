@@ -76,7 +76,7 @@
                     @foreach ($orders as $order)
                     <div class="order-card bg-white rounded-2xl shadow-md border border-gray-100 p-6" 
                          data-status="{{ $order->status }}" 
-                         data-search="{{ $order->customer_name }} {{ $order->id }} @foreach($order->orderItems as $item) {{ $item->menuItem->name }} @endforeach">
+                         data-search="{{ $order->customer_name }} {{ $order->id }} @foreach($order->items as $item) {{ $item->menuItem->name }} @endforeach">
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800">#ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h3>
@@ -90,32 +90,43 @@
                                     @endif
                                 </p>
                             </div>
-                            <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST" class="flex items-center gap-2">
-                                @csrf
-                                @method('PUT')
-                                <select name="status" onchange="this.form.submit()" 
-                                    class="status-badge px-3 py-1 rounded-lg text-sm font-medium
-                                    @if($order->status == 'Completed') bg-green-100 text-green-700
-                                    @elseif($order->status == 'Processing') bg-yellow-100 text-yellow-700
-                                    @elseif($order->status == 'On Delivery') bg-blue-100 text-blue-700
-                                    @elseif($order->status == 'Cancelled') bg-red-100 text-red-700
-                                    @else bg-purple-100 text-purple-700 @endif">
-                                    <option value="Pending" {{ $order->status == 'Pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="Processing" {{ $order->status == 'Processing' ? 'selected' : '' }}>Processing</option>
-                                    <option value="On Delivery" {{ $order->status == 'On Delivery' ? 'selected' : '' }}>On Delivery</option>
-                                    <option value="Completed" {{ $order->status == 'Completed' ? 'selected' : '' }}>Completed</option>
-                                    <option value="Cancelled" {{ $order->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                </select>
-                            </form>
+                            <div class="flex items-center gap-2">
+                                <!-- Status update form -->
+                                <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST" class="flex items-center gap-2">
+                                    @csrf
+                                    @method('PUT')
+                                    <select name="status" onchange="this.form.submit()" 
+                                        class="status-badge px-3 py-1 rounded-lg text-sm font-medium
+                                        @if($order->status == 'Completed') bg-green-100 text-green-700
+                                        @elseif($order->status == 'Processing') bg-yellow-100 text-yellow-700
+                                        @elseif($order->status == 'On Delivery') bg-blue-100 text-blue-700
+                                        @elseif($order->status == 'Cancelled') bg-red-100 text-red-700
+                                        @else bg-purple-100 text-purple-700 @endif">
+                                        <option value="Pending" {{ $order->status == 'Pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="Processing" {{ $order->status == 'Processing' ? 'selected' : '' }}>Processing</option>
+                                        <option value="On Delivery" {{ $order->status == 'On Delivery' ? 'selected' : '' }}>On Delivery</option>
+                                        <option value="Completed" {{ $order->status == 'Completed' ? 'selected' : '' }}>Completed</option>
+                                        <option value="Cancelled" {{ $order->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    </select>
+                                </form>
+
+                                <!-- Archive button form -->
+                                <form action="{{ route('orders.archive', $order->id) }}" method="POST" class="archive-form ml-2">
+                                    @csrf
+                                    <input type="hidden" name="archive_status" value="completed">
+                                    <input type="hidden" name="archive_reason" value="Selesai disajikan">
+                                    <button type="button" class="btn-archive bg-yellow-500 text-white px-2 py-1 rounded">Arsipkan</button>
+                                </form>
+                            </div>
                         </div>
 
                         <div class="mb-4">
                             <h4 class="font-medium text-gray-800">{{ $order->customer_name }}</h4>
-                            <p class="text-sm text-gray-500">{{ $order->orderItems->sum('quantity') }} items - ${{ number_format($order->total_amount, 2) }}</p>
+                            <p class="text-sm text-gray-500">{{ $order->items->sum('quantity') }} items - ${{ number_format($order->total_amount, 2) }}</p>
                         </div>
 
                         <div class="space-y-2 mb-4">
-                            @foreach($order->orderItems as $orderItem)
+                            @foreach($order->items as $orderItem)
                             <div class="flex justify-between">
                                 <span class="text-gray-700">{{ $orderItem->menuItem->name }}</span>
                                 <span class="text-gray-700">{{ $orderItem->quantity }} x ${{ number_format($orderItem->price, 2) }}</span>
@@ -163,6 +174,15 @@
                         card.style.display = 'block';
                     } else {
                         card.style.display = 'none';
+                    }
+                });
+            });
+
+            // Archive confirmation
+            document.querySelectorAll('.btn-archive').forEach(button => {
+                button.addEventListener('click', function () {
+                    if (confirm('Yakin ingin mengarsipkan pesanan ini ke riwayat arsip?')) {
+                        this.closest('form').submit();
                     }
                 });
             });
