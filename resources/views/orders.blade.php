@@ -113,7 +113,6 @@
                                 <!-- Archive button form -->
                                 <form action="{{ route('orders.archive', $order->id) }}" method="POST" class="archive-form ml-2">
                                     @csrf
-                                    <input type="hidden" name="archive_status" value="completed">
                                     <input type="hidden" name="archive_reason" value="Selesai disajikan">
                                     <button type="button" class="btn-archive bg-yellow-500 text-white px-2 py-1 rounded">Arsipkan</button>
                                 </form>

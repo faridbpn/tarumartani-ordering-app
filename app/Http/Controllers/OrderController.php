@@ -14,6 +14,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $query = Order::with(['Items.menuItem'])
+            ->whereNull('archived_at')
             ->orderBy('created_at', 'desc');
 
         if ($search = $request->query('search')) {
@@ -32,13 +33,13 @@ class OrderController extends Controller
             }
         }
 
-        $orders = $query->get(); // Changed from paginate() to get()
+        $orders = $query->get();
 
-        $totalOrders = Order::count();
-        $newOrders = Order::where('status', 'Pending')->count();
-        $processingOrders = Order::where('status', 'Processing')->count();
-        $completedOrders = Order::where('status', 'Completed')->count();
-        $totalRevenue = Order::where('status', 'Completed')->sum('total_amount');
+        $totalOrders = Order::whereNull('archived_at')->count();
+        $newOrders = Order::where('status', 'Pending')->whereNull('archived_at')->count();
+        $processingOrders = Order::where('status', 'Processing')->whereNull('archived_at')->count();
+        $completedOrders = Order::where('status', 'Completed')->whereNull('archived_at')->count();
+        $totalRevenue = Order::where('status', 'Completed')->whereNull('archived_at')->sum('total_amount');
 
         return view('orders', compact(
             'orders', 'totalOrders', 'newOrders', 'processingOrders', 'completedOrders', 'totalRevenue'
@@ -146,16 +147,42 @@ class OrderController extends Controller
     public function archive(Order $order, Request $request)
     {
         $request->validate([
-            'archive_status' => 'required|string|in:completed,canceled,failed',
             'archive_reason' => 'required|string'
         ]);
 
         $order->update([
             'archived_at' => now(),
-            'archive_status' => $request->archive_status,
+            'archive_status' => strtolower($order->status),
             'archive_reason' => $request->archive_reason
         ]);
 
         return redirect()->back()->with('success', 'Order has been archived successfully.');
+    }
+
+    public function deleteArchive(Order $order)
+    {
+        $order->delete();
+        return redirect()->back()->with('success', 'Archived order has been deleted successfully.');
+    }
+
+    public function showDetails(Order $order)
+    {
+        return response()->json([
+            'id' => $order->id,
+            'customer_name' => $order->customer_name,
+            'table_number' => $order->table_number,
+            'status' => $order->status,
+            'created_at' => $order->created_at,
+            'total_amount' => $order->total_amount,
+            'items' => $order->Items->map(function ($item) {
+                return [
+                    'menu_item' => [
+                        'name' => $item->menuItem->name,
+                    ],
+                    'quantity' => $item->quantity,
+                    'subtotal' => $item->subtotal
+                ];
+            })
+        ]);
     }
 }

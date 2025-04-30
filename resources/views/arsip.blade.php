@@ -273,22 +273,23 @@
                                                 {{ ucfirst($order->archive_status) }}
                                             </span>
                                         </div>
-                                        <div class="dropdown relative">
-                                            <button class="p-2 text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-ellipsis-v"></i>
+                                        <div class="flex space-x-2">
+                                            <button onclick="showOrderDetails({{ $order->id }})" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                                <i class="fas fa-eye"></i>
                                             </button>
-                                            <div class="dropdown-content right-0 mt-1 w-40">
-                                                <div class="dropdown-item text-sm"><i class="fas fa-eye mr-2"></i> View</div>
-                                                <form action="{{ route('orders.restore', $order) }}" method="POST" class="dropdown-item text-sm">
-                                                    @csrf
-                                                    <button type="submit"><i class="fas fa-undo mr-2"></i> Restore</button>
-                                                </form>
-                                                <form action="{{ route('orders.destroy', $order) }}" method="POST" class="dropdown-item text-sm text-red-500">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"><i class="fas fa-trash mr-2"></i> Delete</button>
-                                                </form>
-                                            </div>
+                                            <form action="{{ route('orders.restore', $order) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="return confirm('Are you sure you want to delete this order?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -349,46 +350,17 @@
         </main>
     </div>
 
-    <!-- Restore Confirmation Modal -->
-    <div id="restore-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 invisible">
-        <div class="modal-content bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold">Confirm Restoration</h3>
-                <button id="close-restore-modal" class="text-gray-500 hover:text-gray-700">
+    <!-- Modal for Order Details -->
+    <div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Order Details</h3>
+                <button onclick="closeOrderDetails()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
-            <div class="p-4">
-                <p class="mb-4">Are you sure you want to restore this order? It will be moved back to the active orders list.</p>
-                <input type="hidden" id="restore-item-id">
-                
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                    <button type="button" id="cancel-restore-btn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-                    <button type="button" id="confirm-restore-btn" class="px-4 py-2 gradient-bg text-white rounded-lg hover:opacity-90">Restore</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Permanent Delete Confirmation Modal -->
-    <div id="delete-permanent-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 invisible">
-        <div class="modal-content bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold">Confirm Permanent Deletion</h3>
-                <button id="close-delete-permanent-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="p-4">
-                <p class="mb-4">Are you sure you want to permanently delete this order? This action cannot be undone and all data will be lost.</p>
-                <input type="hidden" id="delete-permanent-item-id">
-                
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                    <button type="button" id="cancel-delete-permanent-btn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-                    <button type="button" id="confirm-delete-permanent-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete Permanently</button>
-                </div>
+            <div id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
             </div>
         </div>
     </div>
@@ -455,74 +427,55 @@
             });
             
             // Modal elements
-            const restoreModal = document.getElementById('restore-modal');
-            const deletePermanentModal = document.getElementById('delete-permanent-modal');
-            const restoreBtns = document.querySelectorAll('.dropdown-item:nth-child(2)'); // Restore buttons in dropdown
-            const deletePermanentBtns = document.querySelectorAll('.dropdown-item:nth-child(3)'); // Delete buttons in dropdown
-            const closeRestoreModalBtns = [document.getElementById('close-restore-modal'), document.getElementById('cancel-restore-btn')];
-            const closeDeletePermanentModalBtns = [document.getElementById('close-delete-permanent-modal'), document.getElementById('cancel-delete-permanent-btn')];
-            const confirmRestoreBtn = document.getElementById('confirm-restore-btn');
-            const confirmDeletePermanentBtn = document.getElementById('confirm-delete-permanent-btn');
+            const orderDetailsModal = document.getElementById('orderDetailsModal');
+            const orderDetailsContent = document.getElementById('orderDetailsContent');
             
             // Toggle modal function
             function toggleModal(modal, show) {
                 if (show) {
-                    modal.classList.remove('opacity-0', 'invisible');
-                    modal.classList.add('active');
+                    modal.classList.remove('hidden');
                 } else {
-                    modal.classList.remove('active');
-                    setTimeout(() => {
-                        modal.classList.add('opacity-0', 'invisible');
-                    }, 300);
+                    modal.classList.add('hidden');
                 }
             }
             
-            // Restore order
-            restoreBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const orderId = this.closest('.order-card').querySelector('h3').textContent.split('#')[1];
-                    document.getElementById('restore-item-id').value = orderId;
-                    toggleModal(restoreModal, true);
-                });
-            });
+            // Show order details
+            function showOrderDetails(orderId) {
+                fetch(`/orders/${orderId}/details`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = `
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold">Order ID: ${data.id}</h4>
+                                    <p>Customer: ${data.customer_name}</p>
+                                    <p>Table: ${data.table_number}</p>
+                                    <p>Status: ${data.status}</p>
+                                    <p>Date: ${new Date(data.created_at).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold">Order Items:</h4>
+                                    <ul class="list-disc pl-4">
+                                        ${data.items.map(item => `
+                                            <li>${item.menu_item.name} x ${item.quantity} - Rp ${item.subtotal.toLocaleString()}</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold">Total Amount: Rp ${data.total_amount.toLocaleString()}</h4>
+                                </div>
+                            </div>
+                        `;
+                        
+                        orderDetailsContent.innerHTML = html;
+                        toggleModal(orderDetailsModal, true);
+                    });
+            }
             
-            // Delete permanent
-            deletePermanentBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const orderId = this.closest('.order-card').querySelector('h3').textContent.split('#')[1];
-                    document.getElementById('delete-permanent-item-id').value = orderId;
-                    toggleModal(deletePermanentModal, true);
-                });
-            });
-            
-            // Close modals
-            closeRestoreModalBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    toggleModal(restoreModal, false);
-                });
-            });
-            
-            closeDeletePermanentModalBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    toggleModal(deletePermanentModal, false);
-                });
-            });
-            
-            // Confirm restore
-            confirmRestoreBtn.addEventListener('click', function() {
-                const orderId = document.getElementById('restore-item-id').value;
-                const form = document.querySelector(`form[action*="/orders/${orderId}/restore"]`);
-                form.submit();
-            });
-            
-            // Confirm permanent delete
-            confirmDeletePermanentBtn.addEventListener('click', function() {
-                const orderId = document.getElementById('delete-permanent-item-id').value;
-                const form = document.querySelector(`form[action*="/orders/${orderId}/destroy"]`);
-                form.submit();
-            });
+            // Close order details
+            function closeOrderDetails() {
+                toggleModal(orderDetailsModal, false);
+            }
         });
     </script>
 </body>

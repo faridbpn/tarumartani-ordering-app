@@ -43,10 +43,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('/orders/{order}/details', [OrderController::class, 'showDetails'])->name('orders.details');
 
     // Archive routes
     Route::get('/arsip', [OrderArchiveController::class, 'index'])->name('arsip.index');
-    Route::post('/orders/{order}/archive', [OrderArchiveController::class, 'archive'])->name('orders.archive');
+    Route::post('/orders/{order}/archive', [OrderController::class, 'archive'])->name('orders.archive');
+    Route::delete('/orders/{order}/archive', [OrderController::class, 'deleteArchive'])->name('orders.deleteArchive');
     Route::post('/orders/{order}/restore', [OrderArchiveController::class, 'restore'])->name('orders.restore');
     Route::delete('/orders/{order}/destroy', [OrderArchiveController::class, 'destroy'])->name('orders.destroy');
 });
