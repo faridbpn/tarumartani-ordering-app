@@ -103,12 +103,6 @@
                                 Remember me
                             </label>
                         </div>
-                        
-                        <div class="text-sm">
-                            <a href="#" id="forgotPassword" class="font-medium text-indigo-600 hover:text-indigo-500">
-                                Forgot password?
-                            </a>
-                        </div>
                     </div>
                     
                     <button 
@@ -154,19 +148,6 @@
 
             // Clear password field on page load
             passwordInput.value = '';
-
-            // SweetAlert untuk Forgot Password
-            const forgotPasswordLink = document.getElementById('forgotPassword');
-            forgotPasswordLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                Swal.fire({
-                    title: 'Lupa Password?',
-                    html: 'Password mu adalah <strong>test123</strong>',
-                    icon: 'info',
-                    confirmButtonText: 'Oke',
-                    confirmButtonColor: '#6366f1'
-                });
-            });
         });
     </script>
 </body>
