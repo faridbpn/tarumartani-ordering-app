@@ -6,6 +6,7 @@
     <title>Orders - FoodExpress Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
@@ -16,6 +17,63 @@
         .status-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; }
         .order-item { border-bottom: 1px dashed #e5e7eb; padding: 0.5rem 0; }
         .order-item:last-child { border-bottom: none; }
+
+        /* Kustomisasi SweetAlert2 */
+    .swal2-popup {
+        border-radius: 10px !important;
+        padding: 20px !important;
+    }
+    .swal2-title {
+        font-size: 24px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+    }
+    .swal2-content {
+        font-size: 16px !important;
+        color: #666 !important;
+    }
+    .swal2-confirm {
+        border-radius: 5px !important;
+        padding: 10px 20px !important;
+    }
+    .swal2-cancel {
+        border-radius: 5px !important;
+        padding: 10px 20px !important;
+    }
+
+    /* Modal Animation */
+#deleteConfirmationModal .transform {
+    transition: transform 0.3s ease;
+}
+
+#deleteConfirmationModal.active {
+    display: flex;
+}
+
+#deleteConfirmationModal.active .transform {
+    transform: scale(1);
+}
+
+/* Modal Styling */
+#deleteConfirmationModal .bg-white {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Icon Animation */
+#deleteConfirmationModal .bg-red-100 {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Button Hover Effects */
+#deleteConfirmationModal button {
+    transition: background-color 0.3s ease;
+}
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
@@ -146,48 +204,87 @@
         </main>
     </div>
 
-    <!-- Scripts -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Search functionality
-            document.getElementById('searchInput').addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const orderCards = document.querySelectorAll('.order-card');
-                
-                orderCards.forEach(card => {
-                    const cardText = card.dataset.search.toLowerCase();
-                    if (cardText.includes(searchTerm)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
+    <!-- Modal for Delete Confirmation -->
+<div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 text-center transform scale-95 transition-transform duration-300">
+        <div class="flex justify-center mb-4">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Apakah Anda yakin ingin menghapus order ini?</h3>
+        <p class="text-sm text-gray-600 mb-4" id="deleteOrderId"></p>
+        <div class="flex justify-center space-x-3">
+            <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">Hapus</button>
+            <button onclick="closeDeleteConfirmation()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">Batal</button>
+        </div>
+    </div>
+</div>
 
-            // Status filter functionality
-            document.getElementById('statusFilter').addEventListener('change', function() {
-                const status = this.value;
-                const orderCards = document.querySelectorAll('.order-card');
-                
-                orderCards.forEach(card => {
-                    const cardStatus = card.dataset.status;
-                    if (status === 'All' || cardStatus === status) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+<!-- Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const orderCards = document.querySelectorAll('.order-card');
+            
+            orderCards.forEach(card => {
+                const cardText = card.dataset.search.toLowerCase();
+                if (cardText.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
             });
+        });
 
-            // Archive confirmation
-            document.querySelectorAll('.btn-archive').forEach(button => {
-                button.addEventListener('click', function () {
-                    if (confirm('Yakin ingin mengarsipkan pesanan ini ke riwayat arsip?')) {
+        // Status filter functionality
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            const status = this.value;
+            const orderCards = document.querySelectorAll('.order-card');
+            
+            orderCards.forEach(card => {
+                const cardStatus = card.dataset.status;
+                if (status === 'All' || cardStatus === status) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Archive confirmation dengan SweetAlert2
+        document.querySelectorAll('.btn-archive').forEach(button => {
+            button.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'Konfirmasi',
+                    text: 'Yakin ingin mengarsipkan pesanan ini ke riwayat arsip?',
+                    icon: 'question', // Ikon tanda tanya untuk konfirmasi
+                    showCancelButton: true,
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#6f42c1', // Warna ungu seperti SweetAlert2
+                    cancelButtonColor: '#d3d3d3', // Warna abu-abu untuk tombol Cancel
+                    background: '#fff', // Latar belakang putih
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Submit form untuk mengarsipkan pesanan
                         this.closest('form').submit();
+                        // Tampilkan notifikasi sukses setelah arsip
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Pesanan telah diarsipkan.',
+                            icon: 'success', // Ikon centang hijau
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#6f42c1'
+                        });
                     }
                 });
             });
         });
-    </script>
+    });
+</script>
+
 </body>
 </html>

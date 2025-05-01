@@ -4,17 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderArchiveController extends Controller
 {
     public function index()
     {
-        $archivedOrders = Order::whereNotNull('archived_at')
+        $archivedOrders = Order::with(['items.menuItem', 'user'])
+            ->whereNotNull('archived_at')
             ->orderBy('archived_at', 'desc')
-            ->with(['user', 'items.menuItem'])
             ->paginate(10);
 
         return view('arsip', compact('archivedOrders'));
+    }
+
+    public function export()
+    {
+            $data = Order::whereNotNull('archived_at')
+                ->orderBy('archived_at', 'desc')
+                ->with(['user', 'items.menuItem'])
+                ->get();
+    
+            $pdf = Pdf::loadView('pdf.arcive', compact('data'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('margin-top', 20);
+            $pdf->setOption('margin-bottom', 20);
+            $pdf->setOption('margin-left', 20);
+            $pdf->setOption('margin-right', 20);
+        
+            return $pdf->download('arsip-orders.pdf');
     }
 
     public function archive(Order $order, Request $request)

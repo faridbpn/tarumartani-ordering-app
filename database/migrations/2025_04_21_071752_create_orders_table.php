@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**`
+    /**
      * Run the migrations.
      */
     public function up(): void
@@ -15,8 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('status')->default('pending');
-            $table->decimal('total_amount', 10, 2)->default(0); // ini cukup
-            $table->json('items')->nullable();
+            $table->decimal('total_amount', 10, 2)->default(0.00);
+            $table->string('customer_name')->nullable();
+            $table->integer('table_number')->nullable();
+            $table->timestamp('archived_at')->nullable();
+            $table->string('archive_reason', 225)->nullable();
+            $table->string('archive_status', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
