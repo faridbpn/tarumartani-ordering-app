@@ -44,3 +44,4 @@ class Order extends Model
         return $query->whereNull('archived_at');
     }
 }
+
