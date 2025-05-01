@@ -306,6 +306,19 @@
     </div>
     
     <script>
+
+// Mobile sidebar toggle
+const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('fixed');
+                sidebar.classList.toggle('inset-0');
+                sidebar.classList.toggle('z-40');
+            });
+
+
         document.addEventListener('DOMContentLoaded', function() {
             const menuModal = document.getElementById('menuModal');
             const deleteModal = document.getElementById('deleteModal');

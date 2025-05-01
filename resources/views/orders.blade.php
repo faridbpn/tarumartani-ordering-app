@@ -11,12 +11,50 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
         .gradient-bg { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); }
-        .sidebar { transition: all 0.3s ease; }
+        .sidebar { 
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+        .sidebar.active {
+            transform: translateX(0);
+        }
         .order-card { transition: all 0.2s ease; cursor: pointer; }
         .order-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
         .status-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; }
         .order-item { border-bottom: 1px dashed #e5e7eb; padding: 0.5rem 0; }
         .order-item:last-child { border-bottom: none; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                bottom: 0;
+                width: 80%;
+                max-width: 300px;
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
 
         /* Kustomisasi SweetAlert2 */
     .swal2-popup {
@@ -81,12 +119,18 @@
     <!-- Sidebar -->
     @include('layouts.app')
 
+        <!-- Mobile sidebar toggle -->
+        <div class="md:hidden fixed bottom-4 right-4 z-50">
+            <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        
         <!-- Topbar -->
         <header class="bg-white shadow-sm p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4">   
                 <h2 class="text-xl font-bold text-gray-800">Orders Management</h2>
             </div>
             <div class="flex items-center space-x-4">
@@ -223,7 +267,43 @@
 
 <!-- Scripts -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+         document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
+const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('fixed');
+                sidebar.classList.toggle('inset-0');
+                sidebar.classList.toggle('z-40');
+            });
+            
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('text-gray-500');
+                    });
+                    this.classList.add('tab-active');
+                    this.classList.remove('text-gray-500');
+                    
+                    const tab = this.getAttribute('data-tab');
+                    const orders = document.querySelectorAll('.order-card');
+                    
+                    orders.forEach(order => {
+                        if (tab === 'all' || order.dataset.status === tab) {
+                            order.style.display = 'block';
+                        } else {
+                            order.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
@@ -257,7 +337,7 @@
         // Archive confirmation dengan SweetAlert2
         document.querySelectorAll('.btn-archive').forEach(button => {
             button.addEventListener('click', function () {
-                Swal.fire({
+                Swal.fire({ 
                     title: 'Konfirmasi',
                     text: 'Yakin ingin mengarsipkan pesanan ini ke riwayat arsip?',
                     icon: 'question', // Ikon tanda tanya untuk konfirmasi
