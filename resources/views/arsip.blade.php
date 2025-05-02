@@ -241,21 +241,21 @@
                 
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        <button class="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <button id="sortButton" class="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
                             <i class="fas fa-sort text-gray-500"></i>
                             <span>Sort By</span>
                             <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                         </button>
                         
-                        <div class="dropdown-content mt-1 p-2 w-48">
-                            <div class="dropdown-item text-sm">Newest First</div>
-                            <div class="dropdown-item text-sm">Oldest First</div>
-                            <div class="dropdown-item text-sm">Highest Amount</div>
-                            <div class="dropdown-item text-sm">Lowest Amount</div>
+                        <div id="sortDropdown" class="hidden absolute right-0 mt-1 p-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                            <button class="sort-option w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded" data-sort="newest">Newest First</button>
+                            <button class="sort-option w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded" data-sort="oldest">Oldest First</button>
+                            <button class="sort-option w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded" data-sort="highest">Highest Amount</button>
+                            <button class="sort-option w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded" data-sort="lowest">Lowest Amount</button>
                         </div>
                     </div>
                     
-                    <a href="{{ route('arsip.export') }}" class="px-4 py-2 gradient-bg text-white rounded-lg hover:opacity-90">
+                    <a href="{{ route('arsip.export', request()->query()) }}" class="px-4 py-2 gradient-bg text-white rounded-lg hover:opacity-90">
                         <i class="fas fa-file-export mr-2"></i> Export PDF
                     </a>
                 </div>
@@ -263,6 +263,30 @@
             
             <!-- Grouped Orders -->
             <div class="m-4">
+                @if($archivedOrders->isEmpty())
+                <div class="bg-white rounded-xl shadow p-8 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-inbox text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No Orders Found</h3>
+                    <p class="text-gray-500">
+                        @if(request()->get('tab') && request()->get('tab') !== 'all')
+                            No {{ request()->get('tab') }} orders found.
+                        @elseif(request()->get('date_range'))
+                            No orders found for the selected date range.
+                        @elseif(request()->get('search'))
+                            No orders match your search "{{ request()->get('search') }}".
+                        @else
+                            There are no archived orders yet.
+                        @endif
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ route('arsip.index') }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                            <i class="fas fa-arrow-left mr-1"></i> Clear all filters
+                        </a>
+                    </div>
+                </div>
+                @else
                 @foreach($archivedOrders->groupBy(function($order) {
                     return $order->archived_at->format('F Y');
                 }) as $month => $orders)
@@ -345,9 +369,11 @@
                     </div>
                 </div>
                 @endforeach
+                @endif
             </div>
             
             <!-- Pagination -->
+            @if(!$archivedOrders->isEmpty())
             <div class="m-4 flex justify-between items-center">
                 <div class="text-sm text-gray-600">
                     Showing <span class="font-medium">{{ $archivedOrders->firstItem() }}</span> to <span class="font-medium">{{ $archivedOrders->lastItem() }}</span> of <span class="font-medium">{{ $archivedOrders->total() }}</span> orders
@@ -380,6 +406,7 @@
                     @endif
                 </nav>
             </div>
+            @endif
         </main>
     </div>
 
@@ -428,6 +455,31 @@
                 sidebar.classList.toggle('z-40');
             });
             
+            // Sort dropdown functionality
+            const sortButton = document.getElementById('sortButton');
+            const sortDropdown = document.getElementById('sortDropdown');
+            let isSortDropdownOpen = false;
+
+            sortButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isSortDropdownOpen = !isSortDropdownOpen;
+                sortDropdown.classList.toggle('hidden');
+                // Close filter dropdown if open
+                if (!filterDropdown.classList.contains('hidden')) {
+                    filterDropdown.classList.add('hidden');
+                    isFilterDropdownOpen = false;
+                }
+            });
+
+            // Sort options functionality
+            document.querySelectorAll('.sort-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const url = new URL(window.location);
+                    url.searchParams.set('sort', this.dataset.sort);
+                    window.location.href = url;
+                });
+            });
+
             // Filter dropdown functionality
             const filterButton = document.getElementById('filterButton');
             const filterDropdown = document.getElementById('filterDropdown');
@@ -435,18 +487,26 @@
             const applyFilters = document.getElementById('applyFilters');
             let isFilterDropdownOpen = false;
 
-            // Toggle filter dropdown
             filterButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 isFilterDropdownOpen = !isFilterDropdownOpen;
                 filterDropdown.classList.toggle('hidden');
+                // Close sort dropdown if open
+                if (!sortDropdown.classList.contains('hidden')) {
+                    sortDropdown.classList.add('hidden');
+                    isSortDropdownOpen = false;
+                }
             });
 
-            // Close dropdown when clicking outside
+            // Close dropdowns when clicking outside
             document.addEventListener('click', function(e) {
                 if (!filterDropdown.contains(e.target) && !filterButton.contains(e.target)) {
                     filterDropdown.classList.add('hidden');
                     isFilterDropdownOpen = false;
+                }
+                if (!sortDropdown.contains(e.target) && !sortButton.contains(e.target)) {
+                    sortDropdown.classList.add('hidden');
+                    isSortDropdownOpen = false;
                 }
             });
 
@@ -455,6 +515,8 @@
                 const url = new URL(window.location);
                 url.searchParams.delete('date_range');
                 url.searchParams.delete('payment_method');
+                url.searchParams.delete('search');
+                url.searchParams.delete('sort');
                 window.location.href = url;
             });
 
@@ -493,18 +555,17 @@
                     this.classList.add('tab-active');
                     this.classList.remove('text-gray-500');
 
-                    // Update URL with tab parameter
+                    // Update URL with tab parameter and maintain other filters
                     const url = new URL(window.location);
                     url.searchParams.set('tab', this.dataset.tab);
-                    window.history.pushState({}, '', url);
-
-                    // Reload page with new tab
                     window.location.href = url;
                 });
             });
 
-            // Set active tab based on URL parameter
+            // Set active states based on URL parameters
             const urlParams = new URLSearchParams(window.location.search);
+            
+            // Set active tab
             const activeTab = urlParams.get('tab') || 'all';
             const activeTabButton = document.querySelector(`[data-tab="${activeTab}"]`);
             if (activeTabButton) {
@@ -512,7 +573,16 @@
                 activeTabButton.classList.remove('text-gray-500');
             }
 
-            // Set active filters based on URL parameters
+            // Set active sort
+            const activeSort = urlParams.get('sort');
+            if (activeSort) {
+                const activeSortOption = document.querySelector(`[data-sort="${activeSort}"]`);
+                if (activeSortOption) {
+                    sortButton.querySelector('span').textContent = activeSortOption.textContent;
+                }
+            }
+
+            // Set active filters
             const activeDateRange = urlParams.get('date_range');
             const activePaymentMethod = urlParams.get('payment_method');
             
@@ -528,6 +598,11 @@
             const searchInput = document.querySelector('input[placeholder="Search orders..."]');
             let searchTimeout;
             if (searchInput) {
+                const searchQuery = urlParams.get('search');
+                if (searchQuery) {
+                    searchInput.value = searchQuery;
+                }
+
                 searchInput.addEventListener('input', function() {
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(() => {
@@ -540,12 +615,6 @@
                         window.location.href = url;
                     }, 500);
                 });
-
-                // Set search input value from URL parameter
-                const searchQuery = urlParams.get('search');
-                if (searchQuery) {
-                    searchInput.value = searchQuery;
-                }
             }
             
             // Modal elements for order details
