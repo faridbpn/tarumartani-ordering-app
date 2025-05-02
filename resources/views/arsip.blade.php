@@ -182,18 +182,30 @@
         <main class="flex-1 overflow-y-auto bg-gray-50">
             <!-- Tabs -->
             <div class="bg-white border-b border-gray-200 px-4">
-                <div class="flex space-x-8">
-                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm tab-active" data-tab="all">
-                        All Orders
+                <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg" role="tablist">
+                    <button class="px-4 py-2 text-sm font-medium rounded-md {{ !request()->get('tab') || request()->get('tab') === 'all' ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-700' }}"
+                            role="tab" data-tab="all">
+                        All
                     </button>
-                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="completed">
+                    <button class="px-4 py-2 text-sm font-medium rounded-md {{ request()->get('tab') === 'pending' ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-700' }}"
+                            role="tab" data-tab="pending">
+                        Pending
+                    </button>
+                    <button class="px-4 py-2 text-sm font-medium rounded-md {{ request()->get('tab') === 'processing' ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-700' }}"
+                            role="tab" data-tab="processing">
+                        Processing
+                    </button>
+                    <button class="px-4 py-2 text-sm font-medium rounded-md {{ request()->get('tab') === 'on delivery' ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-700' }}"
+                            role="tab" data-tab="on delivery">
+                        On Delivery
+                    </button>
+                    <button class="px-4 py-2 text-sm font-medium rounded-md {{ request()->get('tab') === 'completed' ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-700' }}"
+                            role="tab" data-tab="completed">
                         Completed
                     </button>
-                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="canceled">
-                        Canceled
-                    </button>
-                    <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="failed">
-                        Failed
+                    <button class="px-4 py-2 text-sm font-medium rounded-md {{ request()->get('tab') === 'cancelled' ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-700' }}"
+                            role="tab" data-tab="cancelled">
+                        Cancelled
                     </button>
                 </div>
             </div>
@@ -221,14 +233,6 @@
                                     <option value="today">Today</option>
                                     <option value="last7days">Last 7 Days</option>
                                     <option value="last30days">Last 30 Days</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm payment-method">
-                                    <option value="">All Methods</option>
-                                    <option value="cash">Cash</option>
-                                    <option value="credit_card">Credit Card</option>
                                 </select>
                             </div>
                             <div class="flex justify-between mt-3">
@@ -343,7 +347,7 @@
                                 
                                 <div class="px-4 pb-4 -mt-2">
                                     <div class="flex items-center text-sm text-gray-600">
-                                        <span class="mr-4" data-customer-name="{{ $order->user->name }}">Customer: <span class="font-medium">{{ $order->user->name }}</span></span>
+                                        <span class="mr-4" data-customer-name="{{ $order->customer_name ?? '-' }}">Customer: <span class="font-medium">{{ $order->customer_name ?? '-' }}</span></span>
                                         <span class="mr-4" data-table-number="{{ $order->table_number }}">Table: <span class="font-medium">{{ $order->table_number }}</span></span>
                                         <span>Payment: <span class="font-medium">Credit Card</span></span>
                                     </div>
@@ -455,168 +459,85 @@
                 sidebar.classList.toggle('z-40');
             });
             
-            // Sort dropdown functionality
-            const sortButton = document.getElementById('sortButton');
-            const sortDropdown = document.getElementById('sortDropdown');
-            let isSortDropdownOpen = false;
-
-            sortButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                isSortDropdownOpen = !isSortDropdownOpen;
-                sortDropdown.classList.toggle('hidden');
-                // Close filter dropdown if open
-                if (!filterDropdown.classList.contains('hidden')) {
-                    filterDropdown.classList.add('hidden');
-                    isFilterDropdownOpen = false;
-                }
-            });
-
-            // Sort options functionality
-            document.querySelectorAll('.sort-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const url = new URL(window.location);
-                    url.searchParams.set('sort', this.dataset.sort);
-                    window.location.href = url;
-                });
-            });
-
-            // Filter dropdown functionality
+            // Date range filter functionality
             const filterButton = document.getElementById('filterButton');
             const filterDropdown = document.getElementById('filterDropdown');
-            const resetFilters = document.getElementById('resetFilters');
+            const dateRangeSelect = document.querySelector('.date-range');
             const applyFilters = document.getElementById('applyFilters');
-            let isFilterDropdownOpen = false;
+            const resetFilters = document.getElementById('resetFilters');
 
-            filterButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                isFilterDropdownOpen = !isFilterDropdownOpen;
-                filterDropdown.classList.toggle('hidden');
-                // Close sort dropdown if open
-                if (!sortDropdown.classList.contains('hidden')) {
-                    sortDropdown.classList.add('hidden');
-                    isSortDropdownOpen = false;
-                }
-            });
+            if (filterButton && filterDropdown) {
+                filterButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    filterDropdown.classList.toggle('hidden');
+                });
 
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!filterDropdown.contains(e.target) && !filterButton.contains(e.target)) {
-                    filterDropdown.classList.add('hidden');
-                    isFilterDropdownOpen = false;
-                }
-                if (!sortDropdown.contains(e.target) && !sortButton.contains(e.target)) {
-                    sortDropdown.classList.add('hidden');
-                    isSortDropdownOpen = false;
-                }
-            });
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!filterDropdown.contains(e.target) && !filterButton.contains(e.target)) {
+                        filterDropdown.classList.add('hidden');
+                    }
+                });
+            }
 
-            // Reset filters
-            resetFilters.addEventListener('click', function() {
-                const url = new URL(window.location);
-                url.searchParams.delete('date_range');
-                url.searchParams.delete('payment_method');
-                url.searchParams.delete('search');
-                url.searchParams.delete('sort');
-                window.location.href = url;
-            });
+            if (dateRangeSelect && applyFilters) {
+                applyFilters.addEventListener('click', function() {
+                    const url = new URL(window.location.href);
+                    if (dateRangeSelect.value) {
+                        url.searchParams.set('date_range', dateRangeSelect.value);
+                    } else {
+                        url.searchParams.delete('date_range');
+                    }
+                    window.location.href = url.toString();
+                });
+            }
 
-            // Apply filters
-            applyFilters.addEventListener('click', function() {
-                const dateRange = document.querySelector('.date-range').value;
-                const paymentMethod = document.querySelector('.payment-method').value;
-                const url = new URL(window.location);
-
-                if (dateRange) {
-                    url.searchParams.set('date_range', dateRange);
-                } else {
-                    url.searchParams.delete('date_range');
-                }
-
-                if (paymentMethod) {
-                    url.searchParams.set('payment_method', paymentMethod);
-                } else {
-                    url.searchParams.delete('payment_method');
-                }
-
-                window.location.href = url;
-            });
+            if (resetFilters) {
+                resetFilters.addEventListener('click', function() {
+                    window.location.href = "{{ route('arsip.index') }}";
+                });
+            }
 
             // Tab switching functionality
-            const tabButtons = document.querySelectorAll('.tab-button');
-            tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all tabs
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('tab-active');
-                        btn.classList.add('text-gray-500');
-                    });
-
-                    // Add active class to clicked tab
-                    this.classList.add('tab-active');
-                    this.classList.remove('text-gray-500');
-
-                    // Update URL with tab parameter and maintain other filters
-                    const url = new URL(window.location);
-                    url.searchParams.set('tab', this.dataset.tab);
-                    window.location.href = url;
+            const tabs = document.querySelectorAll('[role="tab"]');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', tabId);
+                    window.location.href = url.toString();
                 });
             });
 
-            // Set active states based on URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // Set active tab
-            const activeTab = urlParams.get('tab') || 'all';
-            const activeTabButton = document.querySelector(`[data-tab="${activeTab}"]`);
-            if (activeTabButton) {
-                activeTabButton.classList.add('tab-active');
-                activeTabButton.classList.remove('text-gray-500');
-            }
+            // Sort functionality
+            const sortButton = document.getElementById('sortButton');
+            const sortDropdown = document.getElementById('sortDropdown');
+            const sortOptions = document.querySelectorAll('.sort-option');
 
-            // Set active sort
-            const activeSort = urlParams.get('sort');
-            if (activeSort) {
-                const activeSortOption = document.querySelector(`[data-sort="${activeSort}"]`);
-                if (activeSortOption) {
-                    sortButton.querySelector('span').textContent = activeSortOption.textContent;
-                }
-            }
+            if (sortButton && sortDropdown) {
+                sortButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sortDropdown.classList.toggle('hidden');
+                });
 
-            // Set active filters
-            const activeDateRange = urlParams.get('date_range');
-            const activePaymentMethod = urlParams.get('payment_method');
-            
-            if (activeDateRange) {
-                document.querySelector('.date-range').value = activeDateRange;
-            }
-            
-            if (activePaymentMethod) {
-                document.querySelector('.payment-method').value = activePaymentMethod;
-            }
-
-            // Search functionality with debounce
-            const searchInput = document.querySelector('input[placeholder="Search orders..."]');
-            let searchTimeout;
-            if (searchInput) {
-                const searchQuery = urlParams.get('search');
-                if (searchQuery) {
-                    searchInput.value = searchQuery;
-                }
-
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        const url = new URL(window.location);
-                        if (this.value) {
-                            url.searchParams.set('search', this.value);
-                        } else {
-                            url.searchParams.delete('search');
-                        }
-                        window.location.href = url;
-                    }, 500);
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!sortDropdown.contains(e.target) && !sortButton.contains(e.target)) {
+                        sortDropdown.classList.add('hidden');
+                    }
                 });
             }
-            
+
+            if (sortOptions) {
+                sortOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('sort', this.getAttribute('data-sort'));
+                        window.location.href = url.toString();
+                    });
+                });
+            }
+
             // Modal elements for order details
             const orderDetailsModal = document.getElementById('orderDetailsModal');
             const orderDetailsContent = document.getElementById('orderDetailsContent');

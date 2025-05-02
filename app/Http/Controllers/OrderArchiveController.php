@@ -33,11 +33,6 @@ class OrderArchiveController extends Controller
             }
         }
 
-        // Payment method filtering
-        if ($request->payment_method) {
-            $query->where('payment_method', $request->payment_method);
-        }
-
         // Search functionality
         if ($request->search) {
             $search = $request->search;
