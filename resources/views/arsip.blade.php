@@ -207,45 +207,33 @@
                     </div>
                     
                     <div class="relative">
-                        <button class="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <button id="filterButton" class="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
                             <i class="fas fa-filter text-gray-500"></i>
                             <span>Filters</span>
                             <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                         </button>
                         
-                        <div class="dropdown-content mt-1 p-3 w-64">
+                        <div id="filterDropdown" class="hidden absolute right-0 mt-1 p-3 w-64 bg-white rounded-lg shadow-lg z-50">
                             <div class="mb-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                    <option>All Time</option>
-                                    <option>Today</option>
-                                    <option>Last 7 Days</option>
-                                    <option>Last 30 Days</option>
-                                    <option>Custom Range</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Order Value</label>
-                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                    <option>Any Amount</option>
-                                    <option>Under $20</option>
-                                    <option>$20 - $50</option>
-                                    <option>$50 - $100</option>
-                                    <option>Over $100</option>
+                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm date-range">
+                                    <option value="">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="last7days">Last 7 Days</option>
+                                    <option value="last30days">Last 30 Days</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                    <option>All Methods</option>
-                                    <option>Credit Card</option>
-                                    <option>PayPal</option>
-                                    <option>Cash on Delivery</option>
+                                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm payment-method">
+                                    <option value="">All Methods</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="credit_card">Credit Card</option>
                                 </select>
                             </div>
                             <div class="flex justify-between mt-3">
-                                <button class="text-sm text-gray-600 hover:text-gray-800">Reset</button>
-                                <button class="text-sm text-blue-600 hover:text-blue-800 font-medium">Apply</button>
+                                <button id="resetFilters" class="text-sm text-gray-600 hover:text-gray-800">Reset</button>
+                                <button id="applyFilters" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Apply</button>
                             </div>
                         </div>
                     </div>
@@ -440,30 +428,125 @@
                 sidebar.classList.toggle('z-40');
             });
             
-            // Tab functionality
+            // Filter dropdown functionality
+            const filterButton = document.getElementById('filterButton');
+            const filterDropdown = document.getElementById('filterDropdown');
+            const resetFilters = document.getElementById('resetFilters');
+            const applyFilters = document.getElementById('applyFilters');
+            let isFilterDropdownOpen = false;
+
+            // Toggle filter dropdown
+            filterButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isFilterDropdownOpen = !isFilterDropdownOpen;
+                filterDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!filterDropdown.contains(e.target) && !filterButton.contains(e.target)) {
+                    filterDropdown.classList.add('hidden');
+                    isFilterDropdownOpen = false;
+                }
+            });
+
+            // Reset filters
+            resetFilters.addEventListener('click', function() {
+                const url = new URL(window.location);
+                url.searchParams.delete('date_range');
+                url.searchParams.delete('payment_method');
+                window.location.href = url;
+            });
+
+            // Apply filters
+            applyFilters.addEventListener('click', function() {
+                const dateRange = document.querySelector('.date-range').value;
+                const paymentMethod = document.querySelector('.payment-method').value;
+                const url = new URL(window.location);
+
+                if (dateRange) {
+                    url.searchParams.set('date_range', dateRange);
+                } else {
+                    url.searchParams.delete('date_range');
+                }
+
+                if (paymentMethod) {
+                    url.searchParams.set('payment_method', paymentMethod);
+                } else {
+                    url.searchParams.delete('payment_method');
+                }
+
+                window.location.href = url;
+            });
+
+            // Tab switching functionality
             const tabButtons = document.querySelectorAll('.tab-button');
-            
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
+                    // Remove active class from all tabs
                     tabButtons.forEach(btn => {
                         btn.classList.remove('tab-active');
                         btn.classList.add('text-gray-500');
                     });
+
+                    // Add active class to clicked tab
                     this.classList.add('tab-active');
                     this.classList.remove('text-gray-500');
-                    
-                    const tab = this.getAttribute('data-tab');
-                    const orders = document.querySelectorAll('.order-card');
-                    
-                    orders.forEach(order => {
-                        if (tab === 'all' || order.dataset.status === tab) {
-                            order.style.display = 'block';
-                        } else {
-                            order.style.display = 'none';
-                        }
-                    });
+
+                    // Update URL with tab parameter
+                    const url = new URL(window.location);
+                    url.searchParams.set('tab', this.dataset.tab);
+                    window.history.pushState({}, '', url);
+
+                    // Reload page with new tab
+                    window.location.href = url;
                 });
             });
+
+            // Set active tab based on URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab') || 'all';
+            const activeTabButton = document.querySelector(`[data-tab="${activeTab}"]`);
+            if (activeTabButton) {
+                activeTabButton.classList.add('tab-active');
+                activeTabButton.classList.remove('text-gray-500');
+            }
+
+            // Set active filters based on URL parameters
+            const activeDateRange = urlParams.get('date_range');
+            const activePaymentMethod = urlParams.get('payment_method');
+            
+            if (activeDateRange) {
+                document.querySelector('.date-range').value = activeDateRange;
+            }
+            
+            if (activePaymentMethod) {
+                document.querySelector('.payment-method').value = activePaymentMethod;
+            }
+
+            // Search functionality with debounce
+            const searchInput = document.querySelector('input[placeholder="Search orders..."]');
+            let searchTimeout;
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const url = new URL(window.location);
+                        if (this.value) {
+                            url.searchParams.set('search', this.value);
+                        } else {
+                            url.searchParams.delete('search');
+                        }
+                        window.location.href = url;
+                    }, 500);
+                });
+
+                // Set search input value from URL parameter
+                const searchQuery = urlParams.get('search');
+                if (searchQuery) {
+                    searchInput.value = searchQuery;
+                }
+            }
             
             // Modal elements for order details
             const orderDetailsModal = document.getElementById('orderDetailsModal');

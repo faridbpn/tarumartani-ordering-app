@@ -46,6 +46,7 @@
                                 alt="{{ $item->name }}" 
                                 class="w-full h-48 object-cover">
                             <div class="p-4">
+                                <span class="text-xs text-gray-500 mb-1 block">{{ $item->category->name }}</span>
                                 <h3 class="text-lg font-semibold mb-2">{{ $item->name }}</h3>
                                 <p class="text-gray-600 mb-4">{{ $item->description }}</p>
                                 <div class="flex justify-between items-center">

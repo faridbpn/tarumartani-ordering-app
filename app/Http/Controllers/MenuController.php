@@ -7,11 +7,13 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class MenuController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
         $query = Menu::with('category');
         
         // Search functionality
@@ -34,7 +36,7 @@ class MenuController extends Controller
         $menus = $query->paginate(6);
         $categories = Category::all();
         
-        return view('menuItems', compact('menus', 'categories'));
+        return view('menuItems', compact('menus', 'categories', 'user'));
     }
 
     public function show($id)

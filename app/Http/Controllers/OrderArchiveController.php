@@ -8,12 +8,51 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderArchiveController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $archivedOrders = Order::with(['items.menuItem', 'user'])
-            ->whereNotNull('archived_at')
-            ->orderBy('archived_at', 'desc')
-            ->paginate(10);
+        $query = Order::with(['items.menuItem', 'user'])
+            ->whereNotNull('archived_at');
+
+        // Tab filtering
+        if ($request->tab && $request->tab !== 'all') {
+            $query->where('archive_status', strtolower($request->tab));
+        }
+
+        // Date filtering
+        if ($request->date_range) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('archived_at', today());
+                    break;
+                case 'last7days':
+                    $query->where('archived_at', '>=', now()->subDays(7));
+                    break;
+                case 'last30days':
+                    $query->where('archived_at', '>=', now()->subDays(30));
+                    break;
+            }
+        }
+
+        // Payment method filtering
+        if ($request->payment_method) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        // Search functionality
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('customer_name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhereHas('items.menuItem', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $archivedOrders = $query->orderBy('archived_at', 'desc')
+                               ->paginate(10)
+                               ->withQueryString();
 
         return view('arsip', compact('archivedOrders'));
     }

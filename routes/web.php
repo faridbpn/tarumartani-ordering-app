@@ -53,3 +53,4 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/orders/{order}/destroy', [OrderArchiveController::class, 'destroy'])->name('orders.destroy');
     Route::get('/export-arsip', [OrderArchiveController::class, 'export'])->name('arsip.export');
 });
+
