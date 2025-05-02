@@ -121,6 +121,15 @@
             color: #9ca3af;
             cursor: not-allowed;
         }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.2s ease-out;
+        }
+
     </style>
 </head>
 <body class="flex h-screen">
@@ -221,69 +230,82 @@
     
     <!-- Add/Edit Modal -->
     <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
-            <div class="flex justify-between items-center p-4 border-b">
-                <h3 class="text-lg font-semibold" id="modalTitle">Add New Menu</h3>
-                <button data-action="close-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-content animate-fade-in">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800" id="modalTitle">👨‍🍳Add New Menu</h3>
+                <button data-action="close-modal" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
-            <form id="menuForm" method="POST" enctype="multipart/form-data" class="p-4">
+            <form id="menuForm" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
                 @csrf
                 <input type="hidden" id="menuId" name="id">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Name</label>
-                        <input type="text" name="name" id="name" required
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea name="description" id="description"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Price (Rp)</label>
-                        <input type="number" name="price" id="price" required min="0"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Category</label>
-                        <select name="category_id" id="category_id" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Availability</label>
-                        <select name="is_available" id="is_available" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="1">Available</option>
-                            <option value="0">Not Available</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Image</label>
-                        <input type="file" name="image" id="image" accept="image/*"
-                               class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <img id="imagePreview" class="mt-2 w-full h-32 object-cover rounded hidden" alt="Image Preview">
-                    </div>
+    
+                <!-- Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Name</label>
+                    <input type="text" name="name" id="name" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="mt-6 flex justify-end space-x-3">
+    
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                    <textarea name="description" id="description"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-24"></textarea>
+                </div>
+    
+                <!-- Price -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Price (Rp)</label>
+                    <input type="number" name="price" id="price" required min="0"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+    
+                <!-- Category -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Category</label>
+                    <select name="category_id" id="category_id" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+    
+                <!-- Availability -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Availability</label>
+                    <select name="is_available" id="is_available" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="1">Available</option>
+                        <option value="0">Not Available</option>
+                    </select>
+                </div>
+    
+                <!-- Image -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Image</label>
+                    <input type="file" name="image" id="image" accept="image/*"
+                        class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 transition">
+                    <img id="imagePreview" class="mt-3 w-full h-36 object-cover rounded-lg shadow hidden" alt="Image Preview">
+                </div>
+    
+                <!-- Buttons -->
+                <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" data-action="close-modal"
-                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition">
                         Cancel
                     </button>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button type="submit"
+                        class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition">
                         Save
                     </button>
                 </div>
             </form>
         </div>
     </div>
+    
     
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
