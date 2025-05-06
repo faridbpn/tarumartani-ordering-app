@@ -14,7 +14,7 @@ class MenuController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Menu::with('category');
+        $query = Menu::with('category')->orderBy('created_at', 'desc');
         
         // Search functionality
         if ($request->has('search') && !empty($request->search)) {
