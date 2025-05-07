@@ -16,6 +16,60 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        /* Floating cart button styles */
+        .floating-cart-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .floating-cart-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Image popup styles */
+        .image-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .image-popup img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+        
+        .image-popup-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .image-popup-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -44,7 +98,8 @@
                         <div class="food-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300" data-category="{{ $item->category_id }}">
                             <img src="{{ $item->image ? asset('storage/' . $item->image) : 'https://via.placeholder.com/300x200' }}" 
                                 alt="{{ $item->name }}" 
-                                class="w-full h-48 object-cover">
+                                class="w-full h-48 object-cover cursor-pointer menu-image"
+                                data-image="{{ $item->image ? asset('storage/' . $item->image) : 'https://via.placeholder.com/300x200' }}">
                             <div class="p-4">
                                 <span class="text-xs text-gray-500 mb-1 block">{{ $item->category->name }}</span>
                                 <h3 class="text-lg font-semibold mb-2">{{ $item->name }}</h3>
@@ -67,7 +122,7 @@
 
             <!-- Order Summary -->
             <div class="lg:w-1/3">
-                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                <div id="order-summary" class="bg-white rounded-lg shadow-md p-6 sticky top-4">
                     <h2 class="text-xl font-bold mb-4">Your Order</h2>
                     
                     <div id="order-items" class="mb-4 max-h-96 overflow-y-auto">
@@ -102,6 +157,19 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Floating Cart Button (Mobile Only) -->
+    <button id="floating-cart-btn" class="floating-cart-btn lg:hidden text-white p-4 rounded-full">
+        <i class="fas fa-shopping-cart text-xl"></i>
+    </button>
+
+    <!-- Image Popup -->
+    <div id="imagePopup" class="image-popup">
+        <div class="image-popup-close">
+            <i class="fas fa-times"></i>
+        </div>
+        <img src="" alt="Menu Image">
     </div>
 
     <!-- Checkout Modal -->
@@ -145,6 +213,36 @@
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        // Floating cart button functionality
+        document.getElementById('floating-cart-btn').addEventListener('click', function() {
+            document.getElementById('order-summary').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Image popup functionality
+        const imagePopup = document.getElementById('imagePopup');
+        const popupImage = imagePopup.querySelector('img');
+        const popupClose = imagePopup.querySelector('.image-popup-close');
+
+        document.querySelectorAll('.menu-image').forEach(img => {
+            img.addEventListener('click', function() {
+                popupImage.src = this.dataset.image;
+                imagePopup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        popupClose.addEventListener('click', function() {
+            imagePopup.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+
+        imagePopup.addEventListener('click', function(e) {
+            if (e.target === imagePopup) {
+                imagePopup.style.display = 'none';
+                document.body.style.overflow = '';
             }
         });
 
