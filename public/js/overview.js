@@ -122,19 +122,3 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 2000); // Setiap 2 detik
   }
 });
-
-// Fungsi untuk menampilkan pop-up
-function openPopup2() {
-  document.getElementById("popup-2").style.display = "flex";
-}
-
-// Fungsi untuk menutup pop-up
-function closePopup2() {
-  document.getElementById("popup-2").style.display = "none";
-}
-
-// Tambahkan event listener ke tombol "Beli Sekarang"
-document.querySelector(".btn-primary-2").addEventListener("click", function(event) {
-  event.preventDefault(); // Mencegah link default
-  openPopup2();
-});

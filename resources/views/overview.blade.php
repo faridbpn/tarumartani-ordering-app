@@ -24,14 +24,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- 
-    - preload images
-  -->
-  <link rel="preload" as="image" href="{{ asset('images/overview/logo.webp') }}">
-  <link rel="preload" as="image" href="{{ asset('images/overview/hero-banner-1.webp') }}">
-  <link rel="preload" as="image" href="{{ asset('images/overview/hero-banner-2.webp') }}">
-  <link rel="preload" as="image" href="{{ asset('images/overview/hero-banner-3.webp') }}">
-
 </head>
 
 <body id="top">
@@ -178,7 +170,7 @@
 
                   <p class="price">Sudah berdiri sejak 1918</p>
 
-                  <a href="{{ route('menu.public') }}" class="btn btn-primary-2">Beli Sekarang</a>
+                  <a href="{{ route('menu.public') }}" class="btn btn-primary">Beli Sekarang</a>
 
                 </div>
 
