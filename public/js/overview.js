@@ -1,0 +1,140 @@
+'use strict';
+
+
+
+/**
+ * add event on element
+ */
+
+const addEventOnElem = function (elem, type, callback) {
+  if (elem.length > 1) {
+    for (let i = 0; i < elem.length; i++) {
+      elem[i].addEventListener(type, callback);
+    }
+  } else {
+    elem.addEventListener(type, callback);
+  }
+}
+
+
+
+/**
+ * navbar toggle
+ */
+
+const navTogglers = document.querySelectorAll("[data-nav-toggler]");
+const navbar = document.querySelector("[data-navbar]");
+const navbarLinks = document.querySelectorAll("[data-nav-link]");
+const overlay = document.querySelector("[data-overlay]");
+
+const toggleNavbar = function () {
+  navbar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+addEventOnElem(navTogglers, "click", toggleNavbar);
+
+const closeNavbar = function () {
+  navbar.classList.remove("active");
+  overlay.classList.remove("active");
+}
+
+addEventOnElem(navbarLinks, "click", closeNavbar);
+
+
+
+/**
+ * header sticky & back top btn active
+ */
+
+const header = document.querySelector("[data-header]");
+const backTopBtn = document.querySelector("[data-back-top-btn]");
+
+const headerActive = function () {
+  if (window.scrollY > 150) {
+    header.classList.add("active");
+    backTopBtn.classList.add("active");
+  } else {
+    header.classList.remove("active");
+    backTopBtn.classList.remove("active");
+  }
+}
+
+addEventOnElem(window, "scroll", headerActive);
+
+let lastScrolledPos = 0;
+
+const headerSticky = function () {
+  if (lastScrolledPos >= window.scrollY) {
+    header.classList.remove("header-hide");
+  } else {
+    header.classList.add("header-hide");
+  }
+
+  lastScrolledPos = window.scrollY;
+}
+
+addEventOnElem(window, "scroll", headerSticky);
+
+
+
+/**
+ * scroll reveal effect
+ */
+
+const sections = document.querySelectorAll("[data-section]");
+
+const scrollReveal = function () {
+  for (let i = 0; i < sections.length; i++) {
+    if (sections[i].getBoundingClientRect().top < window.innerHeight / 2) {
+      sections[i].classList.add("active");
+    }
+  }
+}
+
+scrollReveal();
+
+addEventOnElem(window, "scroll", scrollReveal);
+
+document.getElementById("whatsappForm").addEventListener("submit", function(event) {
+  event.preventDefault(); 
+
+  let email = document.getElementById("email").value;
+  let comment = document.getElementById("comment").value;
+
+  let phoneNumber = "6281336483124"; 
+  let message = `Halo, saya ingin mendaftar dengan email: ${email}%0A%0AKomentar: ${comment}`;
+  
+  let whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
+  
+  window.open(whatsappURL, "_blank"); 
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.innerWidth <= 768) { // Hanya berjalan di mobile
+    setInterval(() => {
+      let hiddenText = document.querySelector(".hidden-text");
+      hiddenText.style.opacity = "1";
+
+      setTimeout(() => {
+        hiddenText.style.opacity = "0";
+      }, 800); // Muncul selama 0.8 detik
+    }, 2000); // Setiap 2 detik
+  }
+});
+
+// Fungsi untuk menampilkan pop-up
+function openPopup2() {
+  document.getElementById("popup-2").style.display = "flex";
+}
+
+// Fungsi untuk menutup pop-up
+function closePopup2() {
+  document.getElementById("popup-2").style.display = "none";
+}
+
+// Tambahkan event listener ke tombol "Beli Sekarang"
+document.querySelector(".btn-primary-2").addEventListener("click", function(event) {
+  event.preventDefault(); // Mencegah link default
+  openPopup2();
+});

@@ -8,7 +8,14 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderArchiveController;
 
 // Public Routes (User Pages)
-Route::get('/', [UserController::class, 'index'])->name('home');
+Route::get('/', function () {
+    return view('overview');
+})->name('home');
+
+Route::get('/gallery', function () {
+    return view('overviewGallery');
+})->name('gallery');
+
 Route::get('/menu', [UserController::class, 'index'])->name('menu.public');
 
 // Cart Routes

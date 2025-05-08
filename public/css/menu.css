@@ -1,0 +1,302 @@
+:root{
+  /**
+   * colors
+   */
+
+   --hoockers-green_20: hsl(30, 45%, 20%, 0.2); /* Coklat tua transparan untuk efek bayangan */
+  --pale-spring-bud: hsl(40, 80%, 85%); /* Krim untuk background yang lebih terang */
+  --hoockers-green: hsl(25, 50%, 35%); /* Coklat kopi untuk elemen utama */
+  --spanish-gray: hsl(20, 10%, 65%); /* Abu-abu hangat untuk teks sekunder */
+  --light-gray: hsl(30, 50%, 75%); /* Coklat muda untuk elemen sekunder atau border */
+  --cultured-1: hsl(40, 80%, 85%); /* Warna krim lembut untuk background */
+  --cultured-2: hsl(35, 70%, 55%); /* Coklat karamel untuk aksen */
+  --gray-web: hsl(20, 10%, 40%); /* Abu-abu gelap untuk elemen tambahan */
+  --white_30: hsla(0, 0%, 100%, 0.3); /* Putih transparan untuk efek glassmorphism */
+  --black_70: hsla(0, 0%, 0%, 0.7); /* Hitam transparan untuk bayangan atau overlay */
+  --black_50: hsla(0, 0%, 0%, 0.5); /* Hitam semi transparan untuk kontras */
+  --black_15: hsla(0, 0%, 0%, 0.15); /* Hitam sangat ringan untuk garis atau border */
+  --black_10: hsla(0, 0%, 0%, 0.1); /* Hitam hampir transparan untuk elemen pemisah */
+  --black_5: hsla(0, 0%, 0%, 0.05); /* Hitam tipis untuk efek lembut */
+  --white: hsl(0, 0%, 100%); /* Warna putih tetap untuk teks atau elemen kontras */
+  --black: hsl(0, 0%, 0%); /* Warna hitam tetap untuk elemen penting */
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+header {
+    background-color: var(--hoockers-green);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.menu-card {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* Atur lebar maksimal gambar */
+    height: auto;
+    margin: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-card img {
+    width: 100%; /* Lebar gambar mengikuti lebar card */
+    height: 300px; /* Menjaga rasio aspek gambar */
+    object-fit: cover; /* Menyesuaikan gambar tanpa merusak proporsi */
+}
+
+.menu-info {
+    text-align: left;
+    padding: 10px;
+}
+
+.menu-info h3 {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.menu-info p {
+    font-size: 16px;
+    color: #777;
+}
+
+.menu-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.menu-section {
+    margin-bottom: 3rem;
+}
+
+.menu-section h2 {
+    font-size: 1.8rem;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    color: #444;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.menu-item {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+}
+
+footer {
+    background-color: var(--hoockers-green);
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 4rem;
+}
+
+.back-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-button:hover {
+    background-color: #A0522D;
+    transform: translateY(-2px);
+}
+
+.back-button svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.back-text {
+    display: inline;
+}
+
+/* Styling untuk tombol baru dan container gambar */
+.show-images-btn {
+    display: block;
+    width: 280px;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: var(--hoockers-green);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.show-images-btn:hover {
+    background-color: #A0522D;
+}
+
+.image-gallery {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+}
+
+.image-gallery.active {
+    display: grid;
+}
+
+.image-gallery img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
+}
+
+/* Styling untuk overlay gambar diperbesar */
+.image-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--black_70);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-overlay.active {
+    display: flex;
+}
+
+.image-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--hoockers-green);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.close-btn:hover {
+    background-color: #A0522D;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .back-button {
+        padding: 6px 10px;
+        font-size: 12px;
+        top: 10px;
+        left: 10px;
+    }
+    
+    .back-button svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .image-gallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .show-images-btn {
+        width: 150px;
+        font-size: 14px;
+    }
+
+    .image-overlay img {
+        max-width: 95%;
+        max-height: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    .back-button {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+    
+    .back-text {
+        display: none;
+    }
+
+    .show-images-btn {
+        width: 180px;
+        font-size: 10px;
+    }
+    
+    .back-button svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .image-gallery {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1em;
+
+    .show-images-btn {
+        width: 120px;
+        font-size: 12px;
+    }
+
+    .close-btn {
+        top: 15px;
+        right: 15px;
+        padding: 8px;
+        font-size: 16px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .image-gallery {
+        grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
