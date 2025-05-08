@@ -116,6 +116,17 @@
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+@include('layouts.app')
+    
+    <!-- Mobile sidebar toggle -->
+    <div class="md:hidden fixed bottom-4 right-4 z-50">
+        <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </div>
+
     
     <!-- Sidebar -->
     @include('layouts.app')
@@ -177,6 +188,7 @@
             @else
                 <div class="space-y-4">
                     @foreach ($orders as $order)
+
                     <div class="order-card bg-white rounded-2xl shadow-md border border-gray-100 p-6" 
                          data-status="{{ $order->status }}" 
                          data-search="{{ $order->customer_name }} {{ $order->id }} @foreach($order->items as $item) {{ $item->menuItem->name }} @endforeach">
@@ -219,6 +231,8 @@
                                     <input type="hidden" name="archive_reason" value="Selesai disajikan">
                                     <button type="button" class="btn-archive bg-yellow-500 text-white px-2 py-1 rounded">Arsipkan</button>
                                 </form>
+
+                   
                             </div>
                         </div>
 

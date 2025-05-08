@@ -7,7 +7,11 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Auth;
+=======
+use Illuminate\Support\Facades\Log;
+>>>>>>> ba60122543584c394894ac59a2d371f876f2e087
 
 class MenuController extends Controller
 {
@@ -79,7 +83,7 @@ class MenuController extends Controller
                 'data' => $menu
             ]);
         } catch (\Exception $e) {
-            \Log::error('Menu creation failed: ' . $e->getMessage());
+            Log::error('Menu creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create menu: ' . $e->getMessage()
