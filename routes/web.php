@@ -46,9 +46,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/menu/{id}', [MenuController::class, 'update']);
     Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
     
-    // Order Management
+    // Order Management (Admin only)
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('/orders/{order}/details', [OrderController::class, 'showDetails'])->name('orders.details');
 

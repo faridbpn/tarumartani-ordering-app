@@ -77,9 +77,9 @@ class OrderController extends Controller
         $service = 0.05 * $subtotal;
         $total = $subtotal + $tax + $service;
 
-        // Create the order
+        // Create the order with default user_id
         $order = Order::create([
-            'user_id' => auth()->id() ?? 1,
+            'user_id' => 1, // Default user_id for guest orders
             'customer_name' => $request->customer_name,
             'table_number' => $request->table_number,
             'total_amount' => $total,
