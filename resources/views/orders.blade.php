@@ -126,18 +126,6 @@
             <i class="fas fa-bars text-xl"></i>
         </button>
     </div>
-
-    
-    <!-- Sidebar -->
-    @include('layouts.app')
-
-        <!-- Mobile sidebar toggle -->
-        <div class="md:hidden fixed bottom-4 right-4 z-50">
-            <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
-                <i class="fas fa-bars text-xl"></i>
-            </button>
-        </div>
-
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Topbar -->

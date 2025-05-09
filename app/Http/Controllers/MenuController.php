@@ -7,11 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Auth;
-=======
-use Illuminate\Support\Facades\Log;
->>>>>>> ba60122543584c394894ac59a2d371f876f2e087
 
 class MenuController extends Controller
 {

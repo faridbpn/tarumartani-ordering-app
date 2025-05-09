@@ -8,6 +8,7 @@ use App\Models\MenuItem;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -59,69 +60,52 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'table_number' => 'required|string|max:50',
-            'cart_items' => 'required',
-        ]);
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('menus', 'public');
-        }
-<<<<<<< HEAD
-
-        // Calculate totals
-        $subtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cartItems));
-        $tax = 0.1 * $subtotal;
-        $service = 0.05 * $subtotal;
-        $total = $subtotal + $tax + $service;
-
-        // Create the order with default user_id
-        $order = Order::create([
-            'user_id' => 1, // Default user_id for guest orders
-            'customer_name' => $request->customer_name,
-            'table_number' => $request->table_number,
-            'total_amount' => $total,
-            'status' => 'Pending',
-        ]);
-
-        // Create order items
-        foreach ($cartItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'menu_id' => $item['id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'subtotal' => $item['price'] * $item['quantity'],
-=======
-      
-        DB::beginTransaction();
         try {
-            $order = Order::create([
-                'customer_name' => $request->customer_name,
-                'table_number' => $request->table_number,
-                'status' => 'Pending',
-                'total_amount' => 0
->>>>>>> ba60122543584c394894ac59a2d371f876f2e087
+            DB::beginTransaction();
+
+            $request->validate([
+                'customer_name' => 'required|string|max:255',
+                'table_number' => 'required|string|max:50',
+                'items' => 'required|array',
+                'items.*.id' => 'required|exists:menu_items,id',
+                'items.*.quantity' => 'required|integer|min:1'
             ]);
 
             $totalAmount = 0;
+            $orderItems = [];
+
+            // Calculate total amount and prepare order items
             foreach ($request->items as $item) {
-                $menuItem = MenuItem::find($item['id']);
-                $order->orderItems()->create([
+                $menuItem = MenuItem::findOrFail($item['id']);
+                $subtotal = $menuItem->price * $item['quantity'];
+                $totalAmount += $subtotal;
+
+                $orderItems[] = [
                     'menu_item_id' => $item['id'],
                     'quantity' => $item['quantity'],
-                    'price' => $menuItem->price
-                ]);
-                $totalAmount += $menuItem->price * $item['quantity'];
+                    'price' => $menuItem->price,
+                    'subtotal' => $subtotal
+                ];
             }
 
-            // Hitung pajak dan biaya layanan
+            // Calculate tax and service charge
             $tax = $totalAmount * 0.1;
             $service = $totalAmount * 0.05;
             $total = $totalAmount + $tax + $service;
 
-            // Update total pada order
-            $order->update(['total_amount' => $total]);
+            // Create the order
+            $order = Order::create([
+                'user_id' => Auth::id() ?? 1, // Use authenticated user ID or default to 1
+                'customer_name' => $request->customer_name,
+                'table_number' => $request->table_number,
+                'total_amount' => $total,
+                'status' => 'Pending',
+            ]);
+
+            // Create order items
+            foreach ($orderItems as $item) {
+                $order->orderItems()->create($item);
+            }
 
             DB::commit();
 
@@ -130,45 +114,24 @@ class OrderController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to place order. Please try again.');
+            return back()->with('error', 'Failed to place order: ' . $e->getMessage());
         }
     }
 
-    public function addToCart(Request $request, $id)
+    public function addToCart(Request $request, MenuItem $menuItem)
     {
         $request->validate([
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $order->update(['status' => $request->status]);
-
-        return redirect()->back()->with('success', 'Order status updated successfully');
-    }
-
-    /**
-     * Display completed orders.
-     */
-    public function archive()
-    {
-        $orders = Order::with('orderItems.menuItem')
-            ->where('status', 'Completed')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        return view('arsip', compact('orders'));
-    }
-
-    /**
-     * Cart management functions remain unchanged...
-     */
-    public function addToCart(Request $request, MenuItem $menuItem)
-    {
         $cart = Session::get('cart', []);
+        $id = $menuItem->id;
 
         if (isset($cart[$id])) {
             $cart[$id]['quantity'] += $request->quantity;
         } else {
             $cart[$id] = [
+                'id' => $menuItem->id,
                 'name' => $menuItem->name,
                 'price' => $menuItem->price,
                 'quantity' => $request->quantity,
@@ -177,7 +140,45 @@ class OrderController extends Controller
 
         session()->put('cart', $cart);
 
-        return redirect()->route('orders.create')->with('success', 'Item berhasil ditambahkan ke keranjang.');
+        return redirect()->back()->with('success', 'Item added to cart successfully.');
+    }
+
+    public function updateCart(Request $request, MenuItem $menuItem)
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $cart = Session::get('cart', []);
+        $id = $menuItem->id;
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity'] = $request->quantity;
+            session()->put('cart', $cart);
+            return redirect()->back()->with('success', 'Cart updated successfully.');
+        }
+
+        return redirect()->back()->with('error', 'Item not found in cart.');
+    }
+
+    public function removeFromCart(MenuItem $menuItem)
+    {
+        $cart = Session::get('cart', []);
+        $id = $menuItem->id;
+
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+            return redirect()->back()->with('success', 'Item removed from cart.');
+        }
+
+        return redirect()->back()->with('error', 'Item not found in cart.');
+    }
+
+    public function showCart()
+    {
+        $cart = Session::get('cart', []);
+        return view('cart', compact('cart'));
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -193,7 +194,6 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Order status updated successfully');
     }
 
-    // Archive 🔏
     public function archive(Order $order, Request $request)
     {
         $request->validate([

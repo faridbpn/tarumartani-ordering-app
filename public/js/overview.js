@@ -99,11 +99,12 @@ addEventOnElem(window, "scroll", scrollReveal);
 document.getElementById("whatsappForm").addEventListener("submit", function(event) {
   event.preventDefault(); 
 
-  let email = document.getElementById("email").value;
+  let nama = document.getElementById("nama").value;
+  let kontak = document.getElementById("kontak").value;
   let comment = document.getElementById("comment").value;
 
   let phoneNumber = "6281336483124"; 
-  let message = `Halo, saya ingin mendaftar dengan email: ${email}%0A%0AKomentar: ${comment}`;
+  let message = `Halo, saya ingin memberikan masukan untuk Kafe Taru Martani.%0A%0ANama: ${nama}%0AKontak: ${kontak}%0AKomentar: ${comment}`;
   
   let whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
   

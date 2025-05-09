@@ -39,7 +39,7 @@
 
     <div class="p-4 border-t border-white border-opacity-20">
         <div class="flex items-center space-x-3">
-            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Admin" class="w-10 h-10 rounded-full">
+            <img src="{{ asset('images/overview/bes seler.webp') }}" alt="Admin" class="w-10 h-10 rounded-full">
             <div>
                 <p class="font-medium">admin@gmail.com</p>
                 <p class="text-xs opacity-80">bang admin</p>
