@@ -6,6 +6,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderArchiveController;
+use App\Http\Controllers\MejaController;
 
 // Public Routes (User Pages)
 Route::get('/', function () {
@@ -16,36 +17,23 @@ Route::get('/gallery', function () {
     return view('overviewGallery');
 })->name('gallery');
 
-Route::get('/menu', [UserController::class, 'index'])->name('menu.public');
-
-// Cart Routes
-Route::post('/cart/add/{menu}', [OrderController::class, 'addToCart'])->name('cart.add');
-Route::post('/cart/update/{menu}', [OrderController::class, 'updateCart'])->name('cart.update');
-Route::delete('/cart/remove/{menu}', [OrderController::class, 'removeFromCart'])->name('cart.remove');
-Route::get('/cart', [OrderController::class, 'showCart'])->name('cart.show');
-
 // Authentication Routes
 Route::get('/login', [AdminController::class, 'showLogin'])->name('login');
-Route::post('/admin/login', [AdminController::class, 'login'])->name('submit.login');
-Route::post('/admin/logout', [AdminController::class, 'logout'])->middleware('auth')->name('logout');
-
-// Checkout Routes
-Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-Route::get('/orders/success/{order}', [OrderController::class, 'success'])->name('orders.success');
+Route::post('/login', [AdminController::class, 'login'])->name('submit.login');
+Route::post('/logout', [AdminController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Admin Routes (Protected)
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    
+
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('/menu/{id}', [MenuController::class, 'show']);
-    Route::post('/menu', [MenuController::class, 'store']); 
+    Route::post('/menu', [MenuController::class, 'store']);
     Route::post('/menu/{id}', [MenuController::class, 'update']);
     Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
-    
+
     // Order Management (Admin only)
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
@@ -60,3 +48,30 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/export-arsip', [OrderArchiveController::class, 'export'])->name('arsip.export');
 });
 
+Route::middleware(['auth'])->group(function () {
+
+    // Cart Routes
+    Route::get('/menu', [UserController::class, 'index'])->name('menu.public');
+    Route::post('/cart/add/{menu}', [OrderController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/update/{menu}', [OrderController::class, 'updateCart'])->name('cart.update');
+    Route::delete('/cart/remove/{menu}', [OrderController::class, 'removeFromCart'])->name('cart.remove');
+    Route::get('/cart', [OrderController::class, 'showCart'])->name('cart.show');
+
+    // Checkout Routes
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih error ini (?)
+});
+
+// Login Nomor Meja
+Route::get('/nomor-meja/{token}/{nomor_meja}', [MejaController::class, 'nomorMeja'])->name('orders.nomorMeja');
+Route::post('/email-nomor-meja', [MejaController::class, 'saveEmailMeja'])->name('save.email.meja');
+Route::post('/email-nomor-meja/reset', function () {
+    $url = session('url_meja') ?? '/';
+    session()->forget(['email', 'name', 'meja_id', 'nomor_meja', 'url_meja']);
+    // session()->flush();
+    return response()->json(['redirect' => $url]);
+})->name('reset.email.session');
+
+Route::middleware(['cekMeja'])->group(function () {
+    Route::get('/menu/nomor-meja', [MejaController::class, 'index'])->name('menu.meja.index');
+    Route::post('/menu/nomor-meja', [MejaController::class, 'store'])->name('order.meja.store');
+});
