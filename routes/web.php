@@ -75,3 +75,12 @@ Route::middleware(['cekMeja'])->group(function () {
     Route::get('/menu/nomor-meja', [MejaController::class, 'index'])->name('menu.meja.index');
     Route::post('/menu/nomor-meja', [MejaController::class, 'store'])->name('order.meja.store');
 });
+
+// Reservation routes
+Route::get('/need-to-login', function () {
+    return view('needToLogin');
+})->name('needToLogin');
+
+Route::get('/user-reservation', function () {
+    return view('userReservation');
+})->middleware('ensure.user.loggedin')->name('userReservation');

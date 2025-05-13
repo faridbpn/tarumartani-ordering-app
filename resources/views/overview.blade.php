@@ -170,7 +170,7 @@
 
                   <p class="price">Sudah berdiri sejak 1918</p>
 
-                  <a href="{{ route('menu.public') }}" class="btn btn-primary">Beli Sekarang</a>
+                  <button id="reservasiBtn" class="btn btn-primary">Reservasi Sekarang</button>
 
                 </div>
 
@@ -906,6 +906,25 @@
   -->
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+  <script>
+  document.getElementById('reservasiBtn').addEventListener('click', function() {
+      fetch("{{ route('userReservation') }}", {
+          method: "GET",
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+          }
+      })
+      .then(response => {
+          // Jika diarahkan ke login, response.redirected akan true
+          if (response.redirected) {
+              window.location.href = response.url;
+          } else {
+              window.location.href = "{{ route('userReservation') }}";
+          }
+      });
+  });
+  </script>
 
 </body>
 
