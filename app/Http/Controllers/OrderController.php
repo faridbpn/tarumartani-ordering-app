@@ -64,6 +64,13 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
+            // Decode items jika masih berupa string JSON
+            if (is_string($request->items)) {
+                $request->merge([
+                    'items' => json_decode($request->items, true)
+                ]);
+            }
+
             $request->validate([
                 'customer_name' => 'required|string|max:255',
                 'table_number' => 'required|string|max:50',
@@ -105,14 +112,14 @@ class OrderController extends Controller
 
             // Create order items
             foreach ($orderItems as $item) {
-                $order->orderItems()->create($item);
+                $order->items()->create($item);
             }
 
             DB::commit();
-
+    
             return redirect()->route('orders.success', $order)
                 ->with('success', 'Order has been placed successfully!');
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to place order: ' . $e->getMessage());

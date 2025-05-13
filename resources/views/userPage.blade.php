@@ -179,7 +179,7 @@
             <h2 class="text-2xl font-bold mb-4">Complete Your Order</h2>
             <form id="checkoutForm" action="{{ route('orders.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="cart_items" id="cart_items">
+                <input type="hidden" name="items" id="cart_items">
                 <div class="mb-4">
                     <label for="customer_name" class="block text-gray-700 mb-2">Your Name</label>
                     <input type="text" id="customer_name" name="customer_name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
@@ -337,8 +337,12 @@
             document.getElementById('service').textContent = `Rp ${service.toLocaleString()}`;
             document.getElementById('total').textContent = `Rp ${total.toLocaleString()}`;
 
-            // Update cart items for checkout
-            document.getElementById('cart_items').value = JSON.stringify(cart);
+            // Update cart items for checkout - modify this part
+            const formattedItems = cart.map(item => ({
+                id: item.id,
+                quantity: item.quantity
+            }));
+            document.getElementById('cart_items').value = JSON.stringify(formattedItems);
         }
 
         // Handle quantity changes and item removal
@@ -360,7 +364,7 @@
                 updateCart();
             }
 
-            if (e.target.closest('.remove-btn')) {
+            if (e.target.closest('.remove-btn')) {  
                 const index = e.target.closest('.remove-btn').dataset.index;
                 cart.splice(index, 1);
                 updateCart();
@@ -387,6 +391,11 @@
             e.preventDefault();
             const form = $(this);
             const formData = form.serialize();
+            
+            // Add console log to debug the data being sent
+            console.log('Form Data:', formData);
+            console.log('Cart Items:', document.getElementById('cart_items').value);
+            
             const url = form.attr('action');
 
             $.ajax({
@@ -394,6 +403,10 @@
                 url: url,
                 data: formData,
                 success: function(response) {
+                    console.log('Success Response:', response);
+                    // Clear the cart after successful order
+                    cart = [];
+                    updateCart();
                     closeCheckoutModal();
                     $('#resultModalTitle').text('Pesanan Berhasil!');
                     $('#resultModalMessage').text('Pesanan Anda telah berhasil ditempatkan.');
