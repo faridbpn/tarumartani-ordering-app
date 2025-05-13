@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\MenuItem;
-use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
@@ -63,6 +62,13 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
+            // Decode items jika masih berupa string JSON
+            if (is_string($request->items)) {
+                $request->merge([
+                    'items' => json_decode($request->items, true)
+                ]);
+            }
+
             $request->validate([
                 'customer_name' => 'required|string|max:255',
                 'table_number' => 'required|string|max:50',
@@ -104,7 +110,7 @@ class OrderController extends Controller
 
             // Create order items
             foreach ($orderItems as $item) {
-                $order->orderItems()->create($item);
+                $order->items()->create($item);
             }
 
             DB::commit();
