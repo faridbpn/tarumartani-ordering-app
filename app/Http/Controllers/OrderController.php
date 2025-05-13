@@ -62,88 +62,74 @@ class OrderController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'table_number' => 'required|string|max:50',
-            'cart_items' => 'required',
+            'cart_items' => 'required|array',
         ]);
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('menus', 'public');
-        }
-<<<<<<< HEAD
-
-        // Calculate totals
-        $subtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cartItems));
-        $tax = 0.1 * $subtotal;
-        $service = 0.05 * $subtotal;
-        $total = $subtotal + $tax + $service;
-
-        // Create the order with default user_id
-        $order = Order::create([
-            'user_id' => 1, // Default user_id for guest orders
-            'customer_name' => $request->customer_name,
-            'table_number' => $request->table_number,
-            'total_amount' => $total,
-            'status' => 'Pending',
-        ]);
-
-        // Create order items
-        foreach ($cartItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'menu_id' => $item['id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'subtotal' => $item['price'] * $item['quantity'],
-=======
-      
-        DB::beginTransaction();
+    
         try {
+            DB::beginTransaction();
+    
+            $cartItems = $request->cart_items;
+    
+            // Hitung total
+            $subtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cartItems));
+            $tax = 0.1 * $subtotal;
+            $service = 0.05 * $subtotal;
+            $total = $subtotal + $tax + $service;
+    
+            // Buat order
             $order = Order::create([
+                'user_id' => 1, // default user
                 'customer_name' => $request->customer_name,
                 'table_number' => $request->table_number,
+                'total_amount' => $total,
                 'status' => 'Pending',
-                'total_amount' => 0
->>>>>>> ba60122543584c394894ac59a2d371f876f2e087
             ]);
-
-            $totalAmount = 0;
-            foreach ($request->items as $item) {
-                $menuItem = MenuItem::find($item['id']);
-                $order->orderItems()->create([
-                    'menu_item_id' => $item['id'],
+    
+            // Simpan order item
+            foreach ($cartItems as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_id' => $item['id'],
                     'quantity' => $item['quantity'],
-                    'price' => $menuItem->price
+                    'price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['quantity'],
                 ]);
-                $totalAmount += $menuItem->price * $item['quantity'];
             }
-
-            // Hitung pajak dan biaya layanan
-            $tax = $totalAmount * 0.1;
-            $service = $totalAmount * 0.05;
-            $total = $totalAmount + $tax + $service;
-
-            // Update total pada order
-            $order->update(['total_amount' => $total]);
-
+    
             DB::commit();
-
+    
             return redirect()->route('orders.success', $order)
                 ->with('success', 'Order has been placed successfully!');
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to place order. Please try again.');
         }
     }
+    
 
-    public function addToCart(Request $request, $id)
+    public function addToCart(Request $request, MenuItem $menu)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-        ]);
-
-        $order->update(['status' => $request->status]);
-
-        return redirect()->back()->with('success', 'Order status updated successfully');
+        $cart = session()->get('cart', []);
+    
+        $quantity = $request->input('quantity', 1);
+    
+        if (isset($cart[$menu->id])) {
+            $cart[$menu->id]['quantity'] += $quantity;
+        } else {
+            $cart[$menu->id] = [
+                'name' => $menu->name,
+                'price' => $menu->price,
+                'quantity' => $quantity,
+                'image' => $menu->image
+            ];
+        }
+    
+        session()->put('cart', $cart);
+    
+        return redirect()->route('cart.show')->with('success', 'Item berhasil ditambahkan ke keranjang');
     }
+    
 
     /**
      * Display completed orders.
@@ -156,28 +142,6 @@ class OrderController extends Controller
             ->paginate(10);
 
         return view('arsip', compact('orders'));
-    }
-
-    /**
-     * Cart management functions remain unchanged...
-     */
-    public function addToCart(Request $request, MenuItem $menuItem)
-    {
-        $cart = Session::get('cart', []);
-
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] += $request->quantity;
-        } else {
-            $cart[$id] = [
-                'name' => $menuItem->name,
-                'price' => $menuItem->price,
-                'quantity' => $request->quantity,
-            ];
-        }
-
-        session()->put('cart', $cart);
-
-        return redirect()->route('orders.create')->with('success', 'Item berhasil ditambahkan ke keranjang.');
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -194,20 +158,6 @@ class OrderController extends Controller
     }
 
     // Archive 🔏
-    public function archive(Order $order, Request $request)
-    {
-        $request->validate([
-            'archive_reason' => 'required|string'
-        ]);
-
-        $order->update([
-            'archived_at' => now(),
-            'archive_status' => strtolower($order->status),
-            'archive_reason' => $request->archive_reason
-        ]);
-
-        return redirect()->back()->with('success', 'Order has been archived successfully.');
-    }
 
     public function deleteArchive(Order $order)
     {
