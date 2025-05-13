@@ -194,4 +194,13 @@ class AdminController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
+
+    public function userList()
+    {
+        // Logika untuk mengambil data pengguna (misalnya dari database)
+        $users = User::all(); // Contoh sederhana, sesuaikan dengan kebutuhan Anda
+        return view('userList', compact('users'));
+    }
+
+    
 }

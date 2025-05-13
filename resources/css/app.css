@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+.gradient-bg {
+    background: linear-gradient(135deg, #4a90e2, #9013fe); /* Sesuaikan warna sesuai kebutuhan */
+}
+.sidebar a {
+    font-size: 16px; /* Sesuaikan ukuran */
+    font-weight: 400; /* Normal, ubah ke 500/600 jika ingin tebal */
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';

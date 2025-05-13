@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-
+use App\Models\MenuItem;
 
 class UserController extends Controller
 {
@@ -41,11 +41,8 @@ class UserController extends Controller
     
     public function reservation()
     {
-        $categories = Category::all();
-        $menuItems = Menu::with('category')->where('is_available', true)->orderBy('name')->get();
-    
+        $categories = Category::all(); // Contoh, sesuaikan dengan model Anda
+        $menuItems = MenuItem::with('category')->get(); // Contoh, sesuaikan dengan model Anda
         return view('userReservation', compact('categories', 'menuItems'));
     }
-    
-    
 } 
