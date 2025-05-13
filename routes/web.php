@@ -25,7 +25,7 @@ Route::delete('/cart/remove/{menu}', [OrderController::class, 'removeFromCart'])
 Route::get('/cart', [OrderController::class, 'showCart'])->name('cart.show');
 
 // Authentication Routes
-Route::get('/admin/login', [AdminController::class, 'showLogin'])->name('login');
+Route::get('/login', [AdminController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [AdminController::class, 'login'])->name('submit.login');
 Route::post('/admin/logout', [AdminController::class, 'logout'])->middleware('auth')->name('logout');
 
@@ -42,7 +42,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('/menu/{id}', [MenuController::class, 'show']);
-    Route::post('/menu', [MenuController::class, 'store']);
+    Route::post('/menu', [MenuController::class, 'store']); 
     Route::post('/menu/{id}', [MenuController::class, 'update']);
     Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
     

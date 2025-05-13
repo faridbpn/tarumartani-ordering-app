@@ -252,9 +252,8 @@
                 <p class="card-text">Hanya Rp.20.000</p>
 
                 <a href="https://www.instagram.com/p/C70k4bYyjCs/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" class="btn-link" target="_blank">
-                  <span class="span">Lihat Menu</span>
+                  <span class="span">See More</span>
 
-                  <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
                 </a>
 
                 <div class="has-bg-image" style="background-image: url('{{ asset('images/overview/bes seler.webp') }}')"></div>
@@ -270,9 +269,8 @@
                 <p class="card-text">Hanya Rp.23.000</p>
 
                 <a href="https://www.instagram.com/p/C9uaN-BSJcV/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" class="btn-link" target="_blank">
-                  <span class="span">Lihat Menu</span>
+                  <span class="span">See More</span>
 
-                  <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
                 </a>
 
                 <div class="has-bg-image" style="background-image: url('{{ asset('images/overview/bes seler2.webp') }}')"></div>
@@ -288,9 +286,8 @@
                 <p class="card-text">Hanya Rp.25.000</p>
 
                 <a href="https://www.instagram.com/p/C-E97SdSCy3/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" class="btn-link" target="_blank">
-                  <span class="span">Lihat Menu</span>
+                  <span class="span">See More</span>
 
-                  <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
                 </a>
 
                 <div class="has-bg-image" style="background-image: url('{{ asset('images/overview/bes seler3.webp') }}')"></div>
@@ -334,22 +331,6 @@
                     alt="Facial cleanser" class="img-cover">
 
                   <span class="badge" aria-label="20% off">Makanan</span>
-
-                  <div class="card-actions">
-
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                  </div>
                 </div>
 
                 <div class="card-content">
@@ -378,17 +359,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -417,17 +388,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -456,17 +417,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -497,17 +448,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -538,17 +479,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -599,17 +530,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -640,17 +561,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -679,17 +590,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -718,17 +619,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -759,17 +650,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -800,17 +681,7 @@
 
                   <div class="card-actions">
 
-                    <button class="action-btn" aria-label="add to cart">
-                      <ion-icon name="bag-handle-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="add to whishlist">
-                      <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-                    </button>
-
-                    <button class="action-btn" aria-label="compare">
-                      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-                    </button>
+                 
 
                   </div>
                 </div>
@@ -907,7 +778,7 @@
                 <h3 class="h3 card-title">Bahannya Berkualitas</h3>
 
                 <p class="card-text">
-                  Tidak menggunakan bahan bahan yang biasa saja dan sudah melewati banyak pemeriksaan sebelum diolah
+                  Tidak menggunakan bahan yang biasa saja dan sudah melewati banyak pemeriksaan sebelum diolah
                 </p>
 
               </div>
@@ -937,7 +808,7 @@
                 <h3 class="h3 card-title">Bahan Terjamin</h3>
 
                 <p class="card-text">
-                  Selain berkualitas tentu bahan bahan yang kami gunakan juga diperiksa untuk keterjaminannya dari bahan bahan yang berbahaya
+                  Selain berkualitas tentu bahan yang kami gunakan juga diperiksa untuk keterjaminannya dari bahan yang berbahaya
                 </p>
 
               </div>
@@ -960,122 +831,55 @@
     - #FOOTER
   -->
 
-  <footer class="footer" data-section>
-    <div class="container" id="kontak">
-
+  <footer class="footer" id="kontak">
+    <div class="container">
+  
       <div class="footer-top">
-
-        <ul class="footer-list">
-
-          <li>
-            <p class="footer-list-title">Kafe Taru Martani</p>
-          </li>
-
-          <li>
-            <p class="footer-list-text">
-              Temukan kami di <a href="https://www.google.com/maps/place/Taru+Martani+Coffee+%26+Resto+1918/data=!4m2!3m1!1s0x0:0x43df4a553ffc51c7?sa=X&ved=1t:2428&ictx=111" class="link">Google Maps</a>
-            </p>
-          </li>
-
-          <li>
-            <p class="footer-list-text bold">+62 813-3648-3124</p>
-          </li>
-
-        </ul>
-
-        <ul class="footer-list">
-
-          <li>
-            <p class="footer-list-title">Useful Links</p>
-          </li>
-
-          <li>
-            <a href="https://www.instagram.com/tarumartani1918coffee/" class="footer-link">@tarumartani1918coffee</a>
-          </li>
-
-          <li>
-            <a href="https://www.instagram.com/p/C70k4bYyjCs/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" class="footer-link">Best Sellers</a>
-          </li>
-
-          <li>
-            <a href="https://www.youtube.com/results?search_query=kafe+taru+martani+yogyakarta" class="footer-link">Video Kami</a>
-          </li>
-
-        </ul>
-
-        <ul class="footer-list">
-
-          <li>
-            <p class="footer-list-title">Infomation</p>
-          </li>
-
-          <li>
-            <a href="https://www.instagram.com/tarumartani1918coffee/" class="footer-link">Instagram</a>
-          </li>
-
-          <li>
-            <a href="https://www.youtube.com/results?search_query=kafe+taru+martani+yogyakarta" class="footer-link">Youtube</a>
-          </li>
-
-          <li>
-            <a href="tel:081336483124" class="footer-link">Whatsapp</a>
-          </li>
-
-        </ul>
-
-        <div class="footer-list">
-
-          <p class="newsletter-title">Masukkan Email</p>
-
-          <p class="newsletter-text">
-            Tulis Email kalian di bawah ini untuk memebrikan saran atau kritik kalian kepada kami, Terima Kasih !
-          </p>
-
-          <form action="" class="newsletter-form" id="whatsappForm">
-            <input type="email" name="email_address" id="email" placeholder="Masukkan Email" required class="email-field">
-          
-            <textarea name="comment" id="comment" placeholder="Masukkan Komentar" required class="comment-field"></textarea>
-          
-            <button type="submit" class="btn btn-primary">Kirim</button>
-          </form>
-
+        <div class="footer-info">
+          <h3 class="footer-title">Kafe Taru Martani</h3>
+          <p>Temukan kami di <a href="https://www.google.com/maps/place/Taru+Martani+Coffee+%26+Resto+1918" target="_blank" class="footer-link">Google Maps</a></p>
+          <p class="footer-phone">+62 813-3648-3124</p>
         </div>
-
+  
+        <div class="footer-map">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3952.717693464546!2d110.3801580741756!3d-7.820462277411401!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x43df4a553ffc51c7!2sTaru%20Martani%20Coffee%20%26%20Resto%201918!5e0!3m2!1sen!2sid!4v1681998135266!5m2!1sen!2sid"
+            width="100%" height="200" style="border:0; border-radius: 10px;" allowfullscreen="" loading="lazy">
+          </iframe>
+        </div>
       </div>
-
-      <div class="footer-bottom">
-
-        <div class="wrapper">
-          <p class="copyright">
-            <span class="thanks-text">Thanks to</span> 
-            <span class="hidden-text">@codewithsadee</span>
-            <span class="hidden-text"><a href="https://linktr.ee/Masbrodev">Made With Love ❤️ by MasbroDev</a></span>
-          </p>
-      
-          <ul class="social-list">
-            <li>
-              <a href="https://www.instagram.com/tarumartani1918coffee/" class="social-link">
-                <ion-icon name="logo-instagram"></ion-icon>
-              </a>
-            </li>
-      
-            <li>
-              <a href="https://www.youtube.com/results?search_query=kafe+taru+martani+yogyakarta" class="social-link">
-                <ion-icon name="logo-youtube"></ion-icon>
-              </a>
-            </li>
-          </ul>
+  
+      <div class="footer-middle">
+        <ul class="footer-links">
+          <li><strong>Useful Links</strong></li>
+          <li><a href="https://www.instagram.com/tarumartani1918coffee/" target="_blank">@tarumartani1918coffee</a></li>
+          <li><a href="https://www.instagram.com/tarumartani1918coffee/" target="_blank">Instagram Kami</a></li>
+          <li><a href="https://www.youtube.com/results?search_query=kafe+taru+martani+yogyakarta" target="_blank">Video Kami</a></li>
+        </ul>
+  
+        <div class="footer-form">
+          <h4>Hubungi Kami</h4>
+          <p>Tulis nama dan saran/kritik kalian. Kami akan terhubung via WhatsApp. Terima Kasih!</p>
+          <form id="whatsappForm">
+            <input type="text" name="name" placeholder="Masukkan Nama" required>
+            <input type="text" name="contact" placeholder="Nomor WhatsApp / Email" required>
+            <textarea name="comment" placeholder="Komentar" required></textarea>
+            <button type="submit" class="btn">Kirim ke WhatsApp</button>
+          </form>
         </div>
-
-        <p>
-          Jika ada hal hal yang ingin dibicarakan atau saran maupun <br>masukan untuk kafe kami bisa langsung dikirim melalui kontak kami
+      </div>
+  
+      <div class="footer-bottom">
+        <p class="copyright">
+          Thanks to <a href="https://www.youtube.com/@codewithsadee">@codewithsadee</a> |
+          <a href="https://linktr.ee/Masbrodev">Made With Love ❤ by MasbroDev</a>
         </p>
       
       </div>
-
+  
     </div>
   </footer>
-
+  
 
 
 

@@ -126,18 +126,6 @@
             <i class="fas fa-bars text-xl"></i>
         </button>
     </div>
-
-    
-    <!-- Sidebar -->
-    @include('layouts.app')
-
-        <!-- Mobile sidebar toggle -->
-        <div class="md:hidden fixed bottom-4 right-4 z-50">
-            <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
-                <i class="fas fa-bars text-xl"></i>
-            </button>
-        </div>
-
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Topbar -->
@@ -264,7 +252,7 @@
     </div>
 
     <!-- Modal for Delete Confirmation -->
-<div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+<div id="deleteConfirmationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 text-center transform scale-95 transition-transform duration-300">
         <div class="flex justify-center mb-4">
             <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
