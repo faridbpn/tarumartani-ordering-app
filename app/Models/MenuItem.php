@@ -15,8 +15,12 @@ class MenuItem extends Model
         'name',
         'description',
         'price',
-        'category',
+        'category_id',
         'image',
         'is_available',
     ];
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }

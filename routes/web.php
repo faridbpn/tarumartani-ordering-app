@@ -27,6 +27,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
+    // User Management
+    Route::get('/users', [AdminController::class, 'userList'])->name('admin.users');
+
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('/menu/{id}', [MenuController::class, 'show']);
@@ -48,8 +51,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/export-arsip', [OrderArchiveController::class, 'export'])->name('arsip.export');
 });
 
+// User Routes (Protected)
 Route::middleware(['auth'])->group(function () {
-
     // Cart Routes
     Route::get('/menu', [UserController::class, 'index'])->name('menu.public');
     Route::post('/cart/add/{menu}', [OrderController::class, 'addToCart'])->name('cart.add');
@@ -58,7 +61,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [OrderController::class, 'showCart'])->name('cart.show');
 
     // Checkout Routes
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih error ini (?)
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih eror ?? (otw)
+
+    // User Reservation
+    Route::get('/user-reservation', [UserController::class, 'reservation'])->name('userReservation');
 });
 
 // Login Nomor Meja
@@ -67,7 +73,6 @@ Route::post('/email-nomor-meja', [MejaController::class, 'saveEmailMeja'])->name
 Route::post('/email-nomor-meja/reset', function () {
     $url = session('url_meja') ?? '/';
     session()->forget(['email', 'name', 'meja_id', 'nomor_meja', 'url_meja']);
-    // session()->flush();
     return response()->json(['redirect' => $url]);
 })->name('reset.email.session');
 
@@ -80,7 +85,3 @@ Route::middleware(['cekMeja'])->group(function () {
 Route::get('/need-to-login', function () {
     return view('needToLogin');
 })->name('needToLogin');
-
-Route::get('/user-reservation', function () {
-    return view('userReservation');
-})->middleware('ensure.user.loggedin')->name('userReservation');

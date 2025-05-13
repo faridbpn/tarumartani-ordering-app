@@ -79,63 +79,7 @@
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <div class="sidebar bg-white text-gray-800 w-64 border-r border-gray-200 flex flex-col">
-            <div class="p-4 flex items-center space-x-2 border-b border-gray-200">
-                <div class="bg-primary p-2 rounded-lg">
-                    <i class="fas fa-shield-alt text-white text-xl"></i>
-                </div>
-                <h1 class="logo-text text-xl font-bold text-dark">Admin<span class="text-primary">Pro</span></h1>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto py-4">
-                <div class="px-4 space-y-1">
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-tachometer-alt text-gray-500"></i>
-                        <span class="nav-text">Dashboard</span>
-                    </a>
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary bg-opacity-10 text-primary">
-                        <i class="fas fa-users text-primary"></i>
-                        <span class="nav-text font-medium">User Management</span>
-                    </a>
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-shopping-cart text-gray-500"></i>
-                        <span class="nav-text">Products</span>
-                    </a>
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-chart-line text-gray-500"></i>
-                        <span class="nav-text">Analytics</span>
-                    </a>
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-cog text-gray-500"></i>
-                        <span class="nav-text">Settings</span>
-                    </a>
-                </div>
-                
-                <div class="mt-8 px-4">
-                    <h3 class="text-xs uppercase font-semibold text-gray-500 mb-2">Support</h3>
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-question-circle text-gray-500"></i>
-                        <span class="nav-text">Help Center</span>
-                    </a>
-                    <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-envelope text-gray-500"></i>
-                        <span class="nav-text">Contact Us</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="p-4 border-t border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div class="user-avatar w-10 h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
-                        <i class="fas fa-user text-primary"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium">Admin User</p>
-                        <p class="text-xs text-gray-500">Super Admin</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    @include("layouts.app")
         
         <!-- Main Content -->
         <div class="content flex-1 overflow-y-auto">
