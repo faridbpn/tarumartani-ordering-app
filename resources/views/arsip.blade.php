@@ -358,7 +358,7 @@
                                     </div>
                                     @endif
                                     <div class="mt-2 hidden" data-order-items>
-                                        @foreach($order->items as $item)
+                                        @foreach($order->items ?? [] as $item)
                                         <div data-order-item>
                                             <span data-item-name>{{ $item->menuItem->name ?? 'Unknown Item' }}</span>
                                             <span data-item-quantity>{{ $item->quantity }}</span>
