@@ -33,7 +33,7 @@
             <a href="{{ route('arsip.index') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
                 {{ request()->routeIs('arsip.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
-                <i class="fas fa-users"></i>
+                <i class="fas fa-clock-rotate-left"></i>
                 <span>History</span>
             </a>
             {{-- user management --}}
@@ -47,7 +47,7 @@
             <a href="{{ route('userReservation') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
                 {{ request()->routeIs('userReservation') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
-                <i class="fas fa-users"></i>
+                <i class="fas fa-bookmark"></i>
                 <span>Reservasi</span>
             </a>
         </nav>
