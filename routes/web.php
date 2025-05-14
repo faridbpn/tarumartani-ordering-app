@@ -66,6 +66,8 @@ Route::middleware(['auth'])->group(function () {
 
     // User Reservation
     Route::get('/user-reservation', [UserController::class, 'reservation'])->name('userReservation');
+
+    Route::get('/customers/{customer_name}/orders', [AdminController::class, 'viewCustomerOrders'])->name('customers.orders');
 });
 
 // Login Nomor Meja

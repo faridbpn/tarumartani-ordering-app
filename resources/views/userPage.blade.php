@@ -182,11 +182,11 @@
                 <input type="hidden" name="items" id="cart_items">
                 <div class="mb-4">
                     <label for="customer_name" class="block text-gray-700 mb-2">Your Name</label>
-                    <input type="text" id="customer_name" name="customer_name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
+                    <input type="text" id="customer_name" name="customer_name" placeholder="Your Name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
                 </div>
                 <div class="mb-4">
                     <label for="table_number" class="block text-gray-700 mb-2">Table Number</label>
-                    <input type="text" id="table_number" name="table_number" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
+                    <input type="text" id="table_number" name="table_number" placeholder="Table Number" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400" onclick="closeCheckoutModal()">Cancel</button>

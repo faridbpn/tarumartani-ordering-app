@@ -8,6 +8,12 @@
     font-weight: 400; /* Normal, ubah ke 500/600 jika ingin tebal */
 }
 
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.card { border: 1px solid #ddd; padding: 15px; margin: 10px; }
+.table-section table { width: 100%; border-collapse: collapse; }
+.table-section th, .table-section td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+.pagination { margin-top: 20px; }
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';

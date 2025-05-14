@@ -197,9 +197,23 @@ class AdminController extends Controller
 
     public function userList()
     {
-        // Logika untuk mengambil data pengguna (misalnya dari database)
-        $users = User::all(); // Contoh sederhana, sesuaikan dengan kebutuhan Anda
-        return view('userList', compact('users'));
+        $customers = \App\Models\Order::select(
+            'customer_name',
+            \Illuminate\Support\Facades\DB::raw('COUNT(*) as order_count'),
+            \Illuminate\Support\Facades\DB::raw('MAX(created_at) as last_active')
+        )
+            ->whereNotNull('customer_name')
+            ->groupBy('customer_name')
+            ->orderBy('customer_name')
+            ->paginate(10); // Ganti get() dengan paginate(10) untuk 10 item per halaman
+
+        $totalCustomers = $customers->total(); // Total pelanggan dari paginator
+        $activeCustomers = $customers->where('order_count', '>', 0)->count(); // Sesuaikan logika jika perlu
+        $newCustomers = \App\Models\Order::where('created_at', '>=', \Carbon\Carbon::today()->subDays(30))
+            ->distinct('customer_name')
+            ->count('customer_name');
+
+        return view('userList', compact('customers', 'totalCustomers', 'activeCustomers', 'newCustomers'));
     }
 
     
