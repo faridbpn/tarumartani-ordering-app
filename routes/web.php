@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderArchiveController;
 use App\Http\Controllers\MejaController;
+use App\Http\Controllers\ReservationController;
 
 // Public Routes (User Pages)
 Route::get('/', function () {
@@ -49,6 +50,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/orders/{order}/restore', [OrderArchiveController::class, 'restore'])->name('orders.restore');
     Route::delete('/orders/{order}/destroy', [OrderArchiveController::class, 'destroy'])->name('orders.destroy');
     Route::get('/export-arsip', [OrderArchiveController::class, 'export'])->name('arsip.export');
+
+    // Reservation Management
+    Route::get('/reservations', [ReservationController::class, 'adminReservationList'])->name('admin.reservations');
+    Route::post('/reservations/{id}/status', [ReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
+    Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('admin.reservations.show');
+    Route::delete('/reservations/{id}', [ReservationController::class, 'destroy'])->name('admin.reservations.destroy');
 });
 
 // User Routes (Protected)
@@ -66,6 +73,16 @@ Route::middleware(['auth'])->group(function () {
 
     // User Reservation
     Route::get('/user-reservation', [UserController::class, 'reservation'])->name('userReservation');
+
+    // Reservation routes
+    Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
+
+    // Reservation Management
+    Route::get('/reservasvi', [ReservationController::class, 'adminReservationList'])->name('admin.reservations');
+    Route::post('/reservations/{id}/status', [ReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
+    Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('admin.reservations.show');
 });
 
 // Login Nomor Meja

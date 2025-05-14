@@ -29,13 +29,13 @@
                 <i class="fas fa-shopping-cart"></i>
                 <span>Orders</span>
             </a>
-            {{-- orders --}}
-            <a href="{{ route('arsip.index') }}"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg 
-                {{ request()->routeIs('arsip.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
-                <i class="fas fa-clock-rotate-left"></i>
-                <span>History</span>
-            </a>
+            {{-- reservation --}}
+            <a href="{{ route('admin.reservations') }}"
+               class="flex items-center space-x-3 px-4 py-3 rounded-lg 
+               {{ request()->routeIs('admin.reservations') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+               <i class="fas fa-bookmark"></i>
+               <span>Reservasi</span>
+           </a>
             {{-- user management --}}
             <a href="{{ route('admin.users') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
@@ -43,12 +43,12 @@
                 <i class="fas fa-user"></i>
                 <span>User List</span>
             </a>
-            {{-- reservation --}}
-            <a href="{{ route('userReservation') }}"
+             {{-- orders --}}
+             <a href="{{ route('arsip.index') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
-                {{ request()->routeIs('userReservation') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
-                <i class="fas fa-bookmark"></i>
-                <span>Reservasi</span>
+                {{ request()->routeIs('arsip.index') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span>History</span>
             </a>
         </nav>
     </div>

@@ -31,7 +31,7 @@ class OrderSeeder extends Seeder
             $order = Order::create([
                 'user_id' => $user->id,
                 'status' => $status,
-                'total_amount' => 0, // Will be updated after order items are created
+                'total_amount' => 0, 
             ]);
 
             // Create 1-5 random order items for each order
@@ -50,6 +50,7 @@ class OrderSeeder extends Seeder
                     'quantity' => $quantity,
                     'price' => $price,
                     'subtotal' => $subtotal,
+                    'name' => $menu->name,
                 ]);
                 
                 $totalAmount += $subtotal;

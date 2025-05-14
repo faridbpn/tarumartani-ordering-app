@@ -3,380 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Reservation Dashboard</title>
+    <title>Make a Reservation - Taru Martani</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="shortcut icon" href="{{ asset('images/overview/logotarumartani.webp') }}" type="image/svg+xml">
     <style>
-        .reservation-card:hover {
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        .card-shadow:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-        .status-pending {
-            background-color: #FEF3C7;
-            color: #92400E;
+        .input-focus {
+            transition: all 0.3s ease;
+            transform: scale(1);
         }
-        .status-confirmed {
-            background-color: #D1FAE5;
-            color: #065F46;
+        .input-focus:focus, .input-focus:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            transform: scale(1.02);
         }
-        .status-cancelled {
-            background-color: #FEE2E2;
-            color: #92400E;
+        .btn-gradient {
+            background: linear-gradient(to right, #4f46e5, #7c3aed);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .status-completed {
-            background-color: #E0E7FF;
-            color: #3730A3;
+        .btn-gradient:hover {
+            background: linear-gradient(to right, #4338ca, #6d28d9);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
         }
-        .sidebar {
-            transition: all 0.3s;
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
         }
-        .sidebar.collapsed {
-            width: 80px;
+        .btn-gradient:hover::before {
+            width: 300px;
+            height: 300px;
         }
-        .sidebar.collapsed .sidebar-text {
-            display: none;
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
         }
-        .sidebar.collapsed .logo-text {
-            display: none;
+        .slide-in {
+            animation: slideIn 0.6s ease-out forwards;
         }
-        .sidebar.collapsed .logo-icon {
-            display: block;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .logo-icon {
-            display: none;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 15s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-100vh); }
+            100% { transform: translateY(0); }
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
-    <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        @include("layouts.app")
+<body class="gradient-bg min-h-screen flex items-center justify-center py-8 px-4">
+    <!-- Particle Background -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="particle w-2 h-2 top-10 left-20"></div>
+        <div class="particle w-3 h-3 top-40 left-40" style="animation-delay: -2s;"></div>
+        <div class="particle w-2 h-2 top-60 right-20" style="animation-delay: -4s;"></div>
+        <div class="particle w-3 h-3 bottom-20 left-60" style="animation-delay: -6s;"></div>
+        <div class="particle w-2 h-2 bottom-40 right-40" style="animation-delay: -8s;"></div>
+    </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 overflow-auto">
-            <!-- Header -->
-            <header class="bg-white shadow-sm">
-                <div class="px-6 py-4 flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-800">Reservation Management</h1>
-                    <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+    <div class="w-full max-w-3xl mx-auto fade-in">
+        <div class="bg-white rounded-2xl overflow-hidden card-shadow">
+            <div class="p-6 sm:p-8">
+                <div class="text-center mb-6 sm:mb-8 slide-in">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Make a Reservation</h1>
+                    <p class="text-gray-600 text-sm sm:text-base">Book your table or event at Taru Martani</p>
+                </div>
+
+                @if(session('success'))
+                <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center slide-in" role="alert">
+                    <i class="fas fa-check-circle mr-2 animate-bounce"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                @endif
+
+                @if($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg slide-in" role="alert">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                <form id="reservationForm" action="{{ route('reservations.store') }}" method="POST" class="space-y-6" novalidate>
+                    @csrf
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="slide-in" style="animation-delay: 0.1s;">
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                                class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                                placeholder="Enter your full name"
+                                aria-required="true">
+                            <p class="mt-1 text-xs text-red-600 hidden name-error">Please enter your full name.</p>
                         </div>
-                        <button class="p-2 text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-bell"></i>
+                        <div class="slide-in" style="animation-delay: 0.2s;">
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" id="email" value="{{ old('email') }}" required
+                                class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                                placeholder="Enter your email"
+                                aria-required="true">
+                            <p class="mt-1 text-xs text-red-600 hidden email-error">Please enter a valid email address.</p>
+                        </div>
+                        <div class="slide-in" style="animation-delay: 0.3s;">
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" required
+                                class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                                placeholder="Enter your phone number"
+                                aria-required="true">
+                            <p class="mt-1 text-xs text-red-600 hidden phone-error">Please enter a valid phone number (10-15 digits).</p>
+                        </div>
+                        <div class="slide-in" style="animation-delay: 0.4s;">
+                            <label for="guest_count" class="block text-sm font-medium text-gray-700 mb-1">Number of Guests <span class="text-red-500">*</span></label>
+                            <input type="number" name="guest_count" id="guest_count" min="1" max="50" value="{{ old('guest_count') }}" required
+                                class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                                placeholder="Number of guests"
+                                aria-required="true">
+                            <p class="mt-1 text-xs text-red-600 hidden guest_count-error">Please enter a number between 1 and 50.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="slide-in" style="animation-delay: 0.5s;">
+                            <label for="reservation_date" class="block text-sm font-medium text-gray-700 mb-1">Date <span class="text-red-500">*</span></label>
+                            <input type="date" name="reservation_date" id="reservation_date" 
+                                min="{{ date('Y-m-d') }}" value="{{ old('reservation_date') }}" required
+                                class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                                aria-required="true">
+                            <p class="mt-1 text-xs text-red-600 hidden reservation_date-error">Please select a future date.</p>
+                        </div>
+                        <div class="slide-in" style="animation-delay: 0.6s;">
+                            <label for="reservation_time" class="block text-sm font-medium text-gray-700 mb-1">Time <span class="text-red-500">*</span></label>
+                            <input type="time" name="reservation_time" id="reservation_time" 
+                                min="10:00" max="22:00" value="{{ old('reservation_time') }}" required
+                                class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                                aria-required="true">
+                            <p class="mt-1 text-xs text-red-600 hidden reservation_time-error">Please select a time between 10:00 and 22:00.</p>
+                        </div>
+                    </div>
+                    <div class="slide-in" style="animation-delay: 0.7s;">
+                        <label for="service_type" class="block text-sm font-medium text-gray-700 mb-1">Service Type <span class="text-red-500">*</span></label>
+                        <select name="service_type" id="service_type" required
+                            class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                            aria-required="true">
+                            <option value="">Select a service type</option>
+                            <option value="dinner" {{ old('service_type') == 'dinner' ? 'selected' : '' }}>Dinner Reservation</option>
+                            <option value="lunch" {{ old('service_type') == 'lunch' ? 'selected' : '' }}>Lunch Reservation</option>
+                            <option value="meeting" {{ old('service_type') == 'meeting' ? 'selected' : '' }}>Business Meeting</option>
+                            <option value="wedding" {{ old('service_type') == 'wedding' ? 'selected' : '' }}>Wedding Event</option>
+                            <option value="other" {{ old('service_type') == 'other' ? 'selected' : '' }}>Other Event</option>
+                        </select>
+                        <p class="mt-1 text-xs text-red-600 hidden service_type-error">Please select a service type.</p>
+                    </div>
+                    <div class="slide-in" style="animation-delay: 0.8s;">
+                        <label for="special_requests" class="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+                        <textarea name="special_requests" id="special_requests" rows="4"
+                            class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
+                            placeholder="Any special requests or requirements?">{{ old('special_requests') }}</textarea>
+                    </div>
+                    <div class="flex justify-end slide-in" style="animation-delay: 0.9s;">
+                        <button type="submit"
+                            class="px-6 py-3 btn-gradient text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center disabled:opacity-50 disabled:cursor-not-allowed pulse"
+                            id="submitBtn">
+                            <span>Submit Reservation</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                            <svg class="animate-spin h-5 w-5 ml-2 hidden" viewBox="0 0 24 24" id="loadingSpinner">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </button>
                     </div>
-                </div>
-            </header>
-
-            <!-- Stats Cards -->
-            <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Total Reservations</p>
-                            <p class="text-xl font-bold">248</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Confirmed</p>
-                            <p class="text-xl font-bold">184</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Pending</p>
-                            <p class="text-xl font-bold">42</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 text-red-600">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Cancelled</p>
-                            <p class="text-xl font-bold">22</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="px-6 py-4">
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <!-- Filters -->
-                    <div class="p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div class="mb-4 md:mb-0">
-                            <h2 class="text-lg font-semibold">Recent Reservations</h2>
-                            <p class="text-sm text-gray-500">Manage all incoming reservations</p>
-                        </div>
-                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                            <select class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option>All Status</option>
-                                <option>Pending</option>
-                                <option>Confirmed</option>
-                                <option>Cancelled</option>
-                                <option>Completed</option>
-                            </select>
-                            <input type="date" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-2"></i>Filter
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Reservation Table -->
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guests</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="reservation-list">
-                                <!-- Reservations will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="px-6 py-4 border-t flex items-center justify-between">
-                        <div class="text-sm text-gray-500">
-                            Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">248</span> results
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                Previous
-                            </button>
-                            <button class="px-3 py-1 border rounded-md bg-indigo-600 text-white">
-                                1
-                            </button>
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                2
-                            </button>
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                3
-                            </button>
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
-
-    <!-- Reservation Detail Modal -->
-    <div id="reservation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div class="p-6">
-                <div class="flex justify-between items-center border-b pb-4">
-                    <h3 class="text-xl font-bold">Reservation Details</h3>
-                    <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Customer Information</h4>
-                        <div class="mt-4 space-y-3">
-                            <p><span class="text-gray-500">Name:</span> <span id="modal-name" class="font-medium">John Doe</span></p>
-                            <p><span class="text-gray-500">Email:</span> <span id="modal-email" class="font-medium">john@example.com</span></p>
-                            <p><span class="text-gray-500">Phone:</span> <span id="modal-phone" class="font-medium">+1 234 567 890</span></p>
-                            <p><span class="text-gray-500">Special Requests:</span> <span id="modal-requests" class="font-medium">Window seat preferred</span></p>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Reservation Details</h4>
-                        <div class="mt-4 space-y-3">
-                            <p><span class="text-gray-500">Reservation ID:</span> <span id="modal-id" class="font-medium">RES-2023-001</span></p>
-                            <p><span class="text-gray-500">Date & Time:</span> <span id="modal-date" class="font-medium">15 June 2023, 7:30 PM</span></p>
-                            <p><span class="text-gray-500">Service:</span> <span id="modal-service" class="font-medium">Dinner Reservation</span></p>
-                            <p><span class="text-gray-500">Guests:</span> <span id="modal-guests" class="font-medium">4</span></p>
-                            <p><span class="text-gray-500">Status:</span> <span id="modal-status" class="px-2 py-1 rounded-full text-xs status-pending">Pending</span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 pt-4 border-t flex justify-end space-x-3">
-                    <button class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-print mr-2"></i>Print
-                    </button>
-                    <button class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                        <i class="fas fa-times mr-2"></i>Cancel
-                    </button>
-                    <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                        <i class="fas fa-check mr-2"></i>Confirm
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Sample reservation data
-        const reservations = [
-            {
-                id: "RES-2023-001",
-                customer: "John Doe",
-                email: "john@example.com",
-                phone: "+1 234 567 890",
-                date: "15 June 2023, 7:30 PM",
-                service: "Dinner Reservation",
-                guests: 4,
-                status: "pending",
-                requests: "Window seat preferred"
-            },
-            {
-                id: "RES-2023-002",
-                customer: "Jane Smith",
-                email: "jane@example.com",
-                phone: "+1 987 654 321",
-                date: "16 June 2023, 12:30 PM",
-                service: "Lunch Reservation",
-                guests: 2,
-                status: "confirmed",
-                requests: "Vegetarian options needed"
-            },
-            {
-                id: "RES-2023-003",
-                customer: "Robert Johnson",
-                email: "robert@example.com",
-                phone: "+1 555 123 4567",
-                date: "17 June 2023, 6:00 PM",
-                service: "Private Event",
-                guests: 10,
-                status: "completed",
-                requests: "Birthday celebration"
-            },
-            {
-                id: "RES-2023-004",
-                customer: "Emily Davis",
-                email: "emily@example.com",
-                phone: "+1 222 333 4444",
-                date: "18 June 2023, 8:00 PM",
-                service: "Dinner Reservation",
-                guests: 2,
-                status: "cancelled",
-                requests: "None"
-            },
-            {
-                id: "RES-2023-005",
-                customer: "Michael Brown",
-                email: "michael@example.com",
-                phone: "+1 777 888 9999",
-                date: "19 June 2023, 7:00 PM",
-                service: "Anniversary Dinner",
-                guests: 2,
-                status: "pending",
-                requests: "Romantic table setup"
-            }
-        ];
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('reservation_date').min = today;
 
-        // Load reservations into table
-        function loadReservations() {
-            const reservationList = document.getElementById('reservation-list');
-            reservationList.innerHTML = '';
-
-            reservations.forEach(reservation => {
-                const statusClass = status-${reservation.status};
-                const statusText = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
-
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${reservation.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(reservation.customer)}&background=random" alt="">
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${reservation.customer}</div>
-                                <div class="text-sm text-gray-500">${reservation.email}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reservation.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reservation.service}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reservation.guests}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="viewReservation('${reservation.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="text-green-600 hover:text-green-900 mr-3">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="text-red-600 hover:text-red-900">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </td>
-                `;
-                reservationList.appendChild(row);
+        // SweetAlert on success
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Reservation Submitted!',
+                text: '{{ session('success') }}',
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'rounded-xl animate-bounce',
+                    confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg'
+                }
+            }).then(() => {
+                window.location.href = '/';
             });
-        }
+        @endif
 
-        // View reservation details
-        function viewReservation(reservationId) {
-            const reservation = reservations.find(r => r.id === reservationId);
-            if (reservation) {
-                document.getElementById('modal-id').textContent = reservation.id;
-                document.getElementById('modal-name').textContent = reservation.customer;
-                document.getElementById('modal-email').textContent = reservation.email;
-                document.getElementById('modal-phone').textContent = reservation.phone;
-                document.getElementById('modal-date').textContent = reservation.date;
-                document.getElementById('modal-service').textContent = reservation.service;
-                document.getElementById('modal-guests').textContent = reservation.guests;
-                document.getElementById('modal-requests').textContent = reservation.requests;
-                
-                const statusElement = document.getElementById('modal-status');
-                statusElement.textContent = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
-                statusElement.className = px-2 py-1 rounded-full text-xs status-${reservation.status};
-                
-                document.getElementById('reservation-modal').classList.remove('hidden');
+        // Real-time form validation
+        const form = document.getElementById('reservationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?\d{10,15}$/;
+
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                validateField(input);
+            });
+            input.addEventListener('blur', () => {
+                validateField(input);
+            });
+        });
+
+        function validateField(input) {
+            const errorElement = document.querySelector(`.${input.id}-error`);
+            let isValid = true;
+
+            if (input.required && !input.value.trim()) {
+                isValid = false;
+                errorElement.classList.remove('hidden');
+                input.classList.add('border-red-500', 'animate-shake');
+                setTimeout(() => input.classList.remove('animate-shake'), 500);
+            } else if (input.id === 'email' && !emailRegex.test(input.value)) {
+                isValid = false;
+                errorElement.textContent = 'Please enter a valid email address.';
+                errorElement.classList.remove('hidden');
+                input.classList.add('border-red-500', 'animate-shake');
+                setTimeout(() => input.classList.remove('animate-shake'), 500);
+            } else if (input.id === 'phone' && !phoneRegex.test(input.value)) {
+                isValid = false;
+                errorElement.textContent = 'Please enter a valid phone number (10-15 digits).';
+                errorElement.classList.remove('hidden');
+                input.classList.add('border-red-500', 'animate-shake');
+                setTimeout(() => input.classList.remove('animate-shake'), 500);
+            } else if (input.id === 'guest_count' && (input.value < 1 || input.value > 50)) {
+                isValid = false;
+                errorElement.classList.remove('hidden');
+                input.classList.add('border-red-500', 'animate-shake');
+                setTimeout(() => input.classList.remove('animate-shake'), 500);
+            } else if (input.id === 'reservation_date') {
+                const selectedDate = new Date(input.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) {
+                    isValid = false;
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500', 'animate-shake');
+                    setTimeout(() => input.classList.remove('animate-shake'), 500);
+                }
+            } else if (input.id === 'reservation_time') {
+                const time = input.value;
+                if (time < '10:00' || time > '22:00') {
+                    isValid = false;
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500', 'animate-shake');
+                    setTimeout(() => input.classList.remove('animate-shake'), 500);
+                }
+            } else {
+                errorElement.classList.add('hidden');
+                input.classList.remove('border-red-500');
             }
+
+            return isValid;
         }
 
-        // Close modal
-        document.getElementById('close-modal').addEventListener('click', function() {
-            document.getElementById('reservation-modal').classList.add('hidden');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let isFormValid = true;
+
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isFormValid = false;
+                }
+            });
+
+            const date = document.getElementById('reservation_date').value;
+            const time = document.getElementById('reservation_time').value;
+            const selectedDateTime = new Date(`${date}T${time}`);
+            const now = new Date();
+
+            if (selectedDateTime < now) {
+                isFormValid = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Date/Time',
+                    text: 'Please select a future date and time for your reservation.',
+                    customClass: {
+                        popup: 'rounded-xl animate-bounce',
+                        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg'
+                    }
+                });
+            }
+
+            if (isFormValid) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('animate-pulse');
+                loadingSpinner.classList.remove('hidden');
+                try {
+                    // Simulate form submission
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    form.submit();
+                } catch (error) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('animate-pulse');
+                    loadingSpinner.classList.add('hidden');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: 'An error occurred while submitting your reservation.',
+                        customClass: {
+                            popup: 'rounded-xl animate-bounce',
+                            confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg'
+                        }
+                    });
+                }
+            }
         });
 
-        // Toggle sidebar
-        document.getElementById('toggle-sidebar').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadReservations();
-        });
+        // Add shake animation for errors
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .animate-shake {
+                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            }
+            @keyframes shake {
+                10%, 90% { transform: translateX(-1px); }
+                20%, 80% { transform: translateX(2px); }
+                30%, 50%, 70% { transform: translateX(-4px); }
+                40%, 60% { transform: translateX(4px); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

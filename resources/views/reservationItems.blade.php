@@ -6,6 +6,7 @@
     <title>Admin Reservation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .reservation-card:hover {
             transform: translateY(-5px);
@@ -49,50 +50,14 @@
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        <div class="sidebar bg-indigo-800 text-white w-64 flex flex-col">
-            <div class="p-4 flex items-center space-x-3">
-                <div class="logo-icon">
-                    <i class="fas fa-calendar-check text-2xl"></i>
-                </div>
-                <div class="logo-text">
-                    <h1 class="text-xl font-bold">ReservEase</h1>
-                    <p class="text-xs text-indigo-200">Admin Panel</p>
-                </div>
-                <button id="toggle-sidebar" class="ml-auto text-indigo-200 hover:text-white">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <nav class="flex-1 mt-6">
-                <a href="#" class="flex items-center px-6 py-3 text-white bg-indigo-900">
-                    <i class="fas fa-tachometer-alt mr-3"></i>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-                <a href="#" class="flex items-center px-6 py-3 text-indigo-200 hover:text-white hover:bg-indigo-700">
-                    <i class="fas fa-calendar-alt mr-3"></i>
-                    <span class="sidebar-text">Reservations</span>
-                </a>
-                <a href="#" class="flex items-center px-6 py-3 text-indigo-200 hover:text-white hover:bg-indigo-700">
-                    <i class="fas fa-users mr-3"></i>
-                    <span class="sidebar-text">Customers</span>
-                </a>
-                <a href="#" class="flex items-center px-6 py-3 text-indigo-200 hover:text-white hover:bg-indigo-700">
-                    <i class="fas fa-cog mr-3"></i>
-                    <span class="sidebar-text">Settings</span>
-                </a>
-            </nav>
-            <div class="p-4 border-t border-indigo-700">
-                <div class="flex items-center">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Admin" class="w-10 h-10 rounded-full">
-                    <div class="ml-3 sidebar-text">
-                        <p class="text-sm font-medium">Admin User</p>
-                        <p class="text-xs text-indigo-200">Super Admin</p>
-                    </div>
-                    <button class="ml-auto sidebar-text text-indigo-200 hover:text-white">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
+           <!-- Sidebar -->
+        @include('layouts.app')
+            
+        <!-- Mobile sidebar toggle -->
+        <div class="md:hidden fixed bottom-4 right-4 z-50">
+            <button id="sidebar-toggle" class="gradient-bg text-white p-3 rounded-full shadow-lg">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
         </div>
 
         <!-- Main Content -->
@@ -113,54 +78,6 @@
                 </div>
             </header>
 
-            <!-- Stats Cards -->
-            <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Total Reservations</p>
-                            <p class="text-xl font-bold">248</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Confirmed</p>
-                            <p class="text-xl font-bold">184</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Pending</p>
-                            <p class="text-xl font-bold">42</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 text-red-600">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">Cancelled</p>
-                            <p class="text-xl font-bold">22</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Main Content -->
             <div class="px-6 py-4">
                 <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -171,23 +88,20 @@
                             <p class="text-sm text-gray-500">Manage all incoming reservations</p>
                         </div>
                         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                            <select class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option>All Status</option>
-                                <option>Pending</option>
-                                <option>Confirmed</option>
-                                <option>Cancelled</option>
-                                <option>Completed</option>
+                            <input type="text" id="searchInput" placeholder="Search by name/email..." class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <select id="statusFilter" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="completed">Completed</option>
                             </select>
-                            <input type="date" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-2"></i>Filter
-                            </button>
                         </div>
                     </div>
 
                     <!-- Reservation Table -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200" id="reservationTable">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
@@ -200,7 +114,39 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="reservation-list">
-                                <!-- Reservations will be loaded here -->
+                                @foreach($reservations as $reservation)
+                                <tr class="hover:bg-gray-50 reservation-row" data-name="{{ strtolower($reservation->name . ' ' . $reservation->email) }}" data-status="{{ $reservation->status }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $reservation->id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($reservation->name) }}&background=random" alt="">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">{{ $reservation->name }}</div>
+                                                <div class="text-sm text-gray-500">{{ $reservation->email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $reservation->reservation_datetime->format('d M Y, H:i') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $reservation->serviceTypeLabel }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $reservation->guest_count }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 rounded-full text-xs status-{{ $reservation->status }}">{{ ucfirst($reservation->status) }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="showDetail({{ $reservation->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="showStatusModal({{ $reservation->id }}, '{{ $reservation->status }}')" class="text-green-600 hover:text-green-900 mr-3">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="deleteReservation({{ $reservation->id }})" class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -234,7 +180,7 @@
     </div>
 
     <!-- Reservation Detail Modal -->
-    <div id="reservation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div id="reservation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
             <div class="p-6">
                 <div class="flex justify-between items-center border-b pb-4">
@@ -243,183 +189,174 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Customer Information</h4>
-                        <div class="mt-4 space-y-3">
-                            <p><span class="text-gray-500">Name:</span> <span id="modal-name" class="font-medium">John Doe</span></p>
-                            <p><span class="text-gray-500">Email:</span> <span id="modal-email" class="font-medium">john@example.com</span></p>
-                            <p><span class="text-gray-500">Phone:</span> <span id="modal-phone" class="font-medium">+1 234 567 890</span></p>
-                            <p><span class="text-gray-500">Special Requests:</span> <span id="modal-requests" class="font-medium">Window seat preferred</span></p>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-700">Reservation Details</h4>
-                        <div class="mt-4 space-y-3">
-                            <p><span class="text-gray-500">Reservation ID:</span> <span id="modal-id" class="font-medium">RES-2023-001</span></p>
-                            <p><span class="text-gray-500">Date & Time:</span> <span id="modal-date" class="font-medium">15 June 2023, 7:30 PM</span></p>
-                            <p><span class="text-gray-500">Service:</span> <span id="modal-service" class="font-medium">Dinner Reservation</span></p>
-                            <p><span class="text-gray-500">Guests:</span> <span id="modal-guests" class="font-medium">4</span></p>
-                            <p><span class="text-gray-500">Status:</span> <span id="modal-status" class="px-2 py-1 rounded-full text-xs status-pending">Pending</span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 pt-4 border-t flex justify-end space-x-3">
-                    <button class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">
-                        <i class="fas fa-print mr-2"></i>Print
-                    </button>
-                    <button class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                        <i class="fas fa-times mr-2"></i>Cancel
-                    </button>
-                    <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                        <i class="fas fa-check mr-2"></i>Confirm
-                    </button>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6" id="modal-content">
+                    <!-- Content loaded by JS -->
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Status Modal -->
+    <div id="status-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="flex justify-between items-center border-b pb-4">
+                    <h3 class="text-xl font-bold">Update Status</h3>
+                    <button id="close-status-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="statusForm" class="mt-6">
+                    <input type="hidden" name="reservation_id" id="status-reservation-id">
+                    <div class="mb-4">
+                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" id="status-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="admin_notes" class="block text-sm font-medium text-gray-700">Admin Notes</label>
+                        <textarea name="admin_notes" id="admin_notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Sample reservation data
-        const reservations = [
-            {
-                id: "RES-2023-001",
-                customer: "John Doe",
-                email: "john@example.com",
-                phone: "+1 234 567 890",
-                date: "15 June 2023, 7:30 PM",
-                service: "Dinner Reservation",
-                guests: 4,
-                status: "pending",
-                requests: "Window seat preferred"
-            },
-            {
-                id: "RES-2023-002",
-                customer: "Jane Smith",
-                email: "jane@example.com",
-                phone: "+1 987 654 321",
-                date: "16 June 2023, 12:30 PM",
-                service: "Lunch Reservation",
-                guests: 2,
-                status: "confirmed",
-                requests: "Vegetarian options needed"
-            },
-            {
-                id: "RES-2023-003",
-                customer: "Robert Johnson",
-                email: "robert@example.com",
-                phone: "+1 555 123 4567",
-                date: "17 June 2023, 6:00 PM",
-                service: "Private Event",
-                guests: 10,
-                status: "completed",
-                requests: "Birthday celebration"
-            },
-            {
-                id: "RES-2023-004",
-                customer: "Emily Davis",
-                email: "emily@example.com",
-                phone: "+1 222 333 4444",
-                date: "18 June 2023, 8:00 PM",
-                service: "Dinner Reservation",
-                guests: 2,
-                status: "cancelled",
-                requests: "None"
-            },
-            {
-                id: "RES-2023-005",
-                customer: "Michael Brown",
-                email: "michael@example.com",
-                phone: "+1 777 888 9999",
-                date: "19 June 2023, 7:00 PM",
-                service: "Anniversary Dinner",
-                guests: 2,
-                status: "pending",
-                requests: "Romantic table setup"
-            }
-        ];
-
-        // Load reservations into table
-        function loadReservations() {
-            const reservationList = document.getElementById('reservation-list');
-            reservationList.innerHTML = '';
-
-            reservations.forEach(reservation => {
-                const statusClass = status-${reservation.status};
-                const statusText = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
-
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${reservation.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(reservation.customer)}&background=random" alt="">
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${reservation.customer}</div>
-                                <div class="text-sm text-gray-500">${reservation.email}</div>
+        // Show detail modal
+        function showDetail(id) {
+            fetch(`/admin/reservations/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('modal-content').innerHTML = `
+                        <div>
+                            <h4 class="font-semibold text-gray-700">Customer Information</h4>
+                            <div class="mt-4 space-y-3">
+                                <p><span class="text-gray-500">Name:</span> <span class="font-medium">${data.name}</span></p>
+                                <p><span class="text-gray-500">Email:</span> <span class="font-medium">${data.email}</span></p>
+                                <p><span class="text-gray-500">Phone:</span> <span class="font-medium">${data.phone}</span></p>
+                                <p><span class="text-gray-500">Special Requests:</span> <span class="font-medium">${data.special_requests || '-'}</span></p>
                             </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reservation.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reservation.service}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reservation.guests}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="viewReservation('${reservation.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="text-green-600 hover:text-green-900 mr-3">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="text-red-600 hover:text-red-900">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </td>
-                `;
-                reservationList.appendChild(row);
-            });
+                        <div>
+                            <h4 class="font-semibold text-gray-700">Reservation Details</h4>
+                            <div class="mt-4 space-y-3">
+                                <p><span class="text-gray-500">Reservation ID:</span> <span class="font-medium">${data.id}</span></p>
+                                <p><span class="text-gray-500">Date & Time:</span> <span class="font-medium">${data.reservation_datetime}</span></p>
+                                <p><span class="text-gray-500">Service:</span> <span class="font-medium">${data.service_type}</span></p>
+                                <p><span class="text-gray-500">Guests:</span> <span class="font-medium">${data.guest_count}</span></p>
+                                <p><span class="text-gray-500">Status:</span> <span class="px-2 py-1 rounded-full text-xs status-${data.status}">${data.status.charAt(0).toUpperCase() + data.status.slice(1)}</span></p>
+                                <p><span class="text-gray-500">Admin Notes:</span> <span class="font-medium">${data.admin_notes || '-'}</span></p>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('reservation-modal').classList.remove('hidden');
+                });
         }
-
-        // View reservation details
-        function viewReservation(reservationId) {
-            const reservation = reservations.find(r => r.id === reservationId);
-            if (reservation) {
-                document.getElementById('modal-id').textContent = reservation.id;
-                document.getElementById('modal-name').textContent = reservation.customer;
-                document.getElementById('modal-email').textContent = reservation.email;
-                document.getElementById('modal-phone').textContent = reservation.phone;
-                document.getElementById('modal-date').textContent = reservation.date;
-                document.getElementById('modal-service').textContent = reservation.service;
-                document.getElementById('modal-guests').textContent = reservation.guests;
-                document.getElementById('modal-requests').textContent = reservation.requests;
-                
-                const statusElement = document.getElementById('modal-status');
-                statusElement.textContent = reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1);
-                statusElement.className = px-2 py-1 rounded-full text-xs status-${reservation.status};
-                
-                document.getElementById('reservation-modal').classList.remove('hidden');
-            }
-        }
-
-        // Close modal
-        document.getElementById('close-modal').addEventListener('click', function() {
+        document.getElementById('close-modal').onclick = function() {
             document.getElementById('reservation-modal').classList.add('hidden');
-        });
+        };
+
+        // Show status modal
+        function showStatusModal(id, status) {
+            document.getElementById('status-reservation-id').value = id;
+            document.getElementById('status-select').value = status;
+            document.getElementById('admin_notes').value = '';
+            document.getElementById('status-modal').classList.remove('hidden');
+        }
+        document.getElementById('close-status-modal').onclick = function() {
+            document.getElementById('status-modal').classList.add('hidden');
+        };
+
+        // Handle status update
+        document.getElementById('statusForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('status-reservation-id').value;
+            const status = document.getElementById('status-select').value;
+            const admin_notes = document.getElementById('admin_notes').value;
+            fetch(`/admin/reservations/${id}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ status, admin_notes })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Status Updated',
+                        text: 'Reservation status has been updated.'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        };
 
         // Toggle sidebar
         document.getElementById('toggle-sidebar').addEventListener('click', function() {
             document.querySelector('.sidebar').classList.toggle('collapsed');
         });
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadReservations();
-        });
+        // Live search & filter
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const rows = document.querySelectorAll('.reservation-row');
+        function filterRows() {
+            const search = searchInput.value.toLowerCase();
+            const status = statusFilter.value;
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                const rowStatus = row.getAttribute('data-status');
+                const matchSearch = name.includes(search);
+                const matchStatus = !status || rowStatus === status;
+                row.style.display = (matchSearch && matchStatus) ? '' : 'none';
+            });
+        }
+        searchInput.addEventListener('input', filterRows);
+        statusFilter.addEventListener('change', filterRows);
+
+        // Delete reservation
+        function deleteReservation(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This reservation will be deleted permanently!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/reservations/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Deleted!', 'Reservation has been deleted.', 'success').then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', 'Failed to delete reservation.', 'error');
+                        }
+                    });
+                }
+            });
+        }
     </script>
 </body>
 </html>
