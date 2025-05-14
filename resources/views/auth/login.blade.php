@@ -1,57 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @vite([])
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Taru Martani</title>
+    <title>Taru Martani - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
+    <link rel="shortcut icon" href="{{ asset('images/overview/logotarumartani.webp') }}" type="image/svg+xml">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.3);
+        }
+        .floating-label {
+            position: absolute;
+            pointer-events: none;
+            left: 15px;
+            top: 11px;
+            transition: 0.2s ease all;
+            color: #9ca3af;
+        }
+        .input-focused ~ .floating-label,
+        input:not(:placeholder-shown) ~ .floating-label {
+            top: -8px;
+            left: 10px;
+            font-size: 12px;
+            background: white;
+            padding: 0 5px;
+            color: #667eea;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg">
-            <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Login to your account
-                </h2>
-                <p class="mt-2 text-center text-sm text-gray-600">
-                    Or
-                    <a href="{{ route('user.register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                        create a new account
-                    </a>
-                </p>
-            </div>
-            <form class="mt-8 space-y-6" action="{{ route('user.login.submit') }}" method="POST">
-                @csrf
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="email" class="sr-only">Email address</label>
-                        <input id="email" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Email address">
-                    </div>
-                    <div>
-                        <label for="password" class="sr-only">Password</label>
-                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password">
-                    </div>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl overflow-hidden card-shadow">
+            <div class="p-8">
+                <div class="flex justify-center mb-8">
+                    <img src="{{ asset('images/overview/logotarumartani.webp') }}" alt="Taru Martani Logo" class="w-20 h-20 object-contain">
                 </div>
+                
+                <h1 class="text-2xl font-bold text-center text-gray-800 mb-1">Taru Martani</h1>
+                <p class="text-center text-gray-500 mb-8">Sign in to access your account</p>
+                <form id="loginForm" class="space-y-6" method="POST" action="{{ route('submit.login') }}">
+                    @csrf
+                    <div class="relative">
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus focus:outline-none focus:border-indigo-500 transition duration-200 placeholder-transparent form-control @error('email') is-invalid @enderror"
+                            placeholder="Email Address"
+                            value="{{ old('email') }}"
+                            required
+                        >
+                        <label for="email" class="floating-label">Email Address</label>
+                        <div class="absolute right-3 top-3 text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </div>
 
-                @if ($errors->any())
-                    <div class="text-red-500 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <p>{{ $error }}</p>
-                        @endforeach
+                        @error('email')
+                        <div class="text-red-500 text-sm mt-1 hidden invalid-feedback">
+                            {{ $message }}
+                        </div>
+                        @enderror
                     </div>
-                @endif
+                    
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="password"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus focus:outline-none focus:border-indigo-500 transition duration-200 placeholder-transparent form-control @error('password') is-invalid @enderror"
+                            placeholder="Password"
+                            required
+                        >
+                        <label for="password" class="floating-label">Password</label>
+                        <div class="absolute right-3 top-3 text-gray-400 cursor-pointer" id="togglePassword">
+                            <i class="fas fa-eye-slash"></i>
+                        </div>
+                        @error('password')
+                        <div class="text-red-500 text-sm mt-1 hidden invalid-feedback">
+                            {{ $message }}
+                        </div>
+                        @enderror
+                    </div>
 
-                <div>
-                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i class="fas fa-lock"></i>
-                        </span>
+                    @if(session('error'))
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">{{ session('error') }}</span>
+                    </div>
+                    @endif
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input 
+                                id="remember-me" 
+                                name="remember"
+                                type="checkbox" 
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            >
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                                Remember me
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200"
+                    >
                         Sign in
+                        <i class="fas fa-arrow-right ml-2 mt-0.5"></i>
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-6 text-center text-sm text-white">
+            <p>© {{ date('Y') }} Taru Martani. All rights reserved.</p>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                }
+            });
+
+            // Clear password field on page load
+            passwordInput.value = '';
+        });
+    </script>
 </body>
-</html> 
+</html>

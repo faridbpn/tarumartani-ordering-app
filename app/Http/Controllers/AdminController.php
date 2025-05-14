@@ -25,9 +25,19 @@ class AdminController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::attempt($request->only('email', 'password'))) {
+        $credentials = $request->only('email', 'password');
+        
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('admin.dashboard');
+            
+            $user = Auth::user();
+            
+            // Check user role and redirect accordingly
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('userReservation');
+            }
         }
 
         return back()->withErrors([
@@ -158,6 +168,24 @@ class AdminController extends Controller
             'pieData'
         ));
     }
+    
+    // AdminController.php
+    public function redirectAfterLogin()
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Anda belum login.');
+        }
+
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('userReservation');
+    }
+
+
 
     public function logout(Request $request)
     {

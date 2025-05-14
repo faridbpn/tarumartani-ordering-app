@@ -4,7 +4,7 @@
     @vite([])
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
+    <title>Taru Martani - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
@@ -43,13 +43,11 @@
         <div class="bg-white rounded-2xl overflow-hidden card-shadow">
             <div class="p-8">
                 <div class="flex justify-center mb-8">
-                    <div class="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
-                        <i class="fas fa-lock text-white text-3xl"></i>
-                    </div>
+                    <img src="{{ asset('images/overview/logotarumartani.webp') }}" alt="Taru Martani Logo" class="w-20 h-20 object-contain">
                 </div>
                 
-                <h1 class="text-2xl font-bold text-center text-gray-800 mb-1">Admin Portal</h1>
-                <p class="text-center text-gray-500 mb-8">Sign in to your account</p>
+                <h1 class="text-2xl font-bold text-center text-gray-800 mb-1">Taru Martani</h1>
+                <p class="text-center text-gray-500 mb-8">Sign in to access your account</p>
                 <form id="loginForm" class="space-y-6" method="POST" action="{{ route('submit.login') }}">
                     @csrf
                     <div class="relative">
@@ -59,6 +57,7 @@
                             id="email"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus focus:outline-none focus:border-indigo-500 transition duration-200 placeholder-transparent form-control @error('email') is-invalid @enderror"
                             placeholder="Email Address"
+                            value="{{ old('email') }}"
                             required
                         >
                         <label for="email" class="floating-label">Email Address</label>
@@ -92,11 +91,18 @@
                         </div>
                         @enderror
                     </div>
+
+                    @if(session('error'))
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">{{ session('error') }}</span>
+                    </div>
+                    @endif
                     
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <input 
                                 id="remember-me" 
+                                name="remember"
                                 type="checkbox" 
                                 class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                             >
@@ -115,19 +121,10 @@
                     </button>
                 </form>
             </div>
-            
-            <div class="bg-gray-50 px-8 py-6 rounded-b-2xl">
-                <div class="text-center text-sm text-gray-500">
-                    Don't have an account? 
-                    <a href="https://wa.me/6281380464576" target="_blank" class="font-medium text-indigo-600 hover:text-indigo-500">
-                        Contact administrator
-                    </a>
-                </div>
-            </div>
         </div>
         
         <div class="mt-6 text-center text-sm text-white">
-            <p>© 2025 Admin Portal. All rights reserved.</p>
+            <p>© {{ date('Y') }} Taru Martani. All rights reserved.</p>
         </div>
     </div>
 
