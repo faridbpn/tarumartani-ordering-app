@@ -100,6 +100,10 @@ Route::middleware(['cekMeja'])->group(function () {
 });
 
 // Reservation routes
-Route::get('/redirect-after-login', [AdminController::class, 'redirectAfterLogin'])->middleware('auth');
-Route::get('/reservation', [UserController::class, 'reservation'])->name('userReservation')->middleware('auth');
+Route::get('/need-to-login', function () {
+    return view('needToLogin');
+})->name('needToLogin');
 
+Route::get('/user-reservation', function () {
+    return view('userReservation');
+})->middleware('ensure.user.loggedin')->name('userReservation');
