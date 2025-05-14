@@ -74,6 +74,36 @@
         .dropdown:hover .dropdown-content {
             display: block;
         }
+        .container {
+        max-width: 1200px;
+    }
+    .grid-cols-1.md\:grid-cols-3 {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    @media (min-width: 768px) {
+        .grid-cols-1.md\:grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    .shadow {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .hover\:shadow-md:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .transition-shadow {
+        transition: box-shadow 0.3s;
+    }
+    table {
+        border-collapse: collapse;
+    }
+    th, td {
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .bg-gray-50 {
+        background-color: #f9fafb;
+    }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -81,76 +111,74 @@
         <!-- Sidebar -->
         @include("layouts.app")
 
-        <div class="container">
-            <div class="header">
-                <h1>User Management</h1>
-            </div>
-        
-            <div class="stats">
-                <div class="card">
-                    <h3>Total Users</h3>
-                    <h2>{{ $totalCustomers }}</h2>
-                    <p>{{ $newCustomers }} new this month</p>
-                </div>
-                <div class="card">
-                    <h3>Active Users</h3>
-                    <h2>{{ $activeCustomers }}</h2>
-                    <p>Based on recent orders</p>
-                </div>
-                <div class="card">
-                    <h3>New Users</h3>
-                    <h2>{{ $newCustomers }}</h2>
-                    <p>Last 30 days</p>
-                </div>
-            </div>
-        
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>All Users</h2>
-                    <div class="table-actions">
-                        <button>Add User</button>
-                        <select>
-                            <option>Filter</option>
-                        </select>
-                    </div>
-                </div>
-        
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Orders</th>
-                            <th>Last Active</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($customers as $customer)
-                            <tr>
-                                <td>
-                                    {{ $customer->customer_name }}
-                                    @if($customer->order_count > 1)
-                                        <span>(memesan sebanyak {{ $customer->order_count }}x)</span>
-                                    @elseif($customer->order_count == 1)
-                                        <span>(memesan sebanyak 1x)</span>
-                                    @endif
-                                </td>
-                                <td>{{ $customer->order_count }}</td>
-                                <td>{{ \Carbon\Carbon::parse($customer->last_active)->diffForHumans() }}</td>
-                                <td>
-                                    <a href="{{ route('customers.orders', $customer->customer_name) }}">
-                                        <button>View</button>
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-        
-                <div class="pagination">
-                    {{ $customers->links() }}
-                </div>
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">User Management</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-600">Total Users</h3>
+            <h2 class="text-3xl font-bold mt-2">{{ $totalCustomers }}</h2>
+            <p class="text-gray-500 mt-1">{{ $newCustomers }} new this month</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-600">Active Users</h3>
+            <h2 class="text-3xl font-bold mt-2">{{ $activeCustomers }}</h2>
+            <p class="text-gray-500 mt-1">Based on recent orders</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-600">New Users</h3>
+            <h2 class="text-3xl font-bold mt-2">{{ $newCustomers }}</h2>
+            <p class="text-gray-500 mt-1">Last 30 days</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="p-4 flex justify-between items-center border-b">
+            <h2 class="text-xl font-semibold">All Users</h2>
+            <div class="flex space-x-4">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add User</button>
+                <select class="border rounded px-2 py-1">
+                    <option>Filter</option>
+                </select>
             </div>
         </div>
+        <div class="p-4">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b">
+                        <th class="py-2 px-4">User</th>
+                        <th class="py-2 px-4">Orders</th>
+                        <th class="py-2 px-4">Last Active</th>
+                        <th class="py-2 px-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($customers as $customer)
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-2 px-4">
+                                {{ $customer->customer_name }}
+                                @if($customer->order_count > 1)
+                                    <span class="text-gray-600 text-sm">(memesan sebanyak {{ $customer->order_count }}x)</span>
+                                @elseif($customer->order_count == 1)
+                                    <span class="text-gray-600 text-sm">(memesan sebanyak 1x)</span>
+                                @endif
+                            </td>
+                            <td class="py-2 px-4">{{ $customer->order_count }}</td>
+                            <td class="py-2 px-4">{{ \Carbon\Carbon::parse($customer->last_active)->diffForHumans() }}</td>
+                            <td class="py-2 px-4">
+                                <div class="flex space-x-2">
+                                    -
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4">
+            {{ $customers->links() }}
+        </div>
+    </div>
+</div>
 </body>
 </html>
