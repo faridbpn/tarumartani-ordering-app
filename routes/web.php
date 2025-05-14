@@ -61,13 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [OrderController::class, 'showCart'])->name('cart.show');
 
     // Checkout Routes
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih eror ?? (otw)
-
-    // User Reservation
-    Route::get('/user-reservation', [UserController::class, 'reservation'])->name('userReservation');
-
-    Route::get('/customers/{customer_name}/orders', [AdminController::class, 'viewCustomerOrders'])->name('customers.orders');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih error ini (?)
 });
 
 // Login Nomor Meja
@@ -85,6 +79,10 @@ Route::middleware(['cekMeja'])->group(function () {
 });
 
 // Reservation routes
-Route::get('/redirect-after-login', [AdminController::class, 'redirectAfterLogin'])->middleware('auth');
-Route::get('/reservation', [UserController::class, 'reservation'])->name('userReservation')->middleware('auth');
+Route::get('/need-to-login', function () {
+    return view('needToLogin');
+})->name('needToLogin');
 
+Route::get('/user-reservation', function () {
+    return view('userReservation');
+})->middleware('ensure.user.loggedin')->name('userReservation');
