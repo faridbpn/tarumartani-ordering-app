@@ -52,7 +52,7 @@
                     @csrf
                     <div class="relative">
                         <input 
-                            type="email" 
+                            type="email"
                             name="email" 
                             id="email"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus focus:outline-none focus:border-indigo-500 transition duration-200 placeholder-transparent form-control @error('email') is-invalid @enderror"

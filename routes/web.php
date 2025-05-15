@@ -28,7 +28,7 @@ Route::post('/login', [AdminController::class, 'login'])->name('submit.login');
 Route::post('/logout', [AdminController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Admin Routes (Protected)
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'isAdmin'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
