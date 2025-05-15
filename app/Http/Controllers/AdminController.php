@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -214,7 +215,41 @@ class AdminController extends Controller
             ->count('customer_name');
 
         return view('userList', compact('customers', 'totalCustomers', 'activeCustomers', 'newCustomers'));
+
+        $users = User::select('name', 'email', 'role', 'created_at')
+        ->orderBy('name')
+        ->paginate(10); // 10 item per halaman
+
+        $totalUsers = $users->total(); // Total pengguna
+        $activeUsers = User::where('created_at', '>=', Carbon::now()->subDays(30))->count(); // Pengguna aktif (contoh: terdaftar dalam 30 hari terakhir)
+        $newUsers = User::where('created_at', '>=', Carbon::today()->subDays(30))->count(); // Pengguna baru dalam 30 hari terakhir
+
+        return view('userList', compact('users', 'totalUsers', 'activeUsers', 'newUsers'));
     }
 
+    public function createUser()
+    {
+        return view('createUser');
+    }
+
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:user,admin', // Validasi role harus user atau admin
+        ]);
+
+        // Buat user baru
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User berhasil ditambahkan!');
+    }
     
 }

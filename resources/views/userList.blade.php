@@ -111,6 +111,7 @@
         <!-- Sidebar -->
         @include("layouts.app")
 
+
 <div class="container mx-auto p-6">
     <h1 class="text-2xl font-bold mb-6">User Management</h1>
 
@@ -133,52 +134,49 @@
     </div>
 
     <div class="bg-white rounded-lg shadow mb-6">
-        <div class="p-4 flex justify-between items-center border-b">
+        <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold">All Users</h2>
-            <div class="flex space-x-4">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add User</button>
-                <select class="border rounded px-2 py-1">
-                    <option>Filter</option>
-                </select>
+            <div>
+                <a href="{{ route('admin.users.create') }}"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add User</a>
+                <button class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-md">Filter</button>
             </div>
         </div>
         <div class="p-4">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b">
-                        <th class="py-2 px-4">User</th>
-                        <th class="py-2 px-4">Orders</th>
-                        <th class="py-2 px-4">Last Active</th>
-                        <th class="py-2 px-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($customers as $customer)
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="py-2 px-4">
-                                {{ $customer->customer_name }}
-                                @if($customer->order_count > 1)
-                                    <span class="text-gray-600 text-sm">(memesan sebanyak {{ $customer->order_count }}x)</span>
-                                @elseif($customer->order_count == 1)
-                                    <span class="text-gray-600 text-sm">(memesan sebanyak 1x)</span>
-                                @endif
-                            </td>
-                            <td class="py-2 px-4">{{ $customer->order_count }}</td>
-                            <td class="py-2 px-4">{{ \Carbon\Carbon::parse($customer->last_active)->diffForHumans() }}</td>
-                            <td class="py-2 px-4">
-                                <div class="flex space-x-2">
-                                    -
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border rounded-lg">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="py-3 px-4 text-left">User</th>
+                            <th class="py-3 px-4 text-left">Email</th>
+                            <th class="py-3 px-4 text-left">Role</th>
+                            <th class="py-3 px-4 text-left">Last Active</th>
+                            <th class="py-3 px-4 text-left">Actions</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($customers as $customer)
+                            <tr class="border-b">
+                                <td class="py-3 px-4">{{ $customer->name }}</td>
+                                <td class="py-3 px-4">{{ $customer->email }}</td>
+                                <td class="py-3 px-4">{{ ucfirst($customer->role) }}</td>
+                                <td class="py-3 px-4">{{ \Carbon\Carbon::parse($customer->created_at)->diffForHumans() }}</td>
+                                <td class="py-3 px-4">
+                                    <!-- Kamu bisa tambahkan tombol edit atau hapus di sini -->
+                                    <a href="#" class="text-blue-500 hover:underline">Edit</a> |
+                                    <a href="#" class="text-red-500 hover:underline">Delete</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="p-4">
             {{ $customers->links() }}
         </div>
     </div>
 </div>
+
 </body>
 </html>

@@ -29,6 +29,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     // User Management
     Route::get('/users', [AdminController::class, 'userList'])->name('admin.users');
+    Route::get('/users/create', [AdminController::class, 'createUser'])->name('admin.users.create'); // Rute untuk form tambah user
+    Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.users.store'); // Rute untuk menyimpan user baru
 
     // Menu Management
     Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
