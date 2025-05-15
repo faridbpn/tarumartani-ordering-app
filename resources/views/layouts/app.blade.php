@@ -68,7 +68,7 @@
                 </div>
                 <form action="{{ route('logout') }}" method="POST" class="w-full mt-4">
                     @csrf
-                    <button type="submit" class="w-full py-2 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all">
+                    <button type="submit" class="w-full py-2 bg-white bg-opacity-10 hover:bg-white hover:bg-opacity-20 rounded-lg transition-all">
                         <i class="fas fa-sign-out-alt mr-2"></i> Logout
                     </button>
                 </form>
