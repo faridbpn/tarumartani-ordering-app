@@ -211,7 +211,7 @@ class AdminController extends Controller
             ->paginate(10, ['*'], 'customers_page');
     
         // Data pengguna yang ditambahkan oleh admin (dari tabel users)
-        $users = User::select('name', 'email', 'role', 'created_at')
+        $users = User::select('id','name', 'email', 'role', 'created_at')
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'users_page');
     
@@ -258,6 +258,20 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.users')->with('success', 'User berhasil ditambahkan!');
+    }
+    // AdminController.php
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Optional: Cek apakah pengguna yang dihapus bukan admin sendiri (opsional)
+        if ($user->id === Auth::id()) {
+            return redirect()->route('admin.users')->with('error', 'Anda tidak dapat menghapus akun Anda sendiri!');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', 'Pengguna berhasil dihapus!');
     }
     
 }
