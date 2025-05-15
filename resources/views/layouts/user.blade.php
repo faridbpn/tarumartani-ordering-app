@@ -54,6 +54,12 @@
                     <h1 class="text-xl font-bold">Tarumartani Cafe</h1>
                 </div>
                 <div class="flex items-center space-x-4">
+                    @auth
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-user text-xl"></i>
+                            <span class="text-sm">{{ Auth::user()->name }}</span>
+                        </div>
+                    @endauth
                     <a href="{{ route('cart.show') }}" class="relative">
                         <i class="fas fa-shopping-cart text-xl"></i>
                         @if(session()->has('cart'))

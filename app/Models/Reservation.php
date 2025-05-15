@@ -19,6 +19,7 @@ class Reservation extends Model
         'service_type',
         'special_requests',
         'status',
+        'admin_notes', // Tambahkan ini
     ];
 
     protected $casts = [
@@ -64,4 +65,4 @@ class Reservation extends Model
             default => 'gray',
         };
     }
-} 
+}

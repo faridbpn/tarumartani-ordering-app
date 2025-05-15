@@ -41,8 +41,10 @@ class UserController extends Controller
     
     public function reservation()
     {
-        $categories = Category::all(); // Contoh, sesuaikan dengan model Anda
-        $menuItems = MenuItem::with('category')->get(); // Contoh, sesuaikan dengan model Anda
-        return view('userReservation', compact('categories', 'menuItems'));
+        $categories = Category::all();
+        $menuItems = MenuItem::with('category')->get();
+        $totalCustomer = User::where('role', 'user')->count();
+    
+        return view('userReservation', compact('categories', 'menuItems', 'totalCustomer'));
     }
-} 
+}

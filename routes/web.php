@@ -18,6 +18,10 @@ Route::get('/gallery', function () {
     return view('overviewGallery');
 })->name('gallery');
 
+Route::get('/contactus', function () {
+    return view('contactus');
+})->name('contactus');
+
 // Authentication Routes
 Route::get('/login', [AdminController::class, 'showLogin'])->name('login');
 Route::post('/login', [AdminController::class, 'login'])->name('submit.login');
@@ -38,7 +42,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/menu/{id}', [MenuController::class, 'update']);
     Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
 
-    // Order Management (Admin only)
+    // Order Management
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('/orders/{order}/details', [OrderController::class, 'showDetails'])->name('orders.details');
@@ -52,10 +56,13 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/export-arsip', [OrderArchiveController::class, 'export'])->name('arsip.export');
 
     // Reservation Management
-    Route::get('/reservations', [ReservationController::class, 'adminReservationList'])->name('admin.reservations');
-    Route::post('/reservations/{id}/status', [ReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
+    Route::get('/reservations', [ReservationController::class, 'adminIndex'])->name('admin.reservation');
     Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('admin.reservations.show');
+    Route::post('/reservations/{id}/status', [ReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
     Route::delete('/reservations/{id}', [ReservationController::class, 'destroy'])->name('admin.reservations.destroy');
+
+    // Customer Orders
+    Route::get('/customers/orders/{id}', [AdminController::class, 'customerOrders'])->name('customers.orders');
 });
 
 // User Routes (Protected)
@@ -69,20 +76,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Checkout Routes
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih eror ?? (otw)
 
     // User Reservation
-    Route::get('/user-reservation', [UserController::class, 'reservation'])->name('userReservation');
-
-    // Reservation routes
     Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
     Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
-
-    // Reservation Management
-    Route::get('/reservasvi', [ReservationController::class, 'adminReservationList'])->name('admin.reservations');
-    Route::post('/reservations/{id}/status', [ReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
-    Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('admin.reservations.show');
 });
 
 // Login Nomor Meja

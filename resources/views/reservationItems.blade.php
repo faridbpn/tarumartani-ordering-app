@@ -28,29 +28,11 @@
             background-color: #E0E7FF;
             color: #3730A3;
         }
-        .sidebar {
-            transition: all 0.3s;
-        }
-        .sidebar.collapsed {
-            width: 80px;
-        }
-        .sidebar.collapsed .sidebar-text {
-            display: none;
-        }
-        .sidebar.collapsed .logo-text {
-            display: none;
-        }
-        .sidebar.collapsed .logo-icon {
-            display: block;
-        }
-        .logo-icon {
-            display: none;
-        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="flex h-screen overflow-hidden">
-           <!-- Sidebar -->
+       <!-- Sidebar -->
         @include('layouts.app')
             
         <!-- Mobile sidebar toggle -->
@@ -233,7 +215,20 @@
         // Show detail modal
         function showDetail(id) {
             fetch(`/admin/reservations/${id}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401 || res.status === 403) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unauthorized',
+                            text: 'Please login again.'
+                        }).then(() => {
+                            window.location.href = '/login';
+                        });
+                        return;
+                    }
+                    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                    return res.json();
+                })
                 .then(data => {
                     document.getElementById('modal-content').innerHTML = `
                         <div>
@@ -258,6 +253,10 @@
                         </div>
                     `;
                     document.getElementById('reservation-modal').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Error', 'Failed to load reservation details.', 'error');
                 });
         }
         document.getElementById('close-modal').onclick = function() {
@@ -285,27 +284,54 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({ status, admin_notes })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unauthorized',
+                        text: 'Please login again.'
+                    }).then(() => {
+                        window.location.href = '/login';
+                    });
+                    return;
+                }
+                if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Status Updated',
-                        text: 'Reservation status has been updated.'
+                        text: data.message || 'Reservation status has been updated.'
                     }).then(() => {
                         window.location.reload();
                     });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to update status.'
+                    });
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while updating the status.'
+                });
             });
         };
 
         // Toggle sidebar
         document.getElementById('toggle-sidebar').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
+            document.querySelector('.sidebar').classList.toggle('hidden');
         });
 
         // Live search & filter
@@ -341,18 +367,35 @@
                     fetch(`/admin/reservations/${id}`, {
                         method: 'DELETE',
                         headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                         }
                     })
-                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 401 || res.status === 403) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Unauthorized',
+                                text: 'Please login again.'
+                            }).then(() => {
+                                window.location.href = '/login';
+                            });
+                            return;
+                        }
+                        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                        return res.json();
+                    })
                     .then(data => {
                         if (data.success) {
-                            Swal.fire('Deleted!', 'Reservation has been deleted.', 'success').then(() => {
+                            Swal.fire('Deleted!', data.message || 'Reservation has been deleted.', 'success').then(() => {
                                 window.location.reload();
                             });
                         } else {
-                            Swal.fire('Error', 'Failed to delete reservation.', 'error');
+                            Swal.fire('Error', data.message || 'Failed to delete reservation.', 'error');
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'An error occurred while deleting the reservation.', 'error');
                     });
                 }
             });

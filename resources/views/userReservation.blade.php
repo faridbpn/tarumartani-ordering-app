@@ -200,7 +200,9 @@
                         <label for="special_requests" class="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
                         <textarea name="special_requests" id="special_requests" rows="4"
                             class="block w-full rounded-lg border-gray-300 shadow-sm input-focus py-2 px-3 text-sm"
-                            placeholder="Any special requests or requirements?">{{ old('special_requests') }}</textarea>
+                            placeholder="Any special requests or requirements?">{{ old('special_requests') }}
+                        </textarea>
+                        <p class="mt-1 text-xs text-red-600 hidden special_requests-error">Please enter valid special requests.</p>
                     </div>
                     <div class="flex justify-end slide-in" style="animation-delay: 0.9s;">
                         <button type="submit"
@@ -243,7 +245,10 @@
         const form = document.getElementById('reservationForm');
         const submitBtn = document.getElementById('submitBtn');
         const loadingSpinner = document.getElementById('loadingSpinner');
-        const inputs = form.querySelectorAll('input, select, textarea');
+        // Hanya ambil input yang memiliki elemen error terkait
+        const inputs = Array.from(form.querySelectorAll('input, select')).filter(input => {
+            return document.querySelector(`.${input.id}-error`) !== null;
+        });
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^\+?\d{10,15}$/;
 
@@ -257,6 +262,11 @@
         });
 
         function validateField(input) {
+            // Lewati validasi untuk special_requests karena tidak memiliki elemen error
+            if (input.id === 'special_requests') {
+                return true; // Field ini opsional, selalu valid
+            }
+
             const errorElement = document.querySelector(`.${input.id}-error`);
             let isValid = true;
 

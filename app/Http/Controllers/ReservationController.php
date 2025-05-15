@@ -33,10 +33,7 @@ class ReservationController extends Controller
                 ->withInput();
         }
 
-        // Combine date and time
         $reservationDateTime = $request->reservation_date . ' ' . $request->reservation_time;
-        
-        // Check if the selected time is within business hours (10:00 AM to 10:00 PM)
         $hour = (int)date('H', strtotime($request->reservation_time));
         if ($hour < 10 || $hour >= 22) {
             return redirect()->back()
@@ -44,7 +41,6 @@ class ReservationController extends Controller
                 ->withInput();
         }
 
-        // Create the reservation
         $reservation = Reservation::create([
             'user_id' => Auth::id(),
             'name' => $request->name,
@@ -57,8 +53,8 @@ class ReservationController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->back()
-            ->with('success', 'Your reservation has been submitted successfully! We will contact you shortly to confirm.');
+        return redirect()->route('contactus')
+            ->with('success', 'Your reservation has been submitted successfully! You can now contact us via WhatsApp to confirm your reservation.');
     }
 
     public function index()
@@ -67,57 +63,69 @@ class ReservationController extends Controller
             ->orderBy('reservation_datetime', 'desc')
             ->paginate(10);
 
-        return view('userReservations', compact('reservations'));
+        return view('userReservation', compact('reservations'));
     }
 
     public function adminIndex()
     {
         $reservations = Reservation::latest()->paginate(10);
-        return view('admin.reservationItems', compact('reservations'));
+        return view('reservationItems', compact('reservations')); // Ubah ke view yang lebih terorganisir
     }
 
-    // Update reservation status (admin & user)
     public function updateStatus(Request $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
-            'admin_notes' => 'nullable|string|max:1000'
-        ]);
-        $reservation = \App\Models\Reservation::findOrFail($id);
-        $reservation->status = $request->status;
-        if ($request->has('admin_notes')) {
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,confirmed,cancelled,completed',
+                'admin_notes' => 'nullable|string|max:1000'
+            ]);
+
+            $reservation = Reservation::findOrFail($id);
+            $reservation->status = $request->status;
             $reservation->admin_notes = $request->admin_notes;
+            $reservation->save();
+
+            return response()->json([
+                'success' => true,
+                'status' => $reservation->status,
+                'message' => 'Reservation status updated successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update status: ' . $e->getMessage()
+            ], 500);
         }
-        $reservation->save();
-        // Jika AJAX
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'status' => $reservation->status]);
-        }
-        // Jika form biasa
-        return redirect()->back()->with('success', 'Reservation status updated successfully.');
     }
 
     public function destroy($id)
     {
-        $reservation = \App\Models\Reservation::findOrFail($id);
-        $reservation->delete();
-        if (request()->ajax()) {
-            return response()->json(['success' => true]);
+        try {
+            $reservation = Reservation::findOrFail($id);
+            $reservation->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reservation deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete reservation: ' . $e->getMessage()
+            ], 500);
         }
-        return redirect()->back()->with('success', 'Reservation deleted successfully.');
     }
 
-    // Admin: List all reservations
-    public function adminReservationList()
-    {
-        $reservations = \App\Models\Reservation::orderByDesc('created_at')->get();
-        return view('reservationItems', compact('reservations'));
-    }
-
-    // Admin: Get reservation detail (for modal)
     public function show($id)
     {
-        $reservation = \App\Models\Reservation::findOrFail($id);
-        return response()->json($reservation);
+        try {
+            $reservation = Reservation::findOrFail($id);
+            return response()->json($reservation);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch reservation: ' . $e->getMessage()
+            ], 404);
+        }
     }
-} 
+}

@@ -74,12 +74,15 @@
         .dropdown:hover .dropdown-content {
             display: block;
         }
+        tr:hover {
+            background-color: #F9FAFB;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-    @include("layouts.app")
+        @include('layouts.app')
         
         <!-- Main Content -->
         <div class="content flex-1 overflow-y-auto">
@@ -108,7 +111,7 @@
                     <div class="dropdown relative">
                         <button class="flex items-center space-x-2 focus:outline-none">
                             <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                                <span>A</span>
+                                <span>{{ Auth::user()->name[0] ?? 'A' }}</span>
                             </div>
                             <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
                         </button>
@@ -116,7 +119,10 @@
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                             <div class="border-t border-gray-100"></div>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -130,52 +136,52 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Total Users</p>
-                                <h3 class="text-2xl font-bold text-dark">1,248</h3>
+                                <h3 class="text-2xl font-bold text-dark">{{ $totalCustomers ?? 0 }}</h3>
                             </div>
                             <div class="p-3 rounded-full bg-blue-100 text-blue-600">
                                 <i class="fas fa-users"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> 12.5% from last month</p>
+                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ $newCustomers ? round(($newCustomers / ($totalCustomers ?: 1)) * 100, 1) : 0 }}% from last month</p>
                     </div>
                     
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Active Users</p>
-                                <h3 class="text-2xl font-bold text-dark">856</h3>
+                                <h3 class="text-2xl font-bold text-dark">{{ $activeCustomers ?? 0 }}</h3>
                             </div>
                             <div class="p-3 rounded-full bg-green-100 text-green-600">
                                 <i class="fas fa-user-check"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> 8.2% from last month</p>
+                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ $activeCustomers ? round(($activeCustomers / ($totalCustomers ?: 1)) * 100, 1) : 0 }}% from last month</p>
                     </div>
                     
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Admin Users</p>
-                                <h3 class="text-2xl font-bold text-dark">24</h3>
+                                <h3 class="text-2xl font-bold text-dark">{{ $adminUsers ?? 0 }}</h3>
                             </div>
                             <div class="p-3 rounded-full bg-purple-100 text-purple-600">
                                 <i class="fas fa-user-shield"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-red-500 mt-2"><i class="fas fa-arrow-down mr-1"></i> 2.1% from last month</p>
+                        <p class="text-xs text-gray-500 mt-2">Based on role assignments</p>
                     </div>
                     
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">New Users</p>
-                                <h3 class="text-2xl font-bold text-dark">142</h3>
+                                <h3 class="text-2xl font-bold text-dark">{{ $newCustomers ?? 0 }}</h3>
                             </div>
                             <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
                                 <i class="fas fa-user-plus"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> 24.7% from last month</p>
+                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ $newCustomers ? round(($newCustomers / ($totalCustomers ?: 1)) * 100, 1) : 0 }}% from last month</p>
                     </div>
                 </div>
                 
@@ -184,13 +190,19 @@
                     <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="text-lg font-medium text-dark">All Users</h3>
                         <div class="flex space-x-2">
-                            <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                            <a href="{{ route('customers.create') }}" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
                                 <i class="fas fa-plus mr-2"></i> Add User
-                            </button>
+                            </a>
                             <div class="relative">
-                                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                                <button id="filterToggle" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
                                     <i class="fas fa-filter mr-2"></i> Filter
                                 </button>
+                                <div id="filterDropdown" class="hidden absolute right-0 mt-2 bg-white rounded-md shadow-lg py-1 z-10">
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Active Users</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Inactive Users</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admins</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Customers</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -201,246 +213,80 @@
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" id="selectAll">
                                         </div>
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- User Row 1 -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/women/12.jpg" alt="">
+                                @foreach($customers as $customer)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded user-checkbox" data-id="{{ $customer->id }}">
                                             </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
-                                                <div class="text-sm text-gray-500">sarah@example.com</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <div class="h-10 w-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
+                                                        <span class="text-primary">{{ $customer->customer_name[0] }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">{{ $customer->customer_name }}</div>
+                                                    <div class="text-sm text-gray-500">{{ $customer->email ?? 'No email' }}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            Admin
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        2 hours ago
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <button class="text-blue-600 hover:text-blue-900">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-yellow-600 hover:text-yellow-900">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-red-600 hover:text-red-900">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- User Row 2 -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $customer->role == 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+                                                {{ $customer->role == 'admin' ? 'Admin' : 'Customer' }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {{ $customer->status == 'active' ? 'bg-green-100 text-green-800' : 
+                                                   ($customer->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                                {{ ucfirst($customer->status) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $customer->order_count }}
+                                            @if($customer->order_count > 1)
+                                                <span>(memesan sebanyak {{ $customer->order_count }}x)</span>
+                                            @elseif($customer->order_count == 1)
+                                                <span>(memesan sebanyak 1x)</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ \Carbon\Carbon::parse($customer->last_active)->sdiffForHumans() }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex space-x-2">
+                                                <a href="{{ route('customers.orders', $customer->customer_name) }}" class="text-blue-600 hover:text-blue-900">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('customers.edit', $customer->id) }}" class="text-yellow-600 hover:text-yellow-900">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this user?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
                                             </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Michael Brown</div>
-                                                <div class="text-sm text-gray-500">michael@example.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Customer
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        1 day ago
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <button class="text-blue-600 hover:text-blue-900">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-yellow-600 hover:text-yellow-900">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-red-600 hover:text-red-900">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- User Row 3 -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Emily Davis</div>
-                                                <div class="text-sm text-gray-500">emily@example.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Customer
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        3 days ago
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <button class="text-blue-600 hover:text-blue-900">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-yellow-600 hover:text-yellow-900">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-red-600 hover:text-red-900">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- User Row 4 -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/men/75.jpg" alt="">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Robert Wilson</div>
-                                                <div class="text-sm text-gray-500">robert@example.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            Admin
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        5 minutes ago
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <button class="text-blue-600 hover:text-blue-900">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-yellow-600 hover:text-yellow-900">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-red-600 hover:text-red-900">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <!-- User Row 5 -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/women/63.jpg" alt="">
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Jessica Martinez</div>
-                                                <div class="text-sm text-gray-500">jessica@example.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Customer
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                            Inactive
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        2 weeks ago
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <button class="text-blue-600 hover:text-blue-900">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-yellow-600 hover:text-yellow-900">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-red-600 hover:text-red-900">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -448,24 +294,10 @@
                     <!-- Pagination -->
                     <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                         <div class="text-sm text-gray-500">
-                            Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">24</span> results
+                            Showing <span class="font-medium">{{ $customers->firstItem() }}</span> to <span class="font-medium">{{ $customers->lastItem() }}</span> of <span class="font-medium">{{ $customers->total() }}</span> results
                         </div>
                         <div class="flex space-x-1">
-                            <button class="pagination-btn px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Previous
-                            </button>
-                            <button class="active-pagination px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-white">
-                                1
-                            </button>
-                            <button class="pagination-btn px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                2
-                            </button>
-                            <button class="pagination-btn px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                3
-                            </button>
-                            <button class="pagination-btn px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Next
-                            </button>
+                            {{ $customers->links('pagination::tailwind') }}
                         </div>
                     </div>
                 </div>
@@ -480,31 +312,25 @@
             document.querySelector('.content').classList.toggle('expanded');
         });
 
-        // Sample data for demonstration
-        const users = [
-            {
-                id: 1,
-                name: "Sarah Johnson",
-                email: "sarah@example.com",
-                role: "Admin",
-                status: "Active",
-                lastActive: "2 hours ago",
-                avatar: "https://randomuser.me/api/portraits/women/12.jpg"
-            },
-            {
-                id: 2,
-                name: "Michael Brown",
-                email: "michael@example.com",
-                role: "Customer",
-                status: "Active",
-                lastActive: "1 day ago",
-                avatar: "https://randomuser.me/api/portraits/men/32.jpg"
-            },
-            // ... more users
-        ];
+        // Toggle filter dropdown
+        document.getElementById('filterToggle').addEventListener('click', function() {
+            document.getElementById('filterDropdown').classList.toggle('hidden');
+        });
 
-        // You can use this data to dynamically populate the table
-        // For a real application, you would fetch this data from an API
+        // Select all checkboxes
+        document.getElementById('selectAll').addEventListener('change', function() {
+            document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        // Update select all checkbox based on individual checkboxes
+        document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = Array.from(document.querySelectorAll('.user-checkbox')).every(cb => cb.checked);
+                document.getElementById('selectAll').checked = allChecked;
+            });
+        });
     </script>
 </body>
 </html>
