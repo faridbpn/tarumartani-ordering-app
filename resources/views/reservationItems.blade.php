@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Reservation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +24,7 @@
         .status-cancelled {
             background-color: #FEE2E2;
             color: #92400E;
-        }
+        }`
         .status-completed {
             background-color: #E0E7FF;
             color: #3730A3;
@@ -131,30 +132,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="px-6 py-4 border-t flex items-center justify-between">
-                        <div class="text-sm text-gray-500">
-                            Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">248</span> results
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                Previous
-                            </button>
-                            <button class="px-3 py-1 border rounded-md bg-indigo-600 text-white">
-                                1
-                            </button>
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                2
-                            </button>
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                3
-                            </button>
-                            <button class="px-3 py-1 border rounded-md text-gray-700 hover:bg-gray-50">
-                                Next
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -352,7 +329,7 @@
         searchInput.addEventListener('input', filterRows);
         statusFilter.addEventListener('change', filterRows);
 
-        // Delete reservation
+        // Perbaikan fungsi deleteReservation (hapus spasi antara funct dan ion)
         function deleteReservation(id) {
             Swal.fire({
                 title: 'Are you sure?',
@@ -400,6 +377,74 @@
                 }
             });
         }
+
+        // Tambahkan event listener untuk tombol close modal
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close modal buttons
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('reservation-modal').classList.add('hidden');
+            });
+
+            document.getElementById('close-status-modal').addEventListener('click', function() {
+                document.getElementById('status-modal').classList.add('hidden');
+            });
+
+            // Status form submission
+            document.getElementById('statusForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const id = document.getElementById('status-reservation-id').value;
+                const status = document.getElementById('status-select').value;
+                const admin_notes = document.getElementById('admin_notes').value;
+
+                fetch(`/admin/reservations/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ status, admin_notes })
+                })
+                .then(res => {
+                    if (res.status === 401 || res.status === 403) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unauthorized',
+                            text: 'Please login again.'
+                        }).then(() => {
+                            window.location.href = '/login';
+                        });
+                        return;
+                    }
+                    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Status Updated',
+                            text: data.message || 'Reservation status has been updated.'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to update status.'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
+                });
+            });
+        });
     </script>
 </body>
 </html>
