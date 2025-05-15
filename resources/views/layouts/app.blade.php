@@ -40,7 +40,7 @@
             <a href="{{ route('admin.users') }}"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg 
                 {{ request()->routeIs('admin.users') ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' }}">
-                <i class="fas fa-user"></i>
+                <i class="fas fa-users"></i>
                 <span>User List</span>
             </a>
              {{-- orders --}}
