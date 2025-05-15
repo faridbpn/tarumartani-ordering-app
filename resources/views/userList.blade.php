@@ -114,64 +114,106 @@
         <div class="container mx-auto p-6">
             <h1 class="text-2xl font-bold mb-6">User Management</h1>
         
+            <!-- Statistik -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-sm font-medium text-gray-600">Total Users</h3>
+                    <h3 class="text-sm font-medium text-gray-600">Total Customers (Orders)</h3>
+                    <p class="text-2xl font-bold">{{ $totalCustomers }}</p>
+                    <p class="text-sm text-gray-500">{{ $newCustomers }} new this month</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-sm font-medium text-gray-600">Total Added Users</h3>
                     <p class="text-2xl font-bold">{{ $totalUsers }}</p>
                     <p class="text-sm text-gray-500">{{ $newUsers }} new this month</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow">
                     <h3 class="text-sm font-medium text-gray-600">Active Users</h3>
-                    <p class="text-2xl font-bold">{{ $activeUsers }}</p>
-                    <p class="text-sm text-gray-500">Based on recent orders</p>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-sm font-medium text-gray-600">New Users</h3>
-                    <p class="text-2xl font-bold">{{ $newUsers }}</p>
+                    <p class="text-2xl font-bold">{{ $activeCustomers + $activeUsers }}</p>
                     <p class="text-sm text-gray-500">Last 30 days</p>
                 </div>
             </div>
         
-            <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold">All Users</h2>
-                    <div>
-                        <a href="{{ route('admin.users.create') }}"
-                           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add User</a>
-                        <button class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-md">Filter</button>
+            <!-- Dua Kolom ditumpuk secara vertikal -->
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Kolom 1: Pengguna yang Memesan -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Customers (From Orders)</h2>
+                    </div>
+        
+                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                        <table class="min-w-full bg-white border rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-3 px-4 text-left">Customer Name</th>
+                                    <th class="py-3 px-4 text-left">Order Count</th>
+                                    <th class="py-3 px-4 text-left">Last Active</th>
+                                    <th class="py-3 px-4 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($customers as $customer)
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4">{{ $customer->name }}</td>
+                                        <td class="py-3 px-4">{{ $customer->order_count }}</td>
+                                        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($customer->last_active)->diffForHumans() }}</td>
+                                        <td class="py-3 px-4">
+                                            <a href="#" class="text-blue-500 hover:underline">Edit</a> |
+                                            <a href="#" class="text-red-500 hover:underline">Delete</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+        
+                    <div class="mt-4">
+                        {{ $customers->appends(request()->except('customers_page'))->links() }}
                     </div>
                 </div>
         
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border rounded-lg">
-                        <thead>
-                            <tr class="bg-gray-100">
-                                <th class="py-3 px-4 text-left">User</th>
-                                <th class="py-3 px-4 text-left">Email</th>
-                                <th class="py-3 px-4 text-left">Role</th>
-                                <th class="py-3 px-4 text-left">Last Active</th>
-                                <th class="py-3 px-4 text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($users as $user)
-                                <tr class="border-b">
-                                    <td class="py-3 px-4">{{ $user->name }}</td>
-                                    <td class="py-3 px-4">{{ $user->email }}</td>
-                                    <td class="py-3 px-4">{{ ucfirst($user->role) }}</td>
-                                    <td class="py-3 px-4">{{ \Carbon\Carbon::parse($user->created_at)->diffForHumans() }}</td>
-                                    <td class="py-3 px-4">
-                                        <a href="#" class="text-blue-500 hover:underline">Edit</a> |
-                                        <a href="#" class="text-red-500 hover:underline">Delete</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Kolom 2: Pengguna yang Ditambahkan oleh Admin -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Added Users</h2>
+                        <div>
+                            <a href="{{ route('admin.users.create') }}"
+                               class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add User</a>
+                            <button class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-md">Filter</button>
+                        </div>
+                    </div>
         
-                <div class="mt-4">
-                    {{ $users->links() }}
+                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                        <table class="min-w-full bg-white border rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-3 px-4 text-left">User</th>
+                                    <th class="py-3 px-4 text-left">Email</th>
+                                    <th class="py-3 px-4 text-left">Role</th>
+                                    <th class="py-3 px-4 text-left">Last Active</th>
+                                    <th class="py-3 px-4 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($users as $user)
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4">{{ $user->name }}</td>
+                                        <td class="py-3 px-4">{{ $user->email }}</td>
+                                        <td class="py-3 px-4">{{ ucfirst($user->role) }}</td>
+                                        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($user->created_at)->diffForHumans() }}</td>
+                                        <td class="py-3 px-4">
+                                            <a href="#" class="text-blue-500 hover:underline">Edit</a> |
+                                            <a href="#" class="text-red-500 hover:underline">Delete</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+        
+                    <div class="mt-4">
+                        {{ $users->appends(request()->except('users_page'))->links() }}
+                    </div>
                 </div>
             </div>
         </div>

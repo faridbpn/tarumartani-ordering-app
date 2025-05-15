@@ -198,33 +198,42 @@ class AdminController extends Controller
 
     public function userList()
     {
-        // $customers = \App\Models\Order::select(
-        //     'customer_name',
-        //     \Illuminate\Support\Facades\DB::raw('COUNT(*) as order_count'),
-        //     \Illuminate\Support\Facades\DB::raw('MAX(created_at) as last_active')
-        // )
-        //     ->whereNotNull('customer_name')
-        //     ->groupBy('customer_name')
-        //     ->orderBy('customer_name')
-        //     ->paginate(10); // Ganti get() dengan paginate(10) untuk 10 item per halaman
-
-        // $totalCustomers = $customers->total(); // Total pelanggan dari paginator
-        // $activeCustomers = $customers->where('order_count', '>', 0)->count(); // Sesuaikan logika jika perlu
-        // $newCustomers = \App\Models\Order::where('created_at', '>=', \Carbon\Carbon::today()->subDays(30))
-        //     ->distinct('customer_name')
-        //     ->count('customer_name');
-
-        // return view('userList', compact('customers', 'totalCustomers', 'activeCustomers', 'newCustomers'));
-
+        // Data pengguna yang memesan (dari tabel orders)
+        $customers = Order::select(
+            'customer_name as name',
+            DB::raw('COUNT(*) as order_count'),
+            DB::raw('MAX(created_at) as last_active')
+        )
+            ->whereNotNull('customer_name')
+            ->whereNotIn('customer_name', User::pluck('name')) // Hindari duplikat dengan users
+            ->groupBy('customer_name')
+            ->orderBy('customer_name')
+            ->paginate(10, ['*'], 'customers_page');
+    
+        // Data pengguna yang ditambahkan oleh admin (dari tabel users)
         $users = User::select('name', 'email', 'role', 'created_at')
-        ->orderBy('name')
-        ->paginate(10); // 10 item per halaman
-
-        $totalUsers = $users->total(); // Total pengguna
-        $activeUsers = User::where('created_at', '>=', Carbon::now()->subDays(30))->count(); // Pengguna aktif (contoh: terdaftar dalam 30 hari terakhir)
-        $newUsers = User::where('created_at', '>=', Carbon::today()->subDays(30))->count(); // Pengguna baru dalam 30 hari terakhir
-
-        return view('userList', compact('users', 'totalUsers', 'activeUsers', 'newUsers'));
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'users_page');
+    
+        // Statistik untuk customers (dari orders)
+        $totalCustomers = Order::distinct('customer_name')->count('customer_name');
+        $activeCustomers = Order::where('created_at', '>=', Carbon::now()->subDays(30))
+            ->distinct('customer_name')
+            ->count('customer_name');
+        $newCustomers = Order::where('created_at', '>=', Carbon::today()->subDays(30))
+            ->distinct('customer_name')
+            ->count('customer_name');
+    
+        // Statistik untuk users (dari tabel users)
+        $totalUsers = $users->total();
+        $activeUsers = User::where('created_at', '>=', Carbon::now()->subDays(30))->count();
+        $newUsers = User::where('created_at', '>=', Carbon::today()->subDays(30))->count();
+    
+        return view('userList', compact(
+            'customers', 'users',
+            'totalCustomers', 'activeCustomers', 'newCustomers',
+            'totalUsers', 'activeUsers', 'newUsers'
+        ));
     }
 
     public function createUser()
@@ -238,10 +247,9 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:user,admin', // Validasi role harus user atau admin
+            'role' => 'required|in:user,admin',
         ]);
 
-        // Buat user baru
         User::create([
             'name' => $request->name,
             'email' => $request->email,
