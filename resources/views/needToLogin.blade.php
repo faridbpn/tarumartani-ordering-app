@@ -66,7 +66,7 @@
     <!-- Register Link -->
     <p class="text-sm text-gray-500 mt-6 animate__animated animate__fadeInUp animate__delay-2s">
       Don't have an account? 
-      <a href="/login" class="text-blue-400 hover:text-blue-300 transition">Sign up here</a>
+      <a href="{{ route('register') }}" class="text-blue-400 hover:text-blue-300 transition">Sign up here</a>
     </p>
   </div>
 

@@ -67,6 +67,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // masih error ini (?)
 });
 
+    // Registrasi Routes
+    Route::get('/register', [UserController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+
 // Login Nomor Meja
 Route::get('/nomor-meja/{token}/{nomor_meja}', [MejaController::class, 'nomorMeja'])->name('orders.nomorMeja');
 Route::post('/email-nomor-meja', [MejaController::class, 'saveEmailMeja'])->name('save.email.meja');
