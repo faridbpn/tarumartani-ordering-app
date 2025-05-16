@@ -9,6 +9,8 @@ use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -63,25 +65,41 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            $request->validate([
+            // Get JSON input
+            $input = $request->json()->all();
+
+            // Validate the request
+            $validator = Validator::make($input, [
                 'customer_name' => 'required|string|max:255',
                 'table_number' => 'required|string|max:50',
                 'items' => 'required|array',
-                'items.*.id' => 'required|exists:menu_items,id',
+                'items.*.id' => 'required|integer|exists:menus,id',
                 'items.*.quantity' => 'required|integer|min:1'
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
             $totalAmount = 0;
             $orderItems = [];
 
             // Calculate total amount and prepare order items
-            foreach ($request->items as $item) {
+            foreach ($input['items'] as $item) {
                 $menuItem = MenuItem::findOrFail($item['id']);
+                if (!$menuItem->is_available) {
+                    throw new \Exception("Menu item {$menuItem->name} is not available");
+                }
                 $subtotal = $menuItem->price * $item['quantity'];
                 $totalAmount += $subtotal;
 
                 $orderItems[] = [
-                    'menu_item_id' => $item['id'],
+                    'menu_id' => $item['id'],
+                    'name' => $menuItem->name,
                     'quantity' => $item['quantity'],
                     'price' => $menuItem->price,
                     'subtotal' => $subtotal
@@ -95,26 +113,39 @@ class OrderController extends Controller
 
             // Create the order
             $order = Order::create([
-                'user_id' => Auth::id() ?? 1, 
-                'customer_name' => $request->customer_name,
-                'table_number' => $request->table_number,
+                'user_id' => Auth::id() ?? 1,
+                'customer_name' => $input['customer_name'],
+                'table_number' => $input['table_number'],
                 'total_amount' => $total,
                 'status' => 'Pending',
             ]);
 
             // Create order items
             foreach ($orderItems as $item) {
-                $order->orderItems()->create($item);
+                $order->items()->create($item);
             }
 
             DB::commit();
 
-            return redirect()->route('orders.success', $order)
-                ->with('success', 'Order has been placed successfully!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Order has been placed successfully!',
+                'order_id' => $order->id
+            ]);
 
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'One or more menu items not found'
+            ], 404);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to place order: ' . $e->getMessage());
+            Log::error('Order creation failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
     }
 

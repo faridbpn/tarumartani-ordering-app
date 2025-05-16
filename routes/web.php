@@ -26,6 +26,11 @@ Route::get('/contactus', function () {
     return view('contactus');
 })->name('contactus');
 
+// Registrasi Routes
+Route::get('/register', [UserController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [UserController::class, 'register'])->name('register.submit');
+
+
 // Authentication Routes
 Route::get('/login', [AdminController::class, 'showLogin'])->name('login');
 Route::post('/login', [AdminController::class, 'login'])->name('submit.login');
@@ -85,6 +90,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
     Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
+
+    // user List bang
+    Route::get('/users', [AdminController::class, 'userList'])->name('admin.users');
+    Route::get('/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
+    Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.users.store'); 
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 });
 
 // Login Nomor Meja

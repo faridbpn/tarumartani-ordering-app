@@ -41,10 +41,33 @@ class UserController extends Controller
     
     public function reservation()
     {
-        $categories = Category::all();
-        $menuItems = MenuItem::with('category')->get();
-        $totalCustomer = User::where('role', 'user')->count();
+        $categories = Category::all(); // Contoh, sesuaikan dengan model Anda
+        $menuItems = MenuItem::with('category')->get(); // Contoh, sesuaikan dengan model Anda
+        return view('userReservation', compact('categories', 'menuItems'));
+    }
     
-        return view('userReservation', compact('categories', 'menuItems', 'totalCustomer'));
+    // Fungsi untuk menampilkan halaman registrasi
+    public function showRegisterForm()
+    {
+        return view('register'); 
+    }
+
+    // Fungsi untuk menyimpan data pengguna baru
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'user', // Set role default sebagai user
+        ]);
+
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }

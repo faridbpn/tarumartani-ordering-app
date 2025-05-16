@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,313 +25,296 @@
         .sidebar {
             transition: all 0.3s ease;
         }
+
         .sidebar.collapsed {
             width: 80px;
         }
+
         .sidebar.collapsed .nav-text {
             display: none;
         }
+
         .sidebar.collapsed .logo-text {
             display: none;
         }
+
         .sidebar.collapsed .nav-item {
             justify-content: center;
         }
+
         .content {
             transition: all 0.3s ease;
         }
+
         .content.expanded {
             margin-left: 80px;
         }
+
         .user-avatar {
             transition: all 0.3s ease;
         }
+
         .user-avatar:hover {
             transform: scale(1.1);
         }
+
         .search-input:focus {
             outline: none;
             box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
         }
+
         .user-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
+
         .pagination-btn:hover {
             background-color: #E5E7EB;
         }
+
         .active-pagination {
             background-color: #4F46E5;
             color: white;
         }
+
         .dropdown-content {
             display: none;
             position: absolute;
             right: 0;
             min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
             z-index: 1;
         }
+
         .dropdown:hover .dropdown-content {
             display: block;
         }
-        tr:hover {
-            background-color: #F9FAFB;
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .grid-cols-1.md\:grid-cols-3 {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        @media (min-width: 768px) {
+            .grid-cols-1.md\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .shadow {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .hover\:shadow-md:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .transition-shadow {
+            transition: box-shadow 0.3s;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .bg-gray-50 {
+            background-color: #f9fafb;
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         @include('layouts.app')
-        
-        <!-- Main Content -->
-        <div class="content flex-1 overflow-y-auto">
-            <!-- Top Navigation -->
-            <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <button id="sidebarToggle" class="text-gray-500 focus:outline-none">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h2 class="text-xl font-semibold text-dark">User Management</h2>
+
+        <div class="container mx-auto p-6 h-screen overflow-x-scroll">
+            <h1 class="text-2xl font-bold mb-6">User Management</h1>
+
+            <!-- Statistik -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-sm font-medium text-gray-600">Total Customers (Orders)</h3>
+                    <p class="text-2xl font-bold">{{ $totalCustomers }}</p>
+                    <p class="text-sm text-gray-500">{{ $newCustomers }} new this month</p>
                 </div>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Search..." class="search-input pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                    </div>
-                    
-                    <div class="relative">
-                        <button class="text-gray-500 focus:outline-none relative">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-                        </button>
-                    </div>
-                    
-                    <div class="dropdown relative">
-                        <button class="flex items-center space-x-2 focus:outline-none">
-                            <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                                <span>{{ Auth::user()->name[0] ?? 'A' }}</span>
-                            </div>
-                            <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
-                        </button>
-                        <div class="dropdown-content mt-2 bg-white rounded-md shadow-lg py-1">
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-                            <div class="border-t border-gray-100"></div>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
-                            </form>
-                        </div>
-                    </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-sm font-medium text-gray-600">Total Added Users</h3>
+                    <p class="text-2xl font-bold">{{ $totalUsers }}</p>
+                    <p class="text-sm text-gray-500">{{ $newUsers }} new this month</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-sm font-medium text-gray-600">Active Users</h3>
+                    <p class="text-2xl font-bold">{{ $activeCustomers + $activeUsers }}</p>
+                    <p class="text-sm text-gray-500">Last 30 days</p>
                 </div>
             </div>
-            
-            <!-- Main Content Area -->
-            <div class="p-6">
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500">Total Users</p>
-                                <h3 class="text-2xl font-bold text-dark">{{ $totalCustomers ?? 0 }}</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                                <i class="fas fa-users"></i>
-                            </div>
-                        </div>
-                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ $newCustomers ? round(($newCustomers / ($totalCustomers ?: 1)) * 100, 1) : 0 }}% from last month</p>
+
+            <!-- Dua Kolom ditumpuk secara vertikal -->
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Kolom 1: Pengguna yang Memesan -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Customers (From Orders)</h2>
                     </div>
-                    
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500">Active Users</p>
-                                <h3 class="text-2xl font-bold text-dark">{{ $activeCustomers ?? 0 }}</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-green-100 text-green-600">
-                                <i class="fas fa-user-check"></i>
-                            </div>
-                        </div>
-                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ $activeCustomers ? round(($activeCustomers / ($totalCustomers ?: 1)) * 100, 1) : 0 }}% from last month</p>
-                    </div>
-                    
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500">Admin Users</p>
-                                <h3 class="text-2xl font-bold text-dark">{{ $adminUsers ?? 0 }}</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                                <i class="fas fa-user-shield"></i>
-                            </div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">Based on role assignments</p>
-                    </div>
-                    
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500">New Users</p>
-                                <h3 class="text-2xl font-bold text-dark">{{ $newCustomers ?? 0 }}</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                                <i class="fas fa-user-plus"></i>
-                            </div>
-                        </div>
-                        <p class="text-xs text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ $newCustomers ? round(($newCustomers / ($totalCustomers ?: 1)) * 100, 1) : 0 }}% from last month</p>
-                    </div>
-                </div>
-                
-                <!-- User Table Section -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                        <h3 class="text-lg font-medium text-dark">All Users</h3>
-                        <div class="flex space-x-2">
-                            <a href="{{ route('customers.create') }}" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
-                                <i class="fas fa-plus mr-2"></i> Add User
-                            </a>
-                            <div class="relative">
-                                <button id="filterToggle" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
-                                    <i class="fas fa-filter mr-2"></i> Filter
-                                </button>
-                                <div id="filterDropdown" class="hidden absolute right-0 mt-2 bg-white rounded-md shadow-lg py-1 z-10">
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Active Users</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Inactive Users</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admins</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Customers</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        <div class="flex items-center">
-                                            <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" id="selectAll">
-                                        </div>
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+
+                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                        <table class="min-w-full bg-white border rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-3 px-4 text-left">Customer Name</th>
+                                    <th class="py-3 px-4 text-left">Order Count</th>
+                                    <th class="py-3 px-4 text-left">Last Active</th>
+                                    <th class="py-3 px-4 text-left">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($customers as $customer)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded user-checkbox" data-id="{{ $customer->id }}">
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <div class="h-10 w-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
-                                                        <span class="text-primary">{{ $customer->customer_name[0] }}</span>
-                                                    </div>
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">{{ $customer->customer_name }}</div>
-                                                    <div class="text-sm text-gray-500">{{ $customer->email ?? 'No email' }}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $customer->role == 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
-                                                {{ $customer->role == 'admin' ? 'Admin' : 'Customer' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $customer->status == 'active' ? 'bg-green-100 text-green-800' : 
-                                                   ($customer->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                                {{ ucfirst($customer->status) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $customer->order_count }}
-                                            @if($customer->order_count > 1)
-                                                <span>(memesan sebanyak {{ $customer->order_count }}x)</span>
-                                            @elseif($customer->order_count == 1)
-                                                <span>(memesan sebanyak 1x)</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ \Carbon\Carbon::parse($customer->last_active)->sdiffForHumans() }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('customers.orders', $customer->customer_name) }}" class="text-blue-600 hover:text-blue-900">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ route('customers.edit', $customer->id) }}" class="text-yellow-600 hover:text-yellow-900">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this user?')">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                            <tbody>
+                                @foreach ($customers as $customer)
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4">{{ $customer->name }}</td>
+                                        <td class="py-3 px-4">{{ $customer->order_count }}</td>
+                                        <td class="py-3 px-4">
+                                            {{ \Carbon\Carbon::parse($customer->last_active)->diffForHumans() }}</td>
+                                        <td class="py-3 px-4">
+                                            -
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                    
-                    <!-- Pagination -->
-                    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                        <div class="text-sm text-gray-500">
-                            Showing <span class="font-medium">{{ $customers->firstItem() }}</span> to <span class="font-medium">{{ $customers->lastItem() }}</span> of <span class="font-medium">{{ $customers->total() }}</span> results
-                        </div>
-                        <div class="flex space-x-1">
-                            {{ $customers->links('pagination::tailwind') }}
-                        </div>
+
+                    <div class="mt-4">
+                        {{ $customers->appends(request()->except('customers_page'))->links() }}
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Toggle sidebar
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
-            document.querySelector('.content').classList.toggle('expanded');
-        });
+                <!-- Kolom 2: Pengguna yang Ditambahkan oleh Admin -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Added Users</h2>
+                        <div>
+                            <a href="{{ route('admin.users.create') }}"
+                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add User</a>
+                        </div>
+                    </div>
 
-        // Toggle filter dropdown
-        document.getElementById('filterToggle').addEventListener('click', function() {
-            document.getElementById('filterDropdown').classList.toggle('hidden');
-        });
+                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                        @if (session('success'))
+                            <div id="successNotification"
+                                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 transition-opacity duration-500">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                        @if (session('error'))
+                            <div id="errorNotification"
+                                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 transition-opacity duration-500">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                        <!-- Tabel Pengguna -->
+                        <table class="min-w-full bg-white shadow rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-200 text-gray-600 text-sm leading-normal">
+                                    <th class="py-3 px-4 text-left">User</th>
+                                    <th class="py-3 px-4 text-left">Email</th>
+                                    <th class="py-3 px-4 text-left">Role</th>
+                                    <th class="py-3 px-4 text-left">Last Active</th>
+                                    <th class="py-3 px-4 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 text-sm">
+                                @foreach ($users as $user)
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4">{{ $user->name }}</td>
+                                        <td class="py-3 px-4">{{ $user->email }}</td>
+                                        <td class="py-3 px-4">{{ ucfirst($user->role) }}</td>
+                                        <td class="py-3 px-4">
+                                            {{ \Carbon\Carbon::parse($user->created_at)->diffForHumans() }}</td>
+                                        <td class="py-3 px-4">
+                                            <button type="button" class="text-red-500 hover:underline open-modal"
+                                                data-user-id="{{ $user->id }}">Delete</button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
 
-        // Select all checkboxes
-        document.getElementById('selectAll').addEventListener('change', function() {
-            document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
+                        <!-- Pagination -->
+                        <div class="mt-4">
+                            {{ $users->appends(request()->except('users_page'))->links() }}
+                        </div>
 
-        // Update select all checkbox based on individual checkboxes
-        document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const allChecked = Array.from(document.querySelectorAll('.user-checkbox')).every(cb => cb.checked);
-                document.getElementById('selectAll').checked = allChecked;
-            });
-        });
-    </script>
+                        <!-- Modal untuk Konfirmasi Penghapusan -->
+                        <div id="deleteModal"
+                            class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                                <h2 class="text-lg font-semibold mb-4">Konfirmasi Penghapusan</h2>
+                                <p class="mb-6">Apakah Anda yakin ingin menghapus pengguna ini?</p>
+                                <div class="flex justify-end space-x-3">
+                                    <button id="cancelDelete"
+                                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Batal</button>
+                                    <form id="deleteForm" method="POST" action="">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Hapus</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <script>
+                            const modal = document.getElementById('deleteModal');
+                            const openModalButtons = document.querySelectorAll('.open-modal');
+                            const cancelButton = document.getElementById('cancelDelete');
+                            const deleteForm = document.getElementById('deleteForm');
+
+                            openModalButtons.forEach(button => {
+                                button.addEventListener('click', function() {
+                                    const userId = this.getAttribute('data-user-id');
+                                    deleteForm.action = "{{ route('admin.users.delete', ':id') }}".replace(':id', userId);
+                                    modal.classList.remove('hidden');
+                                });
+                            });
+
+                            cancelButton.addEventListener('click', function() {
+                                modal.classList.add('hidden');
+                            });
+
+                            modal.addEventListener('click', function(e) {
+                                if (e.target === modal) {
+                                    modal.classList.add('hidden');
+                                }
+                            });
+                            // Fungsi untuk menghapus notifikasi setelah 2 detik
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const successNotification = document.getElementById('successNotification');
+                                const errorNotification = document.getElementById('errorNotification');
+
+                                if (successNotification) {
+                                    setTimeout(() => {
+                                        successNotification.remove();
+                                    }, 2000); // 2000 ms = 2 detik
+                                }
+
+                                if (errorNotification) {
+                                    setTimeout(() => {
+                                        errorNotification.remove();
+                                    }, 2000); // 2000 ms = 2 detik
+                                }
+                            });
+                        </script>
 </body>
+
 </html>

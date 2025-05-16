@@ -158,6 +158,8 @@
             <h2 class="text-2xl font-bold mb-4">Complete Your Order</h2>
             <form id="checkoutForm" action="{{ route('orders.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="customer_name" id="customer_name" value="{{ session('name') }}">
+                <input type="hidden" name="table_number" id="table_number" value="{{ session('nomor_meja') }}">
                 <input type="hidden" name="items" id="cart_items">
                 <div class="mb-4">
                     <label for="email" class="block text-gray-700 mb-2">Your Email</label>
@@ -316,8 +318,8 @@
             document.getElementById('service').textContent = `Rp ${service.toLocaleString()}`;
             document.getElementById('total').textContent = `Rp ${total.toLocaleString()}`;
             const formattedItems = cart.map(item => ({
-                id: item.id,
-                quantity: item.quantity
+                id: parseInt(item.id),
+                quantity: parseInt(item.quantity)
             }));
             document.getElementById('cart_items').value = JSON.stringify(formattedItems);
             localStorage.setItem('cart', JSON.stringify(cart));
@@ -371,7 +373,17 @@
         $('#checkoutForm').submit(function(e) {
             e.preventDefault();
             const form = $(this);
-            const formData = form.serialize();
+            
+            // Prepare the data
+            const formData = {
+                customer_name: $('#customer_name').val(),
+                table_number: $('#table_number').val(),
+                items: cart.map(item => ({
+                    id: parseInt(item.id),
+                    quantity: parseInt(item.quantity)
+                }))
+            };
+            
             Swal.fire({
                 title: 'Memproses Pesanan...',
                 text: 'Mohon tunggu sebentar',
@@ -380,10 +392,15 @@
                     Swal.showLoading();
                 }
             });
+
             $.ajax({
                 type: 'POST',
                 url: form.attr('action'),
-                data: formData,
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 success: function(response) {
                     cart = [];
                     localStorage.removeItem('cart');
@@ -403,10 +420,17 @@
                 },
                 error: function(xhr) {
                     closeCheckoutModal();
+                    let errorMessage = 'Terjadi kesalahan saat memproses pesanan Anda.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        errorMessage = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    console.error('Error details:', xhr.responseJSON); // Add this for debugging
                     Swal.fire({
                         icon: 'error',
                         title: 'Pesanan Gagal!',
-                        text: xhr.responseJSON?.message || 'Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.',
+                        text: errorMessage,
                         confirmButtonText: 'OK',
                         confirmButtonColor: '#3b82f6'
                     });
