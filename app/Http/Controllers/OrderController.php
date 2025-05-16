@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\MenuItem;
-use App\Models\Table;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -64,13 +63,6 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // Decode items jika masih berupa string JSON
-            if (is_string($request->items)) {
-                $request->merge([
-                    'items' => json_decode($request->items, true)
-                ]);
-            }
-
             $request->validate([
                 'customer_name' => 'required|string|max:255',
                 'table_number' => 'required|string|max:50',
@@ -103,7 +95,7 @@ class OrderController extends Controller
 
             // Create the order
             $order = Order::create([
-                'user_id' => Auth::id() ?? 1, // Use authenticated user ID or default to 1
+                'user_id' => Auth::id() ?? 1, 
                 'customer_name' => $request->customer_name,
                 'table_number' => $request->table_number,
                 'total_amount' => $total,
@@ -112,14 +104,14 @@ class OrderController extends Controller
 
             // Create order items
             foreach ($orderItems as $item) {
-                $order->items()->create($item);
+                $order->orderItems()->create($item);
             }
 
             DB::commit();
-    
+
             return redirect()->route('orders.success', $order)
                 ->with('success', 'Order has been placed successfully!');
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to place order: ' . $e->getMessage());

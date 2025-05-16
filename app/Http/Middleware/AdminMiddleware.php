@@ -18,7 +18,7 @@ class AdminMiddleware
         $user = Auth::user();
 
         if ($user->role != 'admin') {
-            return redirect()->route('home')->with('error', 'hanya untuk admin');
+            return redirect()->route('admin.only')->with('error', 'Hanya untuk admin');
         }
 
         return $next($request);

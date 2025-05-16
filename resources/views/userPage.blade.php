@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="shortcut icon" href="{{ asset('images/overview/logotarumartani.webp') }}" type="image/svg+xml">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
@@ -392,33 +393,51 @@
             const form = $(this);
             const formData = form.serialize();
             
-            // Add console log to debug the data being sent
-            console.log('Form Data:', formData);
-            console.log('Cart Items:', document.getElementById('cart_items').value);
+            // Show loading state
+            Swal.fire({
+                title: 'Memproses Pesanan...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             
-            const url = form.attr('action');
-
             $.ajax({
                 type: 'POST',
-                url: url,
+                url: form.attr('action'),
                 data: formData,
                 success: function(response) {
-                    console.log('Success Response:', response);
                     // Clear the cart after successful order
                     cart = [];
                     updateCart();
                     closeCheckoutModal();
-                    $('#resultModalTitle').text('Pesanan Berhasil!');
-                    $('#resultModalMessage').text('Pesanan Anda telah berhasil ditempatkan.');
-                    $('#resultModal').removeClass('hidden').addClass('flex');
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pesanan Berhasil!',
+                        text: 'Pesanan Anda telah berhasil ditempatkan.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3b82f6'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Optionally redirect to orders page or refresh
+                            window.location.reload();
+                        }
+                    });
                 },
                 error: function(xhr) {
-                    console.log('Error Status:', xhr.status);
-                    console.log('Error Response:', xhr.responseText);
                     closeCheckoutModal();
-                    $('#resultModalTitle').text('Pesanan Gagal!');
-                    $('#resultModalMessage').text('Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.');
-                    $('#resultModal').removeClass('hidden').addClass('flex');
+                    
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pesanan Gagal!',
+                        text: xhr.responseJSON?.message || 'Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3b82f6'
+                    });
                 }
             });
         });

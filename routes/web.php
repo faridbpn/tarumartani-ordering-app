@@ -14,6 +14,10 @@ Route::get('/', function () {
     return view('overview');
 })->name('home');
 
+Route::get('/admin-only', function () {
+    return view('adminOnly');
+})->name('admin.only');
+
 Route::get('/gallery', function () {
     return view('overviewGallery');
 })->name('gallery');
@@ -30,7 +34,7 @@ Route::post('/logout', [AdminController::class, 'logout'])->middleware('auth')->
 // Admin Routes (Protected)
 Route::middleware(['auth', 'isAdmin'])->prefix('admin')->group(function () {
     // Dashboard
-    Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // User Management
     Route::get('/users', [AdminController::class, 'userList'])->name('admin.users');
