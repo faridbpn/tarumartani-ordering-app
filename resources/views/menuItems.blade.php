@@ -457,43 +457,52 @@ const sidebarToggle = document.getElementById('sidebar-toggle');
             });
             
             // Form Submit Handler
-            menuForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const menuId = document.getElementById('menuId').value;
-                const url = menuId ? `/admin/menu/${menuId}` : '/admin/menu';
-                const method = menuId ? 'POST' : 'POST';
-                
-                // Add CSRF token to headers
-                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                
-                fetch(url, {
-                    method: method,
-                    headers: {
-                        'X-CSRF-TOKEN': token,
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => Promise.reject(err));
+           menuForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+                    const menuId = document.getElementById('menuId').value;
+                    const url = menuId ? `/admin/menu/${menuId}` : '/admin/menu';
+                    const method = menuId ? 'POST' : 'POST';
+                    
+                    // Log form data untuk debugging
+                    for (let [key, value] of formData.entries()) {
+                        console.log(key, value);
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        showToast(menuId ? 'Menu updated successfully' : 'Menu created successfully');
-                        setTimeout(() => window.location.reload(), 1000);
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast(error.message || 'Error saving menu', 'error');
+                    
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                console.error('Response error:', err);
+                                return Promise.reject(err);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            showToast(menuId ? 'Menu updated successfully' : 'Menu created successfully');
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            showToast(data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast(error.message || 'Error saving menu', 'error');
+                    });
                 });
-            });
             
             // Search and Filter Handlers
             const searchInput = document.getElementById('searchInput');

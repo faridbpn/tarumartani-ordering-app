@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class MenuController extends Controller
 {
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -49,6 +50,8 @@ class MenuController extends Controller
     public function store(Request $request)
     {
         try {
+            Log::info('Store method called', ['request' => $request->all(), 'hasFile' => $request->hasFile('image')]);
+            
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
@@ -59,6 +62,7 @@ class MenuController extends Controller
             ]);
 
             if ($validator->fails()) {
+                Log::error('Validation failed', ['errors' => $validator->errors()]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
@@ -68,14 +72,37 @@ class MenuController extends Controller
 
             $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
 
-            if ($request->hasFile('image') && $request->file('image')->isValid()) {
-                $path = $request->file('image')->store('menus', 'public');
-                if ($path) {
-                    $data['image'] = $path;
+            if ($request->hasFile('image')) {
+                Log::info('Image detected in request', ['file' => $request->file('image')]);
+                if ($request->file('image')->isValid()) {
+                    try {
+                        $originalName = $request->file('image')->getClientOriginalName();
+                        $path = $request->file('image')->store('menus', 'public');
+                        Log::info('Image stored', ['path' => $path, 'originalName' => $originalName]);
+                        if (!$path) {
+                            throw new \Exception('Failed to store image: Storage path returned empty');
+                        }
+                        $data['image'] = $path;
+                    } catch (\Exception $e) {
+                        Log::error('Image upload failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Failed to upload image: ' . $e->getMessage()
+                        ], 500);
+                    }
+                } else {
+                    Log::error('Invalid image file', ['error' => $request->file('image')->getErrorMessage()]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid image file: ' . $request->file('image')->getErrorMessage()
+                    ], 422);
                 }
+            } else {
+                Log::info('No image file in request');
             }
 
             $menu = Menu::create($data);
+            Log::info('Menu created', ['menu' => $menu]);
 
             return response()->json([
                 'success' => true,
@@ -83,7 +110,7 @@ class MenuController extends Controller
                 'data' => $menu
             ]);
         } catch (\Exception $e) {
-            Log::error('Menu creation failed: ' . $e->getMessage());
+            Log::error('Menu creation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create menu: ' . $e->getMessage()
@@ -95,8 +122,20 @@ class MenuController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            Log::info('Update method called', [
+                'menu_id' => $id,
+                'request_data' => $request->all(),
+                'has_file' => $request->hasFile('image'),
+                'file_input' => $request->file('image') ? [
+                    'name' => $request->file('image')->getClientOriginalName(),
+                    'size' => $request->file('image')->getSize(),
+                    'type' => $request->file('image')->getMimeType(),
+                    'error' => $request->file('image')->getError()
+                ] : null
+            ]);
+    
             $menu = Menu::findOrFail($id);
-
+    
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
@@ -105,37 +144,85 @@ class MenuController extends Controller
                 'is_available' => 'required|boolean',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
             ]);
-
+    
             if ($validator->fails()) {
-                return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+                Log::error('Validation failed', ['errors' => $validator->errors()->toArray()]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
             }
-
+    
             $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
-
-            if ($request->hasFile('image') && $request->file('image')->isValid()) {
-                // Delete old image if exists
-                if ($menu->image) {
-                    Storage::disk('public')->delete($menu->image);
+    
+            if ($request->hasFile('image')) {
+                Log::info('Image detected in request');
+                if ($request->file('image')->isValid()) {
+                    try {
+                        if ($menu->image) {
+                            Log::info('Deleting old image', ['old_image' => $menu->image]);
+                            Storage::disk('public')->delete($menu->image);
+                        }
+                        $originalName = $request->file('image')->getClientOriginalName();
+                        $fileSize = $request->file('image')->getSize();
+                        $fileType = $request->file('image')->getMimeType();
+                        Log::info('Attempting to store image', [
+                            'original_name' => $originalName,
+                            'size' => $fileSize,
+                            'type' => $fileType
+                        ]);
+    
+                        // Uji apakah disk public dapat diakses
+                        if (!Storage::disk('public')->exists('menus')) {
+                            Log::info('Creating menus directory');
+                            Storage::disk('public')->makeDirectory('menus');
+                        }
+    
+                        $path = $request->file('image')->store('menus', 'public');
+                        Log::info('Image store result', ['path' => $path]);
+    
+                        if (!$path) {
+                            throw new \Exception('Failed to store image: Storage path returned empty');
+                        }
+                        $data['image'] = $path;
+                    } catch (\Exception $e) {
+                        Log::error('Image upload failed', [
+                            'message' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Failed to upload image: ' . $e->getMessage()
+                        ], 500);
+                    }
+                } else {
+                    Log::error('Invalid image file', [
+                        'error' => $request->file('image')->getErrorMessage(),
+                        'error_code' => $request->file('image')->getError()
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid image file: ' . $request->file('image')->getErrorMessage()
+                    ], 422);
                 }
-                
-                $path = $request->file('image')->store('menus', 'public');
-
-                // dd($path);
-
-                if ($path) {
-                    $data['image'] = $path;
-                }
+            } else {
+                Log::info('No image file in request');
             }
-
+    
             $menu->update($data);
-
+            Log::info('Menu updated', ['menu' => $menu->toArray()]);
+    
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Menu updated successfully',
                 'data' => $menu
             ]);
         } catch (\Exception $e) {
-            Log::error('Menu update failed: ' . $e->getMessage());
+            Log::error('Menu update failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update menu: ' . $e->getMessage()
