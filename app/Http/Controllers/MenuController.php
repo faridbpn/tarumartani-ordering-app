@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MenuController extends Controller
 {
@@ -67,8 +68,11 @@ class MenuController extends Controller
 
             $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
 
-            if ($request->hasFile('image')) {
-                $data['image'] = $request->file('image')->store('menus', 'public');
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $path = $request->file('image')->store('menus', 'public');
+                if ($path) {
+                    $data['image'] = $path;
+                }
             }
 
             $menu = Menu::create($data);
@@ -90,33 +94,53 @@ class MenuController extends Controller
 
     public function update(Request $request, $id)
     {
-        $menu = Menu::findOrFail($id);
+        try {
+            $menu = Menu::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'is_available' => 'required|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:100',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'category_id' => 'required|exists:categories,id',
+                'is_available' => 'required|boolean',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
-        }
-
-        $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
-
-        if ($request->hasFile('image')) {
-            if ($menu->image) {
-                Storage::disk('public')->delete($menu->image);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
             }
-            $data['image'] = $request->file('image')->store('menus', 'public');
+
+            $data = $request->only(['name', 'description', 'price', 'category_id', 'is_available']);
+
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                // Delete old image if exists
+                if ($menu->image) {
+                    Storage::disk('public')->delete($menu->image);
+                }
+                
+                $path = $request->file('image')->store('menus', 'public');
+
+                // dd($path);
+
+                if ($path) {
+                    $data['image'] = $path;
+                }
+            }
+
+            $menu->update($data);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Menu updated successfully',
+                'data' => $menu
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Menu update failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update menu: ' . $e->getMessage()
+            ], 500);
         }
-
-        $menu->update($data);
-
-        return response()->json(['success' => true, 'message' => 'Menu updated successfully']);
     }
 
     public function destroy($id)
